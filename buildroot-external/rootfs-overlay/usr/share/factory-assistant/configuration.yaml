@@ -1,12 +1,31 @@
 # Factory Assistant — industrial default Core configuration template.
 #
 # Shipped read-only in the OS image at /usr/share/factory-assistant/.
-# Seeding into the live /config on first boot is a Phase 3 work item
-# (see docs/INDUSTRIAL_DEFAULTS.md); until then this file documents the
-# recommended starting configuration and can be copied manually.
+# On a true first boot the fa-seed-config oneshot copies this whole tree into
+# the Home Assistant config directory if no configuration.yaml exists yet; it
+# never overwrites existing config. That host-side seed is a best-effort
+# SCAFFOLD (the config dir is a Supervisor-managed volume) — see
+# docs/INDUSTRIAL_DEFAULTS.md §"Config seeding mechanism". You can also copy
+# this tree into /config manually at commissioning.
 #
 # SAFETY: every industrial protocol example below is READ-ONLY. Do not add
 # write/control paths here — see docs/SAFETY_BOUNDARY.md.
+#
+# --- Deployment defaults / commissioning checklist --------------------------
+# Surfacing these as first-boot onboarding steps needs Core/Supervisor changes
+# and is out of scope here (docs/INDUSTRIAL_DEFAULTS.md); treat them as the
+# recommended manual checklist for now.
+#
+#   * NTP (REQUIRED): keep the appliance clock disciplined to a plant NTP
+#     server so recorder/history timestamps are trustworthy. The OS syncs time
+#     via systemd-timesyncd; point it at the site NTP source and set the
+#     time zone during onboarding (Settings -> System -> Date & Time).
+#   * Static IP (recommended): plants standardize on static addressing.
+#     Configure it via Settings -> System -> Network (NetworkManager), not in
+#     this file. DHCP works out of the box for initial commissioning.
+#   * Mosquitto (offer): for MQTT sensors/gateways, install the Mosquitto
+#     broker add-on (Settings -> Add-ons), then add the MQTT integration —
+#     see the MQTT section below.
 
 default_config:
 

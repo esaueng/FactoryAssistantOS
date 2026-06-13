@@ -1,0 +1,78 @@
+#!/usr/bin/env bash
+# fa-seed-config — first-boot seeding of the Factory Assistant industrial
+# default Core configuration.
+#
+# SPDX-License-Identifier: Apache-2.0
+# Copyright Factory Assistant contributors.
+#
+# Copies the shipped read-only template tree
+#   /usr/share/factory-assistant/   (configuration.yaml, themes/, dashboards/,
+#                                    packages/)
+# into the Home Assistant config directory ONLY on a true first boot — i.e.
+# only when no configuration.yaml exists in the target. Existing config is
+# never overwritten, so user edits, restores, and re-runs are all safe.
+#
+# IMPORTANT CAVEAT (read before trusting this): in Home Assistant OS the
+# Core config directory is a Supervisor-managed data volume that lives inside
+# the Core container's world, not a stable host path. This host-side seed is a
+# best-effort SCAFFOLD: it targets the on-disk location the Supervisor uses
+# today (/mnt/data/supervisor/homeassistant), but that path is an upstream
+# implementation detail and the directory may not exist (or may not yet be the
+# mounted volume) at the moment this unit runs. Robust seeding will ultimately
+# need a Supervisor-fork hook that runs inside the Supervisor's own first-boot
+# flow. See docs/INDUSTRIAL_DEFAULTS.md §"Config seeding mechanism".
+#
+# Monitoring/READ-ONLY appliance: this script only copies configuration
+# templates; it performs no machine writes and no control actions.
+set -euo pipefail
+
+# Source tree shipped read-only in the OS image.
+SRC="${FA_SEED_SRC:-/usr/share/factory-assistant}"
+# Supervisor-managed Home Assistant config directory on the data partition.
+# Overridable for testing; default is the upstream Supervisor layout.
+DEST="${FA_SEED_DEST:-/mnt/data/supervisor/homeassistant}"
+
+log() { printf 'fa-seed-config: %s\n' "$*"; }
+
+# 1. The template tree must be present (it is part of the image).
+if [ ! -d "$SRC" ]; then
+    log "source template tree $SRC not found — nothing to seed"
+    exit 0
+fi
+
+# 2. The Supervisor config volume must already exist. If it does not, the
+#    Supervisor has not provisioned it yet; seeding from the host would create
+#    a stray directory and is not safe. Skip — this is the documented scaffold
+#    limitation, not an error.
+if [ ! -d "$DEST" ]; then
+    log "config directory $DEST not present yet — skipping (see INDUSTRIAL_DEFAULTS.md)"
+    exit 0
+fi
+
+# 3. Idempotency / first-boot gate: only seed when no configuration exists.
+#    Any existing configuration.yaml means the appliance is already configured
+#    (or was restored) and must not be touched.
+if [ -e "$DEST/configuration.yaml" ]; then
+    log "configuration.yaml already present in $DEST — leaving config untouched"
+    exit 0
+fi
+
+log "first boot detected — seeding industrial defaults from $SRC into $DEST"
+
+# 4. Seed each top-level template entry that isn't already present, without
+#    clobbering. An explicit per-entry copy (rather than `cp -Rn`, which exits
+#    non-zero on a skipped collision under `set -e` on BSD/BusyBox cp) keeps the
+#    idempotency contract on every cp implementation while still surfacing
+#    genuine copy errors. cp -R preserves the themes/dashboards/packages subtrees.
+shopt -s nullglob
+for item in "$SRC"/*; do
+    base="$(basename "$item")"
+    if [ -e "$DEST/$base" ]; then
+        log "skipping existing $base (not overwriting)"
+        continue
+    fi
+    cp -R "$item" "$DEST/$base"
+done
+shopt -u nullglob
+
+log "seeding complete"

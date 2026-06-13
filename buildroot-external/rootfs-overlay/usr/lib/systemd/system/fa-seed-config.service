@@ -1,0 +1,36 @@
+# fa-seed-config.service — seed Factory Assistant industrial defaults on first boot.
+#
+# SPDX-License-Identifier: Apache-2.0
+# Copyright Factory Assistant contributors.
+#
+# Oneshot that copies the shipped /usr/share/factory-assistant/ template tree
+# into the Home Assistant config directory only on a true first boot (no
+# existing configuration.yaml). The script is idempotent and never overwrites
+# existing config, so running this unit on every boot is harmless.
+#
+# SCAFFOLD CAVEAT: the Core config directory is a Supervisor-managed volume,
+# not a guaranteed host path. This unit targets the current upstream on-disk
+# location as a best effort and exits cleanly when that volume is not present.
+# Robust seeding may ultimately need a Supervisor-fork hook — see
+# docs/INDUSTRIAL_DEFAULTS.md.
+#
+# Monitoring/READ-ONLY appliance: copies configuration templates only.
+
+[Unit]
+Description=Seed Factory Assistant industrial default configuration on first boot
+Documentation=file:///usr/share/factory-assistant/configuration.yaml
+# Best-effort ordering: run after the data partition is mounted so the
+# Supervisor config volume has a chance to exist. The script re-checks and
+# exits cleanly if it does not.
+After=mnt-data.mount local-fs.target
+ConditionPathExists=/usr/share/factory-assistant/configuration.yaml
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/libexec/fa-seed-config
+# Best-effort: a missing config volume is not a boot failure.
+SuccessExitStatus=0
+
+[Install]
+WantedBy=multi-user.target

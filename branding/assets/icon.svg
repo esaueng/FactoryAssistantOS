@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img"
+     aria-labelledby="fa-icon-title fa-icon-desc" fill="none">
+  <title id="fa-icon-title">Factory Assistant</title>
+  <desc id="fa-icon-desc">Original Factory Assistant app mark: an open
+    industrial gauge arc with a single bold monitoring pulse, simplified for
+    favicon/app-icon use and tuned to stay legible at 16 px. Original work, not
+    derived from, tracing, or resembling any Home Assistant or
+    home-assistant/brands asset. Informational and monitoring-only.</desc>
+
+  <!-- Reduction of the master mark (branding/assets/logo.svg): the gauge arc
+       and one bold pulse, no fine scale ticks, so it survives 16 px. Single
+       brand colour, default FA amber #F5A623; override the fa-brand CSS
+       variable to recolour (e.g. #B07300 on light) so it never reads as a
+       state. -->
+  <g stroke="var(--fa-brand, #F5A623)" stroke-linecap="round" stroke-linejoin="round" fill="none">
+
+    <!-- Gauge arc: ~288deg open-bottom sweep. -->
+    <path d="M 152.55 398.39 A 176 176 0 1 1 359.45 398.39" stroke-width="40"/>
+
+    <!-- Single bold monitoring pulse across the centre. -->
+    <polyline stroke-width="40"
+      points="132,256 210,256 236,300 272,128 304,300 332,256 380,256"/>
+  </g>
+</svg>

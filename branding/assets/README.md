@@ -110,8 +110,49 @@ upstream logos anywhere in shipped artifacts"). The Apache-2.0 grant of no
 trademark rights (§1 above) means original authorship is mandatory, not
 optional.
 
+### Provenance — master mark
+
+| Asset | Provenance |
+|---|---|
+| [`logo.svg`](logo.svg) | **Original work.** Hand-authored vector (plain SVG, no embedded raster, fonts, or external refs). Composed from first principles for Factory Assistant; **not derived from, tracing, recolouring, or resembling the Home Assistant logo or any `home-assistant/brands` asset.** Licensed Apache-2.0. |
+| [`icon.svg`](icon.svg) | **Original work.** A reduction of `logo.svg` (gauge arc + one bold pulse, no fine scale ticks) tuned for the favicon/app-icon and verified legible at 16 px. Same originality and licence as the master. |
+
+Design of the master mark (`logo.svg`): a deliberate **industrial gauge** —
+an open, ~288° bottom-gapped arc with evenly spaced scale ticks (the
+monitoring **instrument**) — crossed at its centre by a **live monitoring
+pulse** waveform (the **signal**). It is drawn in a single FA amber `#F5A623`
+so it reads as one mark, never as a state colour. The master is tuned for the
+product-default **graphite** surfaces (`#111418` / `#1E242C`, ≥7.7:1 contrast);
+on light backgrounds the mark is recoloured to the darker amber `#B07300`, the
+same accent the theme uses in light mode (`#F5A623` on `#F2F4F7` is too low-
+contrast for a fill). The arc + pulse motif is the
+direction pinned in §1; the abstract gauge/pulse depicts observation only and
+**invites no machine control or actuation** (§4). The mark is **not** a
+safety stack-light and makes **no ISO 3864 / ANSI Z535 safety-colour claim**
+(§4). It rasterises cleanly at 16 px (favicon) and 512 px (PWA / About-dialog),
+verified with `rsvg-convert` (see §6).
+
 ## 6. Status
 
-Holding directory: **empty of artwork.** No assets have been produced yet;
-creation begins in Phase 2/3 per the inventory in §2. This README is the spec
-that governs them.
+**Master mark landed.** The refined original master logo — [`logo.svg`](logo.svg)
+— and its 16 px-tuned app/favicon variant — [`icon.svg`](icon.svg) — are in
+place, with provenance recorded in §5. They honour §1 (original gauge/pulse
+motif, amber on graphite, legible at 16 px) and §4 (informational, monitoring-
+only, no safety claim). For light surfaces, recolour the amber to `#B07300`
+(§5). Both rasterise cleanly at 16 px and 512 px; verify with:
+
+```sh
+rsvg-convert -w 16  -h 16  branding/assets/logo.svg -o /tmp/l16.png
+rsvg-convert -w 512 -h 512 branding/assets/logo.svg -o /tmp/l512.png
+rsvg-convert -w 16  -h 16  branding/assets/icon.svg -o /tmp/i16.png
+```
+
+The brand-accent token in the shipped theme
+(`buildroot-external/rootfs-overlay/usr/share/factory-assistant/themes/factory-assistant.yaml`)
+uses the same amber `#F5A623`; the informational state colours stay fixed (§3).
+
+Still to produce per the §2 inventory (Phase 2/3 frontend follow-up, separate
+repo): the raster favicon set / `.ico`, the PWA / maskable icons, landing-page
+art, the About-dialog export, and the documentation header. The raster icon set
+is generated from these SVG masters, not hand-drawn. This README remains the
+spec that governs all of them.

@@ -16,8 +16,9 @@ quick reference); the UI is specified in `docs/UI_DESIGN.md`.
 | Area | Default | Rationale | Where / phase |
 |---|---|---|---|
 | Hostname / discovery | `factory-assistant` (mDNS `.local`) | predictable commissioning on plant LANs | overlay — done |
-| Network | DHCP out of the box; static IP first-class via NetworkManager | plants standardize on static addressing | OS (upstream capability); onboarding guidance P3 |
-| Time | NTP required step in onboarding; UTC recorder timestamps, local-time display | trustworthy telemetry timelines | P3 |
+| Config seeding | first-boot copy of the template tree into `/config` when none exists | reproducible appliance defaults without clobbering user config | overlay scaffold — done (§4); robust path needs Supervisor hook |
+| Network | DHCP out of the box; static IP first-class via NetworkManager | plants standardize on static addressing | OS (upstream capability); manual guidance now (§5), onboarding step P3 |
+| Time | NTP discipline for trustworthy timestamps; UTC recorder timestamps, local-time display | trustworthy telemetry timelines | host timesyncd now; manual guidance (§5); required onboarding step P3 |
 | Cloud/remote access | none; analytics **off** by default | local network deployment posture | P3 (onboarding default) |
 | Units | metric (`unit_system: metric`) | industrial norm; switchable per site | template — done |
 | Recorder retention | `purge_keep_days: 30`, `commit_interval: 5` | bounded local history; long-term data → historian add-on | template — done |
@@ -62,17 +63,66 @@ historian/bridge add-ons, not a v1 commitment.)
 - **ESPHome**: the retrofit path for unsensored legacy machines (vibration,
   current clamps, temperatures, andon light states).
 
-## 4. Config seeding mechanism (Phase 3 work item)
+## 4. Config seeding mechanism
 
-The templates ship read-only in the image. Planned seeding: a small
-`fa-defaults` host package (see `buildroot-external/package/README.md`) or
-Supervisor hook copies the **whole `/usr/share/factory-assistant/` tree**
-(`configuration.yaml`, `themes/`, `dashboards/`) into `/config` **only when
-no configuration exists** (true first boot), so user changes and restores are
-never overwritten. Until implemented, commissioning copies it manually — the
+The templates ship read-only in the image at `/usr/share/factory-assistant/`.
+
+**What ships today (best-effort scaffold).** A systemd oneshot,
+`fa-seed-config.service`, runs
+`/usr/libexec/fa-seed-config` on boot. It copies the **whole
+`/usr/share/factory-assistant/` tree** (`configuration.yaml`, `themes/`,
+`dashboards/`, `packages/`) into the Home Assistant config directory **only on
+a true first boot** — that is, only when no `configuration.yaml` exists in the
+target. It never overwrites existing files (`cp -Rn`), so user edits, restores,
+and re-runs are all safe; running the unit on every boot is harmless and
+idempotent. The unit is enabled in the rootfs overlay via a
+`multi-user.target.wants` symlink. The seed script and unit are part of the
+overlay (`buildroot-external/rootfs-overlay/usr/...`) and are mirrored into the
+upstream build tree by `scripts/apply-overlay.sh` like any other overlay file.
+
+**Honest limitation.** In Home Assistant OS the Core config directory is a
+**Supervisor-managed data volume**, not a stable host path. The host-side hook
+targets the current upstream on-disk location
+(`/mnt/data/supervisor/homeassistant`), but that path is an upstream
+implementation detail, and the volume may not exist (or may not yet be the
+mounted target) at the moment the unit runs. When the directory is absent the
+script logs and exits cleanly — it deliberately does **not** create a stray
+directory. So treat this as a **scaffold**: it works opportunistically, but
+robust, ordering-correct seeding will ultimately need a **Supervisor-fork
+hook** that runs inside the Supervisor's own first-boot/config-provisioning
+flow (the Supervisor lives in its own repo — see `docs/ARCHITECTURE.md`). The
+companion `fa-defaults` host package noted in
+`buildroot-external/package/README.md` may later package the same script with
+its Buildroot wiring; the mechanism is identical.
+
+Either way, commissioning can also copy the tree into `/config` manually — the
 template headers say exactly that.
 
-## 5. Site repo pattern (recommended practice, not shipped)
+## 5. Deployment guidance (NTP / static IP / Mosquitto)
+
+These are the commissioning defaults the seeded `configuration.yaml` documents
+in its header. They are **manual steps today**: surfacing them as guided
+**first-boot onboarding steps** requires backend changes in Core/Supervisor
+(and the frontend onboarding flow), which live in other repos and are **out of
+scope** for this OS-overlay repo. See the §1 defaults table for the phase
+markers.
+
+- **Time / NTP (required).** Trustworthy recorder and history timestamps
+  depend on a disciplined clock. The host syncs time with
+  `systemd-timesyncd`; point it at the plant's NTP source and set the time
+  zone during onboarding (Settings -> System -> Date & Time). Recorder
+  timestamps are stored in UTC and displayed in local time.
+- **Static IP (recommended).** Plants standardize on static addressing.
+  Configure it through Settings -> System -> Network, which drives
+  NetworkManager — **not** in `configuration.yaml`. DHCP works out of the box
+  for initial commissioning and discovery (`factory-assistant.local`).
+- **Mosquitto / MQTT (offer).** For MQTT sensors, gateways, and the OPC UA
+  bridge, install the **Mosquitto broker** add-on (Settings -> Add-ons), then
+  add the MQTT integration (Settings -> Devices & Services). Follow the
+  `fa/<site>/<area>/<device>/<measurement>` topic convention from §2.
+  Monitoring only — no command/control topics.
+
+## 6. Site repo pattern (recommended practice, not shipped)
 
 Treat each plant's `/config` as a git repo: configuration, dashboards,
 register maps, and automations reviewed like code, backed up via the

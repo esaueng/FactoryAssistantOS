@@ -1,0 +1,22 @@
+# Build-time upstream checkout and artifacts — never commit these.
+/upstream/
+/output/
+/release/
+
+# Image and update artifacts
+*.img
+*.img.xz
+*.raucb
+*.qcow2
+*.vmdk
+*.vdi
+*.ova
+
+# Signing material must never enter the repo
+*.pem
+*.key
+*.crt
+
+# Editor/OS noise
+.DS_Store
+*.swp

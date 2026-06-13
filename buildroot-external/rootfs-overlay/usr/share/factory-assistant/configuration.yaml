@@ -1,0 +1,51 @@
+# Factory Assistant — industrial default Core configuration template.
+#
+# Shipped read-only in the OS image at /usr/share/factory-assistant/.
+# Seeding into the live /config on first boot is a Phase 3 work item
+# (see docs/INDUSTRIAL_DEFAULTS.md); until then this file documents the
+# recommended starting configuration and can be copied manually.
+#
+# SAFETY: every industrial protocol example below is READ-ONLY. Do not add
+# write/control paths here — see docs/SAFETY_BOUNDARY.md.
+
+default_config:
+
+homeassistant:
+  name: "Factory Assistant"        # replaced with the site name during onboarding
+  unit_system: metric
+  # time_zone and location are set during onboarding; plants should also
+  # configure NTP so timestamps in the recorder are trustworthy.
+
+# Telemetry retention tuned for plant-floor data volumes. Long-term archival
+# belongs in a dedicated historian/TSDB add-on (see docs/ARCHITECTURE.md).
+recorder:
+  purge_keep_days: 30
+  commit_interval: 5
+
+# --- MQTT (sensors, gateways, machine data) --------------------------------
+# 1. Install the Mosquitto broker add-on (Settings -> Add-ons).
+# 2. Add the MQTT integration (Settings -> Devices & Services).
+# Topic convention (see docs/INDUSTRIAL_DEFAULTS.md):
+#   fa/<site>/<area>/<device>/<measurement>
+
+# --- Modbus TCP (PLC gateways, energy meters) — READ-ONLY -------------------
+# Uncomment and adapt. Register addresses are 0-based. Only input/holding
+# register READS are permitted by policy; never configure write calls.
+#
+# modbus:
+#   - name: plc_line1
+#     type: tcp
+#     host: 192.0.2.10        # documentation address — replace
+#     port: 502
+#     sensors:
+#       - name: line1_press_temperature
+#         address: 0
+#         input_type: input
+#         unit_of_measurement: "°C"
+#         device_class: temperature
+#         scan_interval: 5
+
+# --- OPC UA ------------------------------------------------------------------
+# OPC UA servers are integrated through the planned OPC UA bridge add-on,
+# which subscribes to server nodes (read-only) and republishes to MQTT using
+# the topic convention above. See docs/ARCHITECTURE.md §Industrial data flows.

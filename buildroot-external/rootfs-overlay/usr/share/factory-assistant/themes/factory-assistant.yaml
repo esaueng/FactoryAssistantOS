@@ -1,0 +1,52 @@
+# Factory Assistant UI theme — implements the design tokens in
+# docs/UI_DESIGN.md §8. Dark is the default mode (shop-floor glare, 24/7
+# displays); a light mode is included for office use.
+#
+# Install: copy the whole /usr/share/factory-assistant/ tree into /config
+# (the shipped configuration.yaml includes themes/ via
+# !include_dir_merge_named), then select "factory-assistant" in the user
+# profile, or set it plant-wide with the frontend.set_theme action.
+factory-assistant:
+  # --- brand + state tokens (shared across modes) ---
+  primary-color: "#F5A623"            # FA amber: selection, focus, toggles
+  accent-color: "#F5A623"
+  text-primary-color: "#111418"       # text on amber surfaces
+  success-color: "#43A047"            # running
+  warning-color: "#FFB300"            # blocked / warning
+  error-color: "#E53935"              # down / fault
+  info-color: "#1E88E5"               # maintenance / info
+  state-icon-active-color: "#43A047"
+  ha-card-border-radius: "6px"        # squarer, equipment-like surfaces
+  modes:
+    dark:
+      primary-background-color: "#111418"
+      secondary-background-color: "#1A1E24"
+      card-background-color: "#1E242C"
+      ha-card-background: "#1E242C"
+      primary-text-color: "#E8EAED"
+      secondary-text-color: "#9AA0A6"
+      disabled-text-color: "#5F6368"
+      divider-color: "#2A313B"
+      app-header-background-color: "#111418"
+      app-header-text-color: "#E8EAED"
+      sidebar-background-color: "#14181D"
+      sidebar-text-color: "#9AA0A6"
+      sidebar-icon-color: "#9AA0A6"
+      sidebar-selected-icon-color: "#F5A623"
+      sidebar-selected-text-color: "#E8EAED"
+    light:
+      primary-background-color: "#F2F4F7"
+      secondary-background-color: "#E9EDF2"
+      card-background-color: "#FFFFFF"
+      ha-card-background: "#FFFFFF"
+      primary-text-color: "#1F2933"
+      secondary-text-color: "#52606D"
+      disabled-text-color: "#9AA5B1"
+      divider-color: "#D9E2EC"
+      app-header-background-color: "#FFFFFF"
+      app-header-text-color: "#1F2933"
+      sidebar-background-color: "#FFFFFF"
+      sidebar-text-color: "#52606D"
+      sidebar-icon-color: "#52606D"
+      sidebar-selected-icon-color: "#B07300"   # darker amber for contrast on white
+      sidebar-selected-text-color: "#1F2933"

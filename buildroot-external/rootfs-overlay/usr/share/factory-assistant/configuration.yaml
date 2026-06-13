@@ -22,6 +22,41 @@ recorder:
   purge_keep_days: 30
   commit_interval: 5
 
+# --- Factory UI: theme + default dashboard (docs/UI_DESIGN.md) --------------
+# Assumes the whole /usr/share/factory-assistant/ tree was copied into
+# /config, so themes/ and dashboards/ sit alongside this file.
+frontend:
+  themes: !include_dir_merge_named themes
+
+lovelace:
+  mode: storage                  # UI-managed dashboards stay editable
+  dashboards:
+    factory-overview:
+      mode: yaml
+      title: Plant overview
+      icon: mdi:factory
+      show_in_sidebar: true
+      filename: dashboards/factory-overview.yaml
+
+# --- Plant KPI sensors (drive the overview dashboard's "Shift status") ------
+# Uncomment and adapt; the running/alert counts derive automatically from the
+# *_running / *_alert naming convention (docs/INDUSTRIAL_DEFAULTS.md §2).
+#
+# template:
+#   - sensor:
+#       - name: "Plant machines running"
+#         state: >
+#           {{ states.binary_sensor
+#              | selectattr('entity_id', 'match', 'binary_sensor\..*_running$')
+#              | selectattr('state', 'eq', 'on') | list | count }}
+#       - name: "Plant active alerts"
+#         state: >
+#           {{ states.binary_sensor
+#              | selectattr('entity_id', 'match', 'binary_sensor\..*_alert$')
+#              | selectattr('state', 'eq', 'on') | list | count }}
+#       # sensor.plant_shift_output and sensor.plant_power_now come from the
+#       # line counter and the incomer meter — map them to real sources.
+
 # --- MQTT (sensors, gateways, machine data) --------------------------------
 # 1. Install the Mosquitto broker add-on (Settings -> Add-ons).
 # 2. Add the MQTT integration (Settings -> Devices & Services).

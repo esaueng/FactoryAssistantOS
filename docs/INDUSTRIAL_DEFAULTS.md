@@ -2,8 +2,11 @@
 
 What makes a Factory Assistant appliance behave like plant equipment instead
 of a smart-home hub: the shipped defaults, the conventions, and where each is
-implemented. The Core-side template lives at
-`buildroot-external/rootfs-overlay/usr/share/factory-assistant/configuration.yaml`.
+implemented. The Core-side templates live under
+`buildroot-external/rootfs-overlay/usr/share/factory-assistant/` —
+`configuration.yaml`, the `factory-assistant` UI theme (`themes/`), and the
+"Plant overview" dashboard (`dashboards/`); the UI is specified in
+`docs/UI_DESIGN.md`.
 
 ## 1. Defaults table
 
@@ -18,7 +21,8 @@ implemented. The Core-side template lives at
 | Terminology | "site" not "home"; areas model **line → cell → station** | matches plant mental model | template now; onboarding/frontend P3 |
 | Alerting | informational notifications only | safety boundary §4 | policy — done |
 | Industrial protocols | read-only (Modbus reads, OPC UA subscribe-only) | safety boundary §4 | template + add-on defaults |
-| Default dashboard | "Factory overview": machine tiles by area, alert panel, wallboard-friendly | the product's purpose | frontend fork P3 |
+| Default dashboard | "Plant overview": KPI strip + machine tiles by line, alerts, energy, maintenance views | the product's purpose | YAML template — done; native `fa-machine-card` in frontend fork P3 (`docs/UI_DESIGN.md`) |
+| UI theme | `factory-assistant` dark theme (light mode included), informational state colors | shop-floor glare, 24/7 wallboards, glanceability | theme template — done |
 | Logging | persistent system journal where the data partition allows | post-incident diagnosis on appliances | verify at P1 against upstream behavior |
 
 ## 2. Naming conventions
@@ -56,12 +60,13 @@ historian/bridge add-ons, not a v1 commitment.)
 
 ## 4. Config seeding mechanism (Phase 3 work item)
 
-The template ships read-only in the image. Planned seeding: a small
+The templates ship read-only in the image. Planned seeding: a small
 `fa-defaults` host package (see `buildroot-external/package/README.md`) or
-Supervisor hook copies it into `/config` **only when no configuration
-exists** (true first boot), so user changes and restores are never
-overwritten. Until implemented, commissioning copies it manually — the
-template header says exactly that.
+Supervisor hook copies the **whole `/usr/share/factory-assistant/` tree**
+(`configuration.yaml`, `themes/`, `dashboards/`) into `/config` **only when
+no configuration exists** (true first boot), so user changes and restores are
+never overwritten. Until implemented, commissioning copies it manually — the
+template headers say exactly that.
 
 ## 5. Site repo pattern (recommended practice, not shipped)
 

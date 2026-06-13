@@ -44,9 +44,11 @@ Supervisor forks keep upstream version numbers with the FA registry namespace.
   resemble the Home Assistant logo or any `home-assistant/brands` asset.
   Direction: industrial motif (e.g., abstract machine/gauge/pulse mark),
   legible at 16 px favicon size and on dark wallboards.
-- Palette direction (proposal, to be finalized with the logo): industrial
-  amber/safety-orange accent on graphite/dark neutrals; high contrast for
-  shop-floor displays. Default frontend theme ships dark with a light option.
+- Palette: specified as design tokens in `docs/UI_DESIGN.md` §8 — graphite
+  neutrals, amber `#F5A623` brand accent, distinct informational state colors
+  — and implemented in the shipped `factory-assistant` theme (dark default,
+  light mode included). The logo must work within those tokens; the brand
+  accent may be tuned when the logo lands, state colors stay fixed.
 - Asset inventory to produce in Phase 2/3: favicon set, PWA icons, landing
   page art, boot console text (no splash needed for v1), About-dialog logo,
   documentation header.

@@ -1,0 +1,150 @@
+# Factory Assistant — "Plant overview" dashboard template.
+#
+# Design spec: docs/UI_DESIGN.md (§6 screen inventory). This template uses
+# only stock cards so it runs on an unmodified Core; the frontend fork later
+# replaces the glance approximations with the fa-machine-card tile.
+#
+# COMMISSIONING: entity IDs below are EXAMPLES following the naming
+# convention in docs/INDUSTRIAL_DEFAULTS.md §2 (sensor.<area>_<machine>_
+# <measurement>). They render as "entity not found" until replaced with the
+# plant's real entities. KPI sensors are defined in configuration.yaml
+# (template: block).
+#
+# SAFETY: monitoring only — no control affordances on any view
+# (docs/SAFETY_BOUNDARY.md, docs/UI_DESIGN.md §10).
+title: Plant overview
+views:
+  # ── Overview: KPI strip + machine tiles per line ─────────────────────────
+  - title: Overview
+    path: overview
+    icon: mdi:factory
+    cards:
+      - type: glance
+        title: Shift status
+        columns: 4
+        entities:
+          - entity: sensor.plant_machines_running
+            name: Running
+          - entity: sensor.plant_active_alerts
+            name: Alerts
+          - entity: sensor.plant_shift_output
+            name: Output
+          - entity: sensor.plant_power_now
+            name: Power
+      - type: glance
+        title: Line 1
+        columns: 4
+        show_state: true
+        state_color: true
+        entities:
+          - entity: binary_sensor.line1_press01_running
+            name: Press 01
+          - entity: binary_sensor.line1_press03_running
+            name: Press 03
+          - entity: binary_sensor.line1_weld02_running
+            name: Weld 02
+          - entity: binary_sensor.line1_pack01_running
+            name: Pack 01
+      - type: glance
+        title: Line 2
+        columns: 4
+        show_state: true
+        state_color: true
+        entities:
+          - entity: binary_sensor.line2_extr01_running
+            name: Extruder 01
+          - entity: binary_sensor.line2_extr02_running
+            name: Extruder 02
+          - entity: binary_sensor.line2_wind01_running
+            name: Winder 01
+
+  # ── Line detail: one view per line; duplicate and adapt ──────────────────
+  - title: Line 1
+    path: line1
+    icon: mdi:robot-industrial
+    cards:
+      - type: entities
+        title: Press 03
+        state_color: true
+        entities:
+          - entity: binary_sensor.line1_press03_running
+            name: Running
+          - entity: sensor.line1_press03_rate
+            name: Rate
+          - entity: sensor.line1_press03_motor_temp
+            name: Motor temperature
+          - entity: sensor.line1_press03_runtime_today
+            name: Runtime today
+      - type: gauge
+        entity: sensor.line1_press03_motor_temp
+        name: Press 03 motor temperature
+        unit: "°C"
+        min: 0
+        max: 120
+        needle: true
+        severity:
+          green: 0
+          yellow: 70
+          red: 90
+      - type: history-graph
+        title: Line 1 — last 8 hours
+        hours_to_show: 8
+        entities:
+          - sensor.line1_press03_rate
+          - sensor.line1_press03_motor_temp
+
+  # ── Alerts (andon board) ─────────────────────────────────────────────────
+  - title: Alerts
+    path: alerts
+    icon: mdi:alert
+    cards:
+      - type: entities
+        title: Active alerts
+        state_color: true
+        entities:
+          - entity: binary_sensor.line1_press03_overtemp_alert
+            name: "Press 03 — motor overtemperature"
+          - entity: binary_sensor.line2_extr01_pressure_alert
+            name: "Extruder 01 — barrel pressure high"
+      - type: markdown
+        content: >-
+          **Factory Assistant is a monitoring tool, not a safety device.**
+          Alerts here are informational. Dashboards and notifications must
+          never be the sole means of detecting a hazardous condition
+          (see docs/SAFETY_BOUNDARY.md).
+
+  # ── Energy ───────────────────────────────────────────────────────────────
+  - title: Energy
+    path: energy
+    icon: mdi:transmission-tower
+    cards:
+      - type: markdown
+        content: >-
+          Configure plant energy monitoring under **Settings → Dashboards →
+          Energy** (incomer meter plus per-line/per-machine CT clamps), then
+          the cards below come alive.
+      # - type: energy-distribution        # enable after energy configuration
+      - type: history-graph
+        title: Plant power — last 24 hours
+        hours_to_show: 24
+        entities:
+          - sensor.plant_power_now
+
+  # ── Maintenance ──────────────────────────────────────────────────────────
+  - title: Maintenance
+    path: maintenance
+    icon: mdi:wrench-clock
+    cards:
+      - type: entities
+        title: Runtime counters
+        entities:
+          - entity: sensor.line1_press03_runtime_hours
+            name: "Press 03 — hours since service"
+          - entity: sensor.line2_extr01_runtime_hours
+            name: "Extruder 01 — hours since service"
+      - type: markdown
+        content: >-
+          Pattern: counter-based reminders — an automation notifies when a
+          runtime counter passes its service threshold and resets it after
+          the work order closes. Take a Supervisor **backup** before every
+          maintenance window.

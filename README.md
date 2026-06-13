@@ -46,6 +46,7 @@ are covered in [`docs/OS_BUILD.md`](docs/OS_BUILD.md).
 |---|---|
 | `AGENTS.md` | Working rules for human and AI contributors |
 | `docs/ARCHITECTURE.md` | Full stack: OS layer, Supervisor, Core, frontend, add-ons, updates, first boot |
+| `docs/UI_DESIGN.md` | Factory/manufacturing UI design: personas, machine tiles, screens, tokens, wallboard mode |
 | `docs/OS_BUILD.md` | How to build, flash, and boot the x86-64 image; fork strategy |
 | `docs/LICENSE_COMPLIANCE.md` | Apache 2.0 / third-party license and notice obligations |
 | `docs/SAFETY_BOUNDARY.md` | What Factory Assistant must never do |

@@ -139,12 +139,18 @@ add-on; the recorder keeps a bounded local window
 
 ## 6. Frontend layer
 
-The Factory Assistant frontend fork carries the visible product identity
-(name, logo, theme — `docs/BRANDING.md`) and the industrial default
-experience: a **factory overview dashboard** (areas as lines/cells/stations,
-machine state tiles, alert panel) instead of a home dashboard, plus wallboard
-/kiosk-friendly defaults. It stays API-compatible with Core, served on port
-**8123** (kept for ecosystem compatibility).
+The UI is designed for the plant floor, not the home — the full specification
+(personas, status-first principles, machine-state vocabulary and tile
+grammar, screen inventory, design tokens, wallboard/kiosk mode, and the
+no-control-affordances rule) lives in **`docs/UI_DESIGN.md`**. Shipping
+today inside the OS image: the `factory-assistant` theme (dark default) and
+the "Plant overview" dashboard template under `/usr/share/factory-assistant/`,
+built from stock cards so they run on an unmodified Core. The deeper changes
+— `fa-machine-card` tile, trimmed navigation, andon board, kiosk toggle,
+industrial terminology and onboarding — land with the frontend fork (P3),
+which also carries the visible product identity (`docs/BRANDING.md`). It
+stays API-compatible with Core, served on port **8123** (kept for ecosystem
+compatibility).
 
 ## 7. Update mechanism
 
@@ -209,5 +215,5 @@ Initial set, in priority order:
 | P0 | This repo: architecture, build path, licensing, branding, safety boundary | ✅ this commit |
 | P1 | Verified x86-64 image build via overlay; boots to onboarding on real hardware/VM | next |
 | P2 | True forks (supervisor/frontend/landingpage), FA registry, version service, RAUC keys, CI release pipeline | planned |
-| P3 | Industrial onboarding, config seeding, OPC UA bridge add-on, factory dashboard | planned |
+| P3 | Industrial onboarding, config seeding, OPC UA bridge add-on, frontend fork implementing the factory UI (`docs/UI_DESIGN.md`) | planned |
 | P4 | Limited **non-safety** machine control behind an explicit gate (see `docs/SAFETY_BOUNDARY.md` §Control roadmap gate) | gated |

@@ -130,6 +130,43 @@ views:
         entities:
           - sensor.plant_power_now
 
+  # ── Performance (OEE) ────────────────────────────────────────────────────
+  # OEE = Availability × Performance × Quality. Sensors are defined in
+  # packages/oee_example.yaml (per machine + sensor.plant_oee rollup).
+  - title: OEE
+    path: oee
+    icon: mdi:gauge
+    cards:
+      - type: gauge
+        entity: sensor.plant_oee
+        name: Plant OEE
+        unit: "%"
+        min: 0
+        max: 100
+        needle: true
+        severity:
+          red: 0
+          yellow: 60
+          green: 85
+      - type: glance
+        title: Press 03 — OEE factors
+        columns: 4
+        entities:
+          - entity: sensor.line1_press03_oee
+            name: OEE
+          - entity: sensor.line1_press03_availability
+            name: Availability
+          - entity: sensor.line1_press03_performance
+            name: Performance
+          - entity: sensor.line1_press03_quality
+            name: Quality
+      - type: history-graph
+        title: OEE — last 24 hours
+        hours_to_show: 24
+        entities:
+          - sensor.line1_press03_oee
+          - sensor.plant_oee
+
   # ── Maintenance ──────────────────────────────────────────────────────────
   - title: Maintenance
     path: maintenance
@@ -137,14 +174,22 @@ views:
     cards:
       - type: entities
         title: Runtime counters
+        state_color: true
         entities:
           - entity: sensor.line1_press03_runtime_hours
             name: "Press 03 — hours since service"
+          - entity: input_number.line1_press03_service_hours
+            name: "Press 03 — service interval"
+          - entity: binary_sensor.line1_press03_service_due
+            name: "Press 03 — service due"
           - entity: sensor.line2_extr01_runtime_hours
             name: "Extruder 01 — hours since service"
       - type: markdown
         content: >-
-          Pattern: counter-based reminders — an automation notifies when a
-          runtime counter passes its service threshold and resets it after
-          the work order closes. Take a Supervisor **backup** before every
+          Pattern: counter-based reminders (packages/maintenance_example.yaml)
+          — an automation notifies when a runtime counter passes its service
+          threshold. After the work order closes, maintenance restarts accrual
+          by running the **Press 03 — reset service counter** script from its
+          entity dialog (kept off the board so monitoring views stay read-only,
+          docs/UI_DESIGN.md §10.1). Take a Supervisor **backup** before every
           maintenance window.

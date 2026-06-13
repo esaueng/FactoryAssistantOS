@@ -1,0 +1,123 @@
+# Factory Assistant — OEE example package.
+#
+# Overall Equipment Effectiveness for ONE machine (line1_press03), wired so
+# the pattern is obvious; copy this block per machine at commissioning. OEE is
+# the open item raised in docs/UI_DESIGN.md §11 — this is the read-only,
+# stock-Core implementation of it.
+#
+# Loaded via `homeassistant: packages: !include_dir_named packages` in
+# configuration.yaml. Until the config tree is seeded into /config
+# (docs/INDUSTRIAL_DEFAULTS.md §4) this is a template, copied manually.
+#
+#   OEE = Availability × Performance × Quality
+#     Availability = run_time / planned_production_time
+#     Performance  = (ideal_cycle_time × total_count) / run_time
+#     Quality      = good_count / total_count
+#
+# Inputs you map to real plant signals (naming: docs/INDUSTRIAL_DEFAULTS.md §2):
+#   sensor.line1_press03_run_seconds    runtime accumulated this shift (s)
+#   sensor.line1_press03_total_count    total parts produced this shift
+#   sensor.line1_press03_good_count     good parts this shift
+# Shift constants you set per machine (Settings → Devices & Services → Helpers,
+# or the input_number block below):
+#   input_number.line1_press03_planned_seconds   planned production time (s)
+#   input_number.line1_press03_ideal_cycle_s     ideal cycle time / part (s)
+#
+# SAFETY: derived metrics only; reads no control path (docs/SAFETY_BOUNDARY.md).
+
+input_number:
+  line1_press03_planned_seconds:
+    name: Press 03 planned production time
+    min: 0
+    max: 86400
+    step: 60
+    unit_of_measurement: s
+    mode: box
+    icon: mdi:calendar-clock
+  line1_press03_ideal_cycle_s:
+    name: Press 03 ideal cycle time
+    min: 0
+    max: 3600
+    step: 0.1
+    unit_of_measurement: s
+    mode: box
+    icon: mdi:timer-cog
+
+template:
+  - sensor:
+      # Availability — share of planned time the machine was running.
+      - name: "Press 03 availability"
+        unique_id: line1_press03_availability
+        unit_of_measurement: "%"
+        state_class: measurement
+        availability: >-
+          {{ has_value('sensor.line1_press03_run_seconds')
+             and states('input_number.line1_press03_planned_seconds') | float(0) > 0 }}
+        state: >-
+          {% set run = states('sensor.line1_press03_run_seconds') | float(0) %}
+          {% set planned = states('input_number.line1_press03_planned_seconds') | float(0) %}
+          {{ [run / planned * 100, 100] | min | round(1) }}
+
+      # Performance — actual vs. ideal throughput while running.
+      - name: "Press 03 performance"
+        unique_id: line1_press03_performance
+        unit_of_measurement: "%"
+        state_class: measurement
+        availability: >-
+          {{ has_value('sensor.line1_press03_run_seconds')
+             and has_value('sensor.line1_press03_total_count')
+             and states('sensor.line1_press03_run_seconds') | float(0) > 0 }}
+        state: >-
+          {% set run = states('sensor.line1_press03_run_seconds') | float(0) %}
+          {% set total = states('sensor.line1_press03_total_count') | float(0) %}
+          {% set ideal = states('input_number.line1_press03_ideal_cycle_s') | float(0) %}
+          {{ [ideal * total / run * 100, 100] | min | round(1) }}
+
+      # Quality — share of parts that were good.
+      - name: "Press 03 quality"
+        unique_id: line1_press03_quality
+        unit_of_measurement: "%"
+        state_class: measurement
+        availability: >-
+          {{ has_value('sensor.line1_press03_total_count')
+             and states('sensor.line1_press03_total_count') | float(0) > 0 }}
+        state: >-
+          {% set total = states('sensor.line1_press03_total_count') | float(0) %}
+          {% set good = states('sensor.line1_press03_good_count') | float(0) %}
+          {{ [good / total * 100, 100] | min | round(1) }}
+
+      # OEE — product of the three factors.
+      - name: "Press 03 OEE"
+        unique_id: line1_press03_oee
+        unit_of_measurement: "%"
+        state_class: measurement
+        icon: mdi:gauge
+        availability: >-
+          {{ has_value('sensor.line1_press03_availability')
+             and has_value('sensor.line1_press03_performance')
+             and has_value('sensor.line1_press03_quality') }}
+        state: >-
+          {% set a = states('sensor.line1_press03_availability') | float(0) / 100 %}
+          {% set p = states('sensor.line1_press03_performance') | float(0) / 100 %}
+          {% set q = states('sensor.line1_press03_quality') | float(0) / 100 %}
+          {{ (a * p * q * 100) | round(1) }}
+
+      # Plant-wide OEE — simple mean of every *_oee sensor that has a value.
+      # Drives the wallboard / overview "OEE" KPI (sensor.plant_oee).
+      - name: "Plant OEE"
+        unique_id: plant_oee
+        unit_of_measurement: "%"
+        state_class: measurement
+        icon: mdi:gauge-full
+        availability: >-
+          {{ states.sensor
+             | selectattr('entity_id', 'match', 'sensor\\..*_oee$')
+             | rejectattr('entity_id', 'eq', 'sensor.plant_oee')
+             | selectattr('state', 'is_number') | list | count > 0 }}
+        state: >-
+          {% set vals = states.sensor
+             | selectattr('entity_id', 'match', 'sensor\\..*_oee$')
+             | rejectattr('entity_id', 'eq', 'sensor.plant_oee')
+             | selectattr('state', 'is_number')
+             | map(attribute='state') | map('float') | list %}
+          {{ (vals | sum / vals | count) | round(1) }}

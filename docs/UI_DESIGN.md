@@ -197,10 +197,13 @@ wallboard scale ×1.6.
 | Deliverable | Mechanism | Phase |
 |---|---|---|
 | `factory-assistant` theme (dark+light) | `themes/factory-assistant.yaml` template in the image | **now** |
-| "Plant overview" dashboard (views: Overview, Line, Alerts, Energy, Maintenance) | `dashboards/factory-overview.yaml` template + `configuration.yaml` wiring | **now** (adapted at commissioning) |
+| "Plant overview" dashboard (views: Overview, Line, Alerts, OEE, Energy, Maintenance) | `dashboards/factory-overview.yaml` template + `configuration.yaml` wiring | **now** (adapted at commissioning) |
+| Andon board (severity sections + ack indicators, stock-card approximation) | `dashboards/andon.yaml` + `packages/andon_example.yaml` (ack helpers) | **now** |
+| Wallboard / kiosk board (full-screen status, view-only, browser kiosk flags) | `dashboards/wallboard.yaml` | **now** (interim until the P3 kiosk toggle) |
+| OEE (availability×performance×quality) + maintenance reminders | `packages/oee_example.yaml`, `packages/maintenance_example.yaml` (per-machine templates) | **now** |
 | KPI template sensors | commented examples in `configuration.yaml` template | **now** |
 | Landing page restyled to tokens | `landingpage` fork | P2 |
-| `fa-machine-card`, trimmed navigation, andon board, kiosk toggle, terminology pass ("Home"→"Plant overview", areas as lines/cells), industrial onboarding wording | `frontend` fork | P3 |
+| `fa-machine-card`, trimmed navigation, native andon view + kiosk toggle, terminology pass ("Home"→"Plant overview", areas as lines/cells), industrial onboarding wording | `frontend` fork | P3 |
 | Auto-generated area dashboards from the line/cell taxonomy | `frontend` fork | P3 |
 
 Templates are deliberately stock-Lovelace (glance/entities/gauge/history
@@ -226,7 +229,9 @@ Restating `docs/SAFETY_BOUNDARY.md` as UI rules:
 
 ## 11. Open questions (tracked, not blocking)
 
-Shift calendar modeling (entities vs. add-on), OEE add-on scope
-(availability × performance × quality from the state model), Sparkplug B
+Shift calendar modeling (entities vs. add-on); OEE now ships as a stock-card
+template package (`packages/oee_example.yaml`) — the open question is whether a
+dedicated add-on should compute it from the state model at fleet scale;
+Sparkplug B
 namespace browsing in the bridge add-on UI, multi-appliance/multi-site
 roll-up (out of scope for the single-appliance v1).

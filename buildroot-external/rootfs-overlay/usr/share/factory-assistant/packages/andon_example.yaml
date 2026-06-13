@@ -1,0 +1,51 @@
+# Factory Assistant — andon acknowledge example package.
+#
+# Acknowledge bookkeeping for the andon board (dashboards/andon.yaml). Each
+# alert gets an input_boolean "_ack" helper an operator can flip to record
+# "seen / being worked"; an automation auto-clears the ack when the underlying
+# condition clears, so the board returns to a clean slate without manual
+# tidy-up.
+#
+# Loaded via `homeassistant: packages: !include_dir_named packages` in
+# configuration.yaml. Template until the config tree is seeded
+# (docs/INDUSTRIAL_DEFAULTS.md §4); copy a helper + automation pair per alert.
+#
+# SAFETY (docs/SAFETY_BOUNDARY.md, docs/UI_DESIGN.md §10.3): acknowledge is
+# informational bookkeeping ONLY. It does not silence, clear, or alter any
+# alert condition and never implies a machine was made safe. The alert
+# binary_sensor stays "on" until its real condition clears, regardless of ack.
+
+input_boolean:
+  line1_press03_overtemp_ack:
+    name: Press 03 overtemperature acknowledged
+    icon: mdi:check-decagram
+  line2_extr01_pressure_ack:
+    name: Extruder 01 pressure acknowledged
+    icon: mdi:check-decagram
+
+automation:
+  # Auto-clear the ack flag once the alert condition itself clears, so a
+  # re-occurrence shows up as a fresh, un-acknowledged alert.
+  - alias: "Andon — clear ack when Press 03 overtemp clears"
+    id: andon_clear_ack_line1_press03_overtemp
+    mode: single
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.line1_press03_overtemp_alert
+        to: "off"
+    action:
+      - service: input_boolean.turn_off
+        target:
+          entity_id: input_boolean.line1_press03_overtemp_ack
+
+  - alias: "Andon — clear ack when Extruder 01 pressure clears"
+    id: andon_clear_ack_line2_extr01_pressure
+    mode: single
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.line2_extr01_pressure_alert
+        to: "off"
+    action:
+      - service: input_boolean.turn_off
+        target:
+          entity_id: input_boolean.line2_extr01_pressure_ack

@@ -4,9 +4,10 @@ What makes a Factory Assistant appliance behave like plant equipment instead
 of a smart-home hub: the shipped defaults, the conventions, and where each is
 implemented. The Core-side templates live under
 `buildroot-external/rootfs-overlay/usr/share/factory-assistant/` —
-`configuration.yaml`, the `factory-assistant` UI theme (`themes/`), and the
-"Plant overview" dashboard (`dashboards/`); the UI is specified in
-`docs/UI_DESIGN.md`.
+`configuration.yaml`, the `factory-assistant` UI theme (`themes/`), the
+dashboards (`dashboards/`: Plant overview, andon board, wallboard), and the
+industrial example packages (`packages/`: OEE, maintenance reminders, andon
+acknowledge); the UI is specified in `docs/UI_DESIGN.md`.
 
 ## 1. Defaults table
 

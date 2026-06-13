@@ -1,0 +1,115 @@
+# Factory Assistant — "Plant wallboard" dashboard template.
+#
+# Design spec: docs/UI_DESIGN.md §6 (screen inventory) and §7 (wallboard /
+# kiosk mode). A dedicated, view-only board for an unattended HDMI/panel-PC
+# display viewed at 3–8 m: plant + per-line status and active alerts, no
+# interaction. Built from stock cards so it runs on an unmodified Core; the
+# frontend fork's kiosk toggle (type ×1.6, hidden chrome) lands in P3.
+#
+# DEPLOY (interim, until the P3 kiosk toggle):
+#   1. Dedicate a NON-ADMIN, view-only user for the display (UI_DESIGN §7).
+#   2. Point a kiosk browser at this dashboard, e.g.
+#        http://factory-assistant.local:8123/wallboard/status
+#      Chromium:  --kiosk --noerrdialogs --disable-pinch
+#                 --autoplay-policy=no-user-gesture-required
+#   3. The factory-assistant dark theme renders regardless of profile
+#      (UI_DESIGN §7); zoom the browser ~150–160 % to approximate the P3
+#      ×1.6 wallboard scale until the native toggle exists.
+#
+# COMMISSIONING: entity IDs are EXAMPLES following docs/INDUSTRIAL_DEFAULTS.md
+# §2 (sensor.<area>_<machine>_<measurement>). They render "entity not found"
+# / "unavailable" until mapped to the plant's real entities. The KPI sensors
+# (sensor.plant_*) and the active-alert count are defined in
+# configuration.yaml; OEE in packages/oee_example.yaml.
+#
+# SAFETY: monitoring only — no control affordances on any card
+# (docs/SAFETY_BOUNDARY.md, docs/UI_DESIGN.md §10). Freshness/staleness is a
+# first-class state: an offline machine must never read as OK (UI_DESIGN §4).
+title: Wallboard
+views:
+  # ── Single full-bleed status board ───────────────────────────────────────
+  - title: Status
+    path: status
+    icon: mdi:monitor-dashboard
+    type: sections
+    max_columns: 4
+    cards: []
+    sections:
+      # KPI strip — the four numbers a passing line lead reads in one glance.
+      - type: grid
+        title: Plant
+        cards:
+          - type: glance
+            show_name: true
+            show_state: true
+            state_color: true
+            columns: 5
+            entities:
+              - entity: sensor.plant_machines_running
+                name: Running
+              - entity: sensor.plant_active_alerts
+                name: Alerts
+              - entity: sensor.plant_oee
+                name: OEE
+              - entity: sensor.plant_shift_output
+                name: Output
+              - entity: sensor.plant_power_now
+                name: Power
+
+      # Per-line machine status. Duplicate a grid per production line; keep
+      # tiles uniform (UI_DESIGN §3 density-over-decoration). state_color +
+      # the running/idle/down icons carry state without relying on color
+      # alone (UI_DESIGN §2 principle 5).
+      - type: grid
+        title: Line 1
+        cards:
+          - type: glance
+            show_state: true
+            state_color: true
+            columns: 4
+            entities:
+              - entity: binary_sensor.line1_press01_running
+                name: Press 01
+              - entity: binary_sensor.line1_press03_running
+                name: Press 03
+              - entity: binary_sensor.line1_weld02_running
+                name: Weld 02
+              - entity: binary_sensor.line1_pack01_running
+                name: Pack 01
+
+      - type: grid
+        title: Line 2
+        cards:
+          - type: glance
+            show_state: true
+            state_color: true
+            columns: 4
+            entities:
+              - entity: binary_sensor.line2_extr01_running
+                name: Extruder 01
+              - entity: binary_sensor.line2_extr02_running
+                name: Extruder 02
+              - entity: binary_sensor.line2_wind01_running
+                name: Winder 01
+              - entity: binary_sensor.line2_pal01_running
+                name: Palletizer 01
+
+      # Active alerts, large rows. The standing safety disclaimer is part of
+      # the board, not a tooltip (UI_DESIGN §10.5). The andon board
+      # (dashboards/andon.yaml) is the full triage surface; this is the
+      # at-a-distance summary.
+      - type: grid
+        title: Active alerts
+        cards:
+          - type: entities
+            state_color: true
+            entities:
+              - entity: binary_sensor.line1_press03_overtemp_alert
+                name: "Press 03 — motor overtemperature"
+              - entity: binary_sensor.line2_extr01_pressure_alert
+                name: "Extruder 01 — barrel pressure high"
+          - type: markdown
+            content: >-
+              **Monitoring tool, not a safety device.** Dashboards must never
+              be the sole means of detecting a hazardous condition
+              (docs/SAFETY_BOUNDARY.md).

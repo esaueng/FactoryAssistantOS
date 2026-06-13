@@ -1,0 +1,96 @@
+# Factory Assistant — maintenance reminders example package.
+#
+# Counter-based, runtime-hours service reminders for ONE machine
+# (line1_press03). Pattern (docs/UI_DESIGN.md §6 Maintenance): a runtime
+# counter accrues operating hours; when it passes a per-machine threshold an
+# *informational* notification fires and a `*_service_due` alert turns on
+# (shown on the andon board, dashboards/andon.yaml); after the work order
+# closes, an operator resets the counter from the Maintenance view.
+#
+# Loaded via `homeassistant: packages: !include_dir_named packages` in
+# configuration.yaml. Template until the config tree is seeded
+# (docs/INDUSTRIAL_DEFAULTS.md §4); copy this block per machine.
+#
+# Inputs (naming: docs/INDUSTRIAL_DEFAULTS.md §2):
+#   binary_sensor.line1_press03_running    running state (drives the timer)
+# Helpers defined here:
+#   sensor.line1_press03_runtime_hours      accrued hours since last service
+#   input_number.line1_press03_service_hours  threshold (hours)
+#   binary_sensor.line1_press03_service_due    threshold reached (andon "info")
+#   script.line1_press03_reset_service         reset after the work order closes
+#
+# SAFETY: reminders are informational; resetting a counter is local
+# bookkeeping and touches no machine (docs/SAFETY_BOUNDARY.md). Notifications
+# must never be the sole means of detecting a hazardous condition.
+
+input_number:
+  line1_press03_service_hours:
+    name: Press 03 service interval
+    min: 0
+    max: 10000
+    step: 10
+    unit_of_measurement: h
+    mode: box
+    icon: mdi:wrench-clock
+
+# Accrue runtime while the machine reports "running". history_stats counts
+# the on-time of the running binary_sensor since it was last reset; pairing it
+# with a utility_meter/manual reset is the documented commissioning step.
+sensor:
+  - platform: history_stats
+    name: Press 03 runtime hours
+    entity_id: binary_sensor.line1_press03_running
+    state: "on"
+    type: time
+    start: "{{ as_timestamp(states.input_datetime.line1_press03_serviced_at.state) if states('input_datetime.line1_press03_serviced_at') not in ['unknown','unavailable'] else 0 }}"
+    end: "{{ now() }}"
+
+input_datetime:
+  line1_press03_serviced_at:
+    name: Press 03 last serviced
+    has_date: true
+    has_time: true
+
+template:
+  - binary_sensor:
+      - name: "Press 03 service due"
+        unique_id: line1_press03_service_due
+        device_class: problem
+        icon: mdi:wrench-clock
+        availability: >-
+          {{ has_value('sensor.line1_press03_runtime_hours')
+             and states('input_number.line1_press03_service_hours') | float(0) > 0 }}
+        state: >-
+          {{ states('sensor.line1_press03_runtime_hours') | float(0)
+             >= states('input_number.line1_press03_service_hours') | float(0) }}
+
+script:
+  line1_press03_reset_service:
+    alias: "Press 03 — reset service counter"
+    icon: mdi:restart
+    sequence:
+      # Stamp "serviced now" so history_stats restarts the runtime accrual.
+      - service: input_datetime.set_datetime
+        target:
+          entity_id: input_datetime.line1_press03_serviced_at
+        data:
+          datetime: "{{ now().strftime('%Y-%m-%d %H:%M:%S') }}"
+
+automation:
+  - alias: "Press 03 — notify when service is due"
+    id: line1_press03_service_due_notify
+    mode: single
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.line1_press03_service_due
+        from: "off"
+        to: "on"
+    action:
+      # Informational only — persistent notification, no machine action.
+      - service: persistent_notification.create
+        data:
+          title: "Maintenance due: Press 03"
+          message: >-
+            Press 03 has reached its {{ states('input_number.line1_press03_service_hours') }} h
+            service interval ({{ states('sensor.line1_press03_runtime_hours') }} h run).
+            Schedule service, then reset the counter from the Maintenance view.

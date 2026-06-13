@@ -1,0 +1,89 @@
+# Factory Assistant — "Andon board" dashboard template.
+#
+# Design spec: docs/UI_DESIGN.md §6 (Alerts / andon board). Active alerts
+# grouped by severity (critical → warning → info), each row carrying its
+# acknowledge state. Acknowledge is *bookkeeping only*: an alert stays visible
+# until its underlying condition clears — ack never implies a machine was made
+# safe (UI_DESIGN §10.3, docs/SAFETY_BOUNDARY.md).
+#
+# Built from stock cards so it runs on an unmodified Core. Stock Lovelace
+# cannot dynamically re-sort by severity-then-age (that is the frontend fork's
+# fa-machine-card / andon view, P3); here, severity is expressed as fixed
+# sections and age/ack are shown per row. The acknowledge helpers and the
+# "auto-clear ack when the condition clears" automation are defined in
+# packages/andon_example.yaml — copy and adapt them per alert at commissioning.
+#
+# DEPLOY as a dedicated alerts wallboard (UI_DESIGN §7):
+#   http://factory-assistant.local:8123/andon/board   (kiosk browser, view-only user)
+#
+# COMMISSIONING: the binary_sensor.*_alert entities and their input_boolean.*_ack
+# helpers are EXAMPLES (naming: docs/INDUSTRIAL_DEFAULTS.md §2). They read
+# "entity not found" until mapped to real plant alerts.
+#
+# SAFETY: informational only. No control affordances; no element is named or
+# styled as e-stop, interlock, or safety alarm (UI_DESIGN §10.1–10.2).
+title: Andon
+views:
+  - title: Board
+    path: board
+    icon: mdi:alert-decagram
+    type: sections
+    max_columns: 3
+    cards: []
+    sections:
+      # ── Critical ─────────────────────────────────────────────────────────
+      # Production-stopping faults. Severity is an operator convention here,
+      # NOT an ISO 3864 / ANSI Z535 safety-color claim (UI_DESIGN §2.5).
+      - type: grid
+        title: 🔴 Critical
+        cards:
+          - type: entities
+            state_color: true
+            entities:
+              - type: section
+                label: Machine down / fault
+              - entity: binary_sensor.line1_press03_overtemp_alert
+                name: "Press 03 — motor overtemperature"
+                secondary_info: last-changed
+              - entity: input_boolean.line1_press03_overtemp_ack
+                name: "  ↳ acknowledged"
+                icon: mdi:check-decagram
+
+      # ── Warning ──────────────────────────────────────────────────────────
+      # Degraded / approaching-limit; production continues.
+      - type: grid
+        title: 🟠 Warning
+        cards:
+          - type: entities
+            state_color: true
+            entities:
+              - entity: binary_sensor.line2_extr01_pressure_alert
+                name: "Extruder 01 — barrel pressure high"
+                secondary_info: last-changed
+              - entity: input_boolean.line2_extr01_pressure_ack
+                name: "  ↳ acknowledged"
+                icon: mdi:check-decagram
+
+      # ── Info ─────────────────────────────────────────────────────────────
+      # Maintenance reminders and non-urgent notices.
+      - type: grid
+        title: 🔵 Info
+        cards:
+          - type: entities
+            state_color: true
+            entities:
+              - entity: binary_sensor.line1_press03_service_due
+                name: "Press 03 — service hours reached"
+                secondary_info: last-changed
+
+      # ── Standing disclaimer (UI_DESIGN §10.5, mandatory on this view) ─────
+      - type: grid
+        title: ""
+        cards:
+          - type: markdown
+            content: >-
+              **Factory Assistant is a monitoring tool, not a safety device.**
+              Alerts here are informational. Acknowledging an alert is
+              bookkeeping only and does not make any machine safe. Dashboards
+              and notifications must never be the sole means of detecting a
+              hazardous condition (docs/SAFETY_BOUNDARY.md).

@@ -15,6 +15,10 @@ homeassistant:
   unit_system: metric
   # time_zone and location are set during onboarding; plants should also
   # configure NTP so timestamps in the recorder are trustworthy.
+  # Industrial example packages (OEE, maintenance reminders, andon ack). Each
+  # is a per-machine template you copy and adapt at commissioning; they render
+  # "unavailable" until mapped to real entities. See packages/*.yaml.
+  packages: !include_dir_named packages
 
 # Telemetry retention tuned for plant-floor data volumes. Long-term archival
 # belongs in a dedicated historian/TSDB add-on (see docs/ARCHITECTURE.md).
@@ -37,6 +41,22 @@ lovelace:
       icon: mdi:factory
       show_in_sidebar: true
       filename: dashboards/factory-overview.yaml
+    # Full-screen andon board for alerts triage / a dedicated alerts wallboard
+    # (docs/UI_DESIGN.md §6). Ack bookkeeping lives in packages/andon_example.yaml.
+    andon:
+      mode: yaml
+      title: Andon
+      icon: mdi:alert-decagram
+      show_in_sidebar: true
+      filename: dashboards/andon.yaml
+    # Unattended plant wallboard (docs/UI_DESIGN.md §7). Off the sidebar —
+    # displays open it by direct URL (/wallboard/status) under a view-only user.
+    wallboard:
+      mode: yaml
+      title: Wallboard
+      icon: mdi:monitor-dashboard
+      show_in_sidebar: false
+      filename: dashboards/wallboard.yaml
 
 # --- Plant KPI sensors (drive the overview dashboard's "Shift status") ------
 # Uncomment and adapt; the running/alert counts derive automatically from the
@@ -56,6 +76,7 @@ lovelace:
 #              | selectattr('state', 'eq', 'on') | list | count }}
 #       # sensor.plant_shift_output and sensor.plant_power_now come from the
 #       # line counter and the incomer meter — map them to real sources.
+#       # sensor.plant_oee (the OEE KPI) is provided by packages/oee_example.yaml.
 
 # --- MQTT (sensors, gateways, machine data) --------------------------------
 # 1. Install the Mosquitto broker add-on (Settings -> Add-ons).

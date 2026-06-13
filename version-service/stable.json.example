@@ -1,0 +1,21 @@
+{
+  "_comment": "ILLUSTRATIVE example of a Factory Assistant stable channel document. Derive the authoritative schema from the upstream home-assistant/version repo at the pinned Supervisor version (Phase 2). REPLACE-ORG and .example values are placeholders.",
+  "channel": "stable",
+  "supervisor": "2026.05.0",
+  "homeassistant": {
+    "default": "2026.5.0"
+  },
+  "hassos": {
+    "generic-x86-64": "16.2",
+    "ota": "https://github.com/REPLACE-ORG/operating-system/releases/download/{version}/faos_{board}-{version}.raucb"
+  },
+  "dns": "2026.05.0",
+  "audio": "2026.05.0",
+  "cli": "2026.05.0",
+  "multicast": "2026.05.0",
+  "observer": "2026.05.0",
+  "image": {
+    "core": "ghcr.io/REPLACE-ORG/{machine}-homeassistant",
+    "supervisor": "ghcr.io/REPLACE-ORG/{arch}-hassio-supervisor"
+  }
+}

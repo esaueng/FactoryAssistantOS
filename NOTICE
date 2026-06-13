@@ -1,0 +1,25 @@
+Factory Assistant OS
+Copyright 2026 Factory Assistant contributors
+
+Licensed under the Apache License, Version 2.0.
+
+Factory Assistant is based on Home Assistant.
+
+This product includes and builds upon software developed by the Home
+Assistant project (https://www.home-assistant.io/), including Home Assistant
+Core, Home Assistant Supervisor, the Home Assistant frontend, and Home
+Assistant Operating System, each licensed under the Apache License,
+Version 2.0. All upstream copyright, patent, trademark, and attribution
+notices are retained in the corresponding source trees.
+
+"Home Assistant" and the Home Assistant logo are trademarks of their
+respective owners (the Home Assistant project / Open Home Foundation).
+The name is used here solely for factual attribution of origin, as permitted
+for describing the origin of the Work. Factory Assistant is an independent
+project and is not affiliated with or endorsed by the Home Assistant project,
+the Open Home Foundation, or Nabu Casa, Inc.
+
+Built images additionally contain third-party open source components
+(including the Linux kernel, Buildroot-built packages, systemd, Docker Engine,
+and RAUC) under their own licenses. The complete per-release license bundle is
+generated and published as described in docs/LICENSE_COMPLIANCE.md.

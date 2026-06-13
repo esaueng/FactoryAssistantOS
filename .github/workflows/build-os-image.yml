@@ -1,0 +1,154 @@
+# Build a Factory Assistant OS image (generic x86-64) and, on a version tag,
+# publish it as a GitHub Release.
+#
+# This is the production-correct way to cut a release image: it runs on a
+# runner with enough disk and open network to clone upstream + the Buildroot
+# submodule and fetch the hundreds of source packages a full OS build needs.
+# (It deliberately does NOT run in restricted sandboxes — a from-source
+#  Buildroot build wants ~50 GB of disk and broad outbound network.)
+#
+# Triggers:
+#   * workflow_dispatch — build on demand, uploads the image as an artifact.
+#   * push of a tag like v17.3-fa.1 — build AND attach the image, checksum,
+#     and license bundle to a GitHub Release.
+#
+# Signing: until Factory Assistant RAUC keys exist (Phase 2 — see
+# docs/OS_BUILD.md §Signing), the build uses upstream's public self-signed
+# dev certificate. The resulting .img.xz is FLASH-ONLY and its .raucb OTA
+# bundle is NOT trusted for over-the-air updates. This is expected for the
+# first release.
+name: Build Factory Assistant OS image
+
+on:
+  workflow_dispatch:
+    inputs:
+      board:
+        description: "Board id to build"
+        default: "generic-x86-64"
+        type: choice
+        options: ["generic-x86-64"]
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write # create releases / upload assets on tag builds
+
+jobs:
+  build:
+    name: Build Factory Assistant OS (generic-x86-64)
+    runs-on: ubuntu-22.04
+    env:
+      DEFCONFIG: generic_x86_64 # Buildroot defconfig for board generic-x86-64
+      BOARD_ID: generic-x86-64
+    steps:
+      - name: Checkout Factory Assistant OS overlay repo
+        uses: actions/checkout@v4
+
+      - name: Free space on build drive
+        # GitHub-hosted runners ship with ~14 GB free on / but a large
+        # ephemeral disk at /mnt. Reclaim space and put the heavy build
+        # output + caches on /mnt. (Same approach upstream HAOS CI uses.)
+        run: |
+          df -h
+          sudo rm -rf /usr/local/lib/android/sdk/ndk /opt/hostedtoolcache/CodeQL /usr/share/dotnet || true
+          sudo mkdir -p /mnt/cache /mnt/output
+          sudo chown -R "$(id -u):$(id -g)" /mnt/cache /mnt/output
+          df -h
+
+      - name: Fetch pinned upstream OS sources (+ Buildroot submodule)
+        run: ./scripts/bootstrap.sh
+
+      - name: Apply the Factory Assistant overlay
+        run: ./scripts/apply-overlay.sh
+
+      - name: Generate self-signed RAUC signing key (flash-only)
+        working-directory: upstream/operating-system
+        run: |
+          echo "::warning::No Factory Assistant RAUC keys configured — building with a PUBLIC self-signed dev certificate. The image is flash-only; its OTA bundle is NOT trusted. See docs/OS_BUILD.md §Signing."
+          buildroot-external/scripts/generate-signing-key.sh cert.pem key.pem
+
+      - name: Build the upstream builder container image
+        run: docker build -t faos-builder upstream/operating-system
+
+      - name: Configure Buildroot (defconfig + Factory Assistant overrides)
+        run: |
+          docker run --rm --privileged \
+            -e BUILDER_UID="$(id -u)" -e BUILDER_GID="$(id -g)" \
+            -v "${GITHUB_WORKSPACE}/upstream/operating-system:/build" \
+            -v "/mnt/cache:/cache" \
+            -v "/mnt/output:/build/output" \
+            faos-builder make "${DEFCONFIG}_defconfig"
+
+      - name: Build the image (long — full Buildroot compile)
+        run: |
+          docker run --rm --privileged \
+            -e BUILDER_UID="$(id -u)" -e BUILDER_GID="$(id -g)" \
+            -v "${GITHUB_WORKSPACE}/upstream/operating-system:/build" \
+            -v "/mnt/cache:/cache" \
+            -v "/mnt/output:/build/output" \
+            faos-builder make
+
+      - name: Generate third-party license bundle
+        # Apache-2.0 / copyleft compliance — see docs/LICENSE_COMPLIANCE.md §3.
+        run: |
+          docker run --rm --privileged \
+            -e BUILDER_UID="$(id -u)" -e BUILDER_GID="$(id -g)" \
+            -v "${GITHUB_WORKSPACE}/upstream/operating-system:/build" \
+            -v "/mnt/cache:/cache" \
+            -v "/mnt/output:/build/output" \
+            faos-builder make legal-info || echo "::warning::legal-info step failed; generate the license bundle manually before distributing."
+
+      - name: Collect artifacts and checksums
+        id: collect
+        run: |
+          set -euo pipefail
+          mkdir -p "${GITHUB_WORKSPACE}/release"
+          shopt -s nullglob
+          imgs=(/mnt/output/images/faos_${BOARD_ID}-*.img.xz)
+          if [ ${#imgs[@]} -eq 0 ]; then
+            echo "No faos_${BOARD_ID}-*.img.xz produced — check the build log." >&2
+            ls -la /mnt/output/images/ || true
+            exit 1
+          fi
+          cp "${imgs[@]}" "${GITHUB_WORKSPACE}/release/"
+          # OTA bundle (untrusted self-signed) for completeness, if present
+          cp /mnt/output/images/faos_${BOARD_ID}-*.raucb "${GITHUB_WORKSPACE}/release/" 2>/dev/null || true
+          # License bundle
+          if [ -d /mnt/output/legal-info ]; then
+            tar -C /mnt/output -czf "${GITHUB_WORKSPACE}/release/faos_${BOARD_ID}-legal-info.tar.gz" legal-info
+          fi
+          cd "${GITHUB_WORKSPACE}/release"
+          sha256sum * > SHA256SUMS
+          echo "Artifacts:"; ls -la
+          echo "image_glob=release/faos_${BOARD_ID}-*.img.xz" >> "$GITHUB_OUTPUT"
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: faos-${{ env.BOARD_ID }}
+          path: release/
+          if-no-files-found: error
+
+      - name: Publish GitHub Release (tag builds only)
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            release/faos_${{ env.BOARD_ID }}-*.img.xz
+            release/faos_${{ env.BOARD_ID }}-*.raucb
+            release/faos_${{ env.BOARD_ID }}-legal-info.tar.gz
+            release/SHA256SUMS
+          body: |
+            **Factory Assistant OS — ${{ github.ref_name }}** (board: `${{ env.BOARD_ID }}`)
+
+            Factory Assistant is based on Home Assistant. Monitoring appliance —
+            **not a safety device** (see `docs/SAFETY_BOUNDARY.md`).
+
+            ⚠️ Built with a **public self-signed** RAUC certificate: flash-only,
+            OTA updates are not trusted on this build (Factory Assistant signing
+            keys are Phase 2 — `docs/OS_BUILD.md` §Signing).
+
+            Flash `faos_${{ env.BOARD_ID }}-*.img.xz` to an x86-64 machine
+            (`docs/OS_BUILD.md` §3), boot, then open
+            `http://factory-assistant.local:8123`. Verify downloads against
+            `SHA256SUMS`.

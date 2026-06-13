@@ -38,13 +38,20 @@ make os          # build the generic-x86-64 image inside the build container
 
 Artifacts land under `upstream/operating-system/output/images/` as
 `faos_generic-x86-64-<version>.img.xz`. Flashing, first boot, and VM options
-are covered in [`docs/OS_BUILD.md`](docs/OS_BUILD.md).
+are covered in [`docs/OS_BUILD.md`](docs/OS_BUILD.md); cutting a published
+release (CI or local host) is in [`RELEASE.md`](RELEASE.md).
+
+> The overlay/rebrand step is verified against the pinned upstream (17.3); the
+> full Buildroot compile must run on CI or a Linux host with ~50 GB disk and
+> open network — see [`RELEASE.md`](RELEASE.md).
 
 ## Repository layout
 
 | Path | Purpose |
 |---|---|
 | `AGENTS.md` | Working rules for human and AI contributors |
+| `RELEASE.md` | Runbook for cutting a flashable release image (CI or local host) |
+| `.github/workflows/build-os-image.yml` | CI pipeline that builds the x86-64 image and publishes a Release |
 | `docs/ARCHITECTURE.md` | Full stack: OS layer, Supervisor, Core, frontend, add-ons, updates, first boot |
 | `docs/UI_DESIGN.md` | Factory/manufacturing UI design: personas, machine tiles, screens, tokens, wallboard mode |
 | `docs/OS_BUILD.md` | How to build, flash, and boot the x86-64 image; fork strategy |

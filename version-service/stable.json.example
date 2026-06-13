@@ -6,7 +6,7 @@
     "default": "2026.5.0"
   },
   "hassos": {
-    "generic-x86-64": "16.2",
+    "generic-x86-64": "17.3",
     "ota": "https://github.com/REPLACE-ORG/operating-system/releases/download/{version}/faos_{board}-{version}.raucb"
   },
   "dns": "2026.05.0",

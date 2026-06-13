@@ -6,8 +6,10 @@ implemented. The Core-side templates live under
 `buildroot-external/rootfs-overlay/usr/share/factory-assistant/` —
 `configuration.yaml`, the `factory-assistant` UI theme (`themes/`), the
 dashboards (`dashboards/`: Plant overview, andon board, wallboard), and the
-industrial example packages (`packages/`: OEE, maintenance reminders, andon
-acknowledge); the UI is specified in `docs/UI_DESIGN.md`.
+industrial example packages (`packages/`: plant KPIs, OEE, energy,
+maintenance reminders, andon acknowledge), and the read-only protocol examples
+(`examples/`: MQTT and Modbus, with `examples/README.md` as the naming/topic
+quick reference); the UI is specified in `docs/UI_DESIGN.md`.
 
 ## 1. Defaults table
 
@@ -50,10 +52,11 @@ historian/bridge add-ons, not a v1 commitment.)
 
 - **MQTT**: Mosquitto add-on is the assumed broker; per-device credentials;
   QoS 1 for telemetry. Keep payloads numeric/JSON-flat for recorder
-  friendliness.
+  friendliness. Worked read-only example: `examples/mqtt_example.yaml`.
 - **Modbus TCP**: poll PLC *gateways*/meters, not safety controllers; scan
   intervals ≥ 1 s unless justified; register maps documented per machine in
-  the site repo; reads only (function codes 3/4) — never writes.
+  the site repo; reads only (function codes 3/4) — never writes. Worked
+  read-only example: `examples/modbus_example.yaml`.
 - **OPC UA**: via the bridge add-on (P3): subscribe to a curated node set,
   republish on the `fa/...` topic convention, read-only mode hard-default.
 - **ESPHome**: the retrofit path for unsensored legacy machines (vibration,

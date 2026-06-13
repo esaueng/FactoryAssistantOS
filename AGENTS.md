@@ -67,6 +67,10 @@ root of the system and the place where the appliance image is built.
   `make distclean bootstrap overlay`, re-verify every row of the rebrand
   checklist against the new tag (upstream layout moves), and note the bump in
   the commit message.
+- **Convert to a true fork (Phase 2)**: follow the Path B procedure in
+  `docs/OS_BUILD.md` §7 — overlay files land at their final paths,
+  `scripts/apply-overlay.sh` retires, and upstream release tags merge on a
+  cadence (branding/identity → ours; internal identifiers stay upstream-compatible).
 - **Add documentation**: put it in `docs/`, link it from `README.md`'s table.
   Upstream merges may later introduce a `Documentation/` directory; `docs/`
   stays canonical for Factory Assistant.

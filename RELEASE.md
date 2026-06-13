@@ -74,8 +74,14 @@ and complete onboarding. Full flashing/VM notes: `docs/OS_BUILD.md` §3.
 - [ ] This is a **flash-only** image unless Factory Assistant RAUC keys are
       configured (`docs/OS_BUILD.md` §Signing) — OTA is untrusted with the
       self-signed cert.
-- [ ] Re-walk the rebrand checklist (`docs/OS_BUILD.md` §4) — Phase 2 items
-      (registry, update channel, landing page/CLI banner) are not yet applied.
+- [ ] Re-walk the rebrand checklist (`docs/OS_BUILD.md` §4). Applied today:
+      product name/ID, hostname, console banner (`etc/issue` + `etc/motd`);
+      GRUB is N/A on x86-64. Still Phase 2: container registry, update-channel
+      URL, landing page, containerized CLI-plugin banner, frontend branding.
+- [ ] Verify the Supervisor accepts the `faos` os-release identity on first
+      boot (`docs/OS_BUILD.md` §4 — os-release ID verification).
+- [ ] Resolve the `branding/identity.env` go-live placeholders (org, registry,
+      version host, OTA host) before any published or OTA release.
 - [ ] Publish the license bundle with the artifact
       (`docs/LICENSE_COMPLIANCE.md` §6).
 - [ ] Boot-test on real hardware/VM (milestone P1, `docs/ARCHITECTURE.md` §11).

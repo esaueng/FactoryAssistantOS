@@ -1,0 +1,174 @@
+# Factory Assistant — MQTT ingestion example (READ-ONLY).
+#
+# How plant data arrives over MQTT: two machines (line1_press03,
+# line2_extr01, the same IDs the shipped dashboards use) fed from gateways
+# publishing on the topic convention below. Copy and adapt per machine at
+# commissioning; entities render "unavailable" until a real device publishes.
+#
+# Prerequisites (see configuration.yaml "--- MQTT ---"):
+#   1. Install the Mosquitto broker add-on (Settings → Add-ons).
+#   2. Add the MQTT integration (Settings → Devices & Services).
+# This file then goes under `mqtt:` in configuration.yaml, e.g.
+#   mqtt: !include examples/mqtt_example.yaml
+# Until the config tree is seeded into /config (docs/INDUSTRIAL_DEFAULTS.md §4)
+# this is a template, copied manually.
+#
+# Topic convention (docs/INDUSTRIAL_DEFAULTS.md §2):
+#   fa/<site>/<area>/<device>/<measurement>   e.g. fa/plant1/line1/press03/motor_temp
+#   …/status                                  per-device availability (LWT)
+# Entity-ID convention (docs/INDUSTRIAL_DEFAULTS.md §2):
+#   sensor.<area>_<machine>_<measurement>     e.g. sensor.line1_press03_motor_temp
+#   binary_sensor.<area>_<machine>_running    e.g. binary_sensor.line1_press03_running
+#
+# Conventions applied below (docs/INDUSTRIAL_DEFAULTS.md §2–3):
+#   - QoS 1 for telemetry.
+#   - Retained messages for slow-changing states (running, alerts, availability).
+#   - Availability topics (…/status) with payload_available / payload_not_available.
+#   - Numeric or flat-JSON payloads, decoded with value_template, for recorder
+#     friendliness.
+#
+# SAFETY: ingestion only. Every entry below subscribes and reads — there are NO
+# command_topic, no publishing, no automation that writes to a device. Machine
+# control is out of scope by policy (docs/SAFETY_BOUNDARY.md). The PREFERRED
+# path is MQTT discovery (below); these manual entries are the fallback for
+# gateways that cannot self-describe.
+
+# --- PREFERRED: MQTT discovery (gateways create entities themselves) ---------
+# A capable gateway announces each entity by publishing a retained config
+# message to homeassistant/<component>/<object_id>/config; Factory Assistant
+# creates the entity automatically — no YAML to maintain per machine. Encode the
+# same naming convention in the unique_id / object_id so the resulting entity_id
+# matches sensor.<area>_<machine>_<measurement>. Example payload a gateway would
+# retain to homeassistant/sensor/line1_press03_motor_temp/config:
+#
+#   {
+#     "name": "Press 03 motor temperature",
+#     "unique_id": "line1_press03_motor_temp",
+#     "object_id": "line1_press03_motor_temp",
+#     "state_topic": "fa/plant1/line1/press03/motor_temp",
+#     "availability_topic": "fa/plant1/line1/press03/status",
+#     "payload_available": "online",
+#     "payload_not_available": "offline",
+#     "device_class": "temperature",
+#     "unit_of_measurement": "°C",
+#     "state_class": "measurement",
+#     "qos": 1,
+#     "device": {
+#       "identifiers": ["line1_press03"],
+#       "name": "Line 1 Press 03",
+#       "manufacturer": "Acme",
+#       "model": "HP-400"
+#     }
+#   }
+#
+# Prefer discovery wherever the gateway/firmware supports it. The manual
+# definitions below cover devices that publish raw data but cannot self-describe.
+
+# --- MANUAL: line1 / press03 (hydraulic press) ------------------------------
+sensor:
+  # Motor temperature — numeric payload. Drives sensor.line1_press03_motor_temp
+  # on the overview dashboard.
+  - name: "Press 03 motor temperature"
+    unique_id: line1_press03_motor_temp
+    state_topic: "fa/plant1/line1/press03/motor_temp"
+    availability_topic: "fa/plant1/line1/press03/status"
+    payload_available: "online"
+    payload_not_available: "offline"
+    device_class: temperature
+    unit_of_measurement: "°C"
+    state_class: measurement
+    qos: 1
+
+  # Production rate — flat-JSON payload, e.g. {"rate": 58.2, "unit": "ppm"}.
+  # Pulled out with value_template. Drives sensor.line1_press03_rate.
+  - name: "Press 03 rate"
+    unique_id: line1_press03_rate
+    state_topic: "fa/plant1/line1/press03/rate"
+    value_template: "{{ value_json.rate }}"
+    availability_topic: "fa/plant1/line1/press03/status"
+    payload_available: "online"
+    payload_not_available: "offline"
+    unit_of_measurement: "ppm"
+    state_class: measurement
+    qos: 1
+    # NOTE: sensor.line1_press03_runtime_today / _runtime_hours and the OEE
+    # sensors are DERIVED on-box (packages/*.yaml), not ingested here.
+
+  # --- MANUAL: line2 / extr01 (extruder) — same `sensor:` list --------------
+  # Barrel temperature — numeric payload.
+  - name: "Extruder 01 barrel temperature"
+    unique_id: line2_extr01_barrel_temp
+    state_topic: "fa/plant1/line2/extr01/barrel_temp"
+    availability_topic: "fa/plant1/line2/extr01/status"
+    payload_available: "online"
+    payload_not_available: "offline"
+    device_class: temperature
+    unit_of_measurement: "°C"
+    state_class: measurement
+    qos: 1
+
+  # Melt pressure — flat-JSON payload, e.g. {"pressure": 142.0, "unit": "bar"}.
+  - name: "Extruder 01 melt pressure"
+    unique_id: line2_extr01_melt_pressure
+    state_topic: "fa/plant1/line2/extr01/melt_pressure"
+    value_template: "{{ value_json.pressure }}"
+    availability_topic: "fa/plant1/line2/extr01/status"
+    payload_available: "online"
+    payload_not_available: "offline"
+    device_class: pressure
+    unit_of_measurement: "bar"
+    state_class: measurement
+    qos: 1
+
+binary_sensor:
+  # Running state — slow-changing, so the gateway publishes it RETAINED: a
+  # restarted appliance learns the last known state immediately. Drives
+  # binary_sensor.line1_press03_running (the *_running count convention).
+  - name: "Press 03 running"
+    unique_id: line1_press03_running
+    state_topic: "fa/plant1/line1/press03/running"
+    payload_on: "1"
+    payload_off: "0"
+    device_class: running
+    availability_topic: "fa/plant1/line1/press03/status"
+    payload_available: "online"
+    payload_not_available: "offline"
+    qos: 1
+
+  # Over-temperature alert — also retained (slow-changing latched state).
+  # Drives binary_sensor.line1_press03_overtemp_alert (the *_alert convention).
+  - name: "Press 03 over-temperature alert"
+    unique_id: line1_press03_overtemp_alert
+    state_topic: "fa/plant1/line1/press03/overtemp_alert"
+    payload_on: "1"
+    payload_off: "0"
+    device_class: heat
+    availability_topic: "fa/plant1/line1/press03/status"
+    payload_available: "online"
+    payload_not_available: "offline"
+    qos: 1
+
+  # Extruder running state — retained. Drives binary_sensor.line2_extr01_running.
+  - name: "Extruder 01 running"
+    unique_id: line2_extr01_running
+    state_topic: "fa/plant1/line2/extr01/running"
+    payload_on: "1"
+    payload_off: "0"
+    device_class: running
+    availability_topic: "fa/plant1/line2/extr01/status"
+    payload_available: "online"
+    payload_not_available: "offline"
+    qos: 1
+
+  # Extruder melt-pressure alert — retained. Drives
+  # binary_sensor.line2_extr01_pressure_alert (the *_alert convention).
+  - name: "Extruder 01 pressure alert"
+    unique_id: line2_extr01_pressure_alert
+    state_topic: "fa/plant1/line2/extr01/pressure_alert"
+    payload_on: "1"
+    payload_off: "0"
+    device_class: problem
+    availability_topic: "fa/plant1/line2/extr01/status"
+    payload_available: "online"
+    payload_not_available: "offline"
+    qos: 1

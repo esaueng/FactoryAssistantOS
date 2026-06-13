@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://version.factory-assistant.example/schema/channel.schema.json",
+  "title": "Factory Assistant update channel document",
+  "description": "Shape of a Factory Assistant {stable,beta,dev}.json channel document polled by the Supervisor. ILLUSTRATIVE: the authoritative schema is whatever the pinned Supervisor parses — derive it from the upstream home-assistant/version repo at fork time (Phase 2) and validate against the Supervisor's updater before publishing. See version-service/README.md and docs/ARCHITECTURE.md §7.",
+  "type": "object",
+  "$defs": {
+    "version": {
+      "type": "string",
+      "description": "CalVer/semver-style version, e.g. 2026.05.0, 2026.5.0, or 17.3.",
+      "pattern": "^[0-9]+(\\.[0-9]+){1,2}([._-][0-9A-Za-z.]+)?$"
+    },
+    "imageRef": {
+      "type": "string",
+      "description": "Container image reference, may contain {machine}/{arch} placeholders the Supervisor expands.",
+      "pattern": "^[a-z0-9.-]+(:[0-9]+)?/.+$"
+    },
+    "otaUrl": {
+      "type": "string",
+      "description": "HTTPS URL template for the OS RAUC bundle; must keep the {version} (and typically {board}) placeholders.",
+      "pattern": "^https://.*\\{version\\}.*$"
+    }
+  },
+  "required": ["channel", "supervisor", "homeassistant", "hassos"],
+  "additionalProperties": false,
+  "properties": {
+    "_comment": {
+      "type": "string",
+      "description": "Free-form note; ignored by the Supervisor."
+    },
+    "channel": {
+      "enum": ["stable", "beta", "dev"],
+      "description": "Update channel this document serves."
+    },
+    "supervisor": { "$ref": "#/$defs/version" },
+    "homeassistant": {
+      "type": "object",
+      "description": "Core versions. 'default' applies to every board unless a board-specific key overrides it.",
+      "required": ["default"],
+      "properties": {
+        "default": { "$ref": "#/$defs/version" }
+      },
+      "patternProperties": {
+        "^[a-z0-9-]+$": { "$ref": "#/$defs/version" }
+      },
+      "additionalProperties": false
+    },
+    "hassos": {
+      "type": "object",
+      "description": "OS image versions per board id, plus the OTA bundle URL template. Board ids use upstream-compatible names (e.g. generic-x86-64) per AGENTS.md invariant 4.",
+      "required": ["ota"],
+      "properties": {
+        "ota": { "$ref": "#/$defs/otaUrl" }
+      },
+      "patternProperties": {
+        "^(?!ota$)[a-z0-9-]+$": { "$ref": "#/$defs/version" }
+      },
+      "additionalProperties": false,
+      "minProperties": 2
+    },
+    "dns": { "$ref": "#/$defs/version" },
+    "audio": { "$ref": "#/$defs/version" },
+    "cli": { "$ref": "#/$defs/version" },
+    "multicast": { "$ref": "#/$defs/version" },
+    "observer": { "$ref": "#/$defs/version" },
+    "image": {
+      "type": "object",
+      "description": "Container image name templates pulled from the Factory Assistant registry.",
+      "properties": {
+        "core": { "$ref": "#/$defs/imageRef" },
+        "supervisor": { "$ref": "#/$defs/imageRef" }
+      },
+      "additionalProperties": { "$ref": "#/$defs/imageRef" }
+    }
+  }
+}

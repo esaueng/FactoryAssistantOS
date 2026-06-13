@@ -20,6 +20,34 @@ the authoritative schema is whatever the pinned Supervisor version parses —
 derive the real file from the upstream `version` repository at fork time
 (Phase 2), and validate it against the Supervisor's updater before publishing.
 
+## Files
+
+| File | Purpose |
+|---|---|
+| `stable.json.example` | Illustrative `stable` channel document |
+| `schema/channel.schema.json` | JSON Schema (draft 2020-12) for a channel document; validated in CI (`make lint`) |
+| `generate-channel.sh` | Produce a channel document from `branding/identity.env` + version flags, validated against the schema |
+
+## Generating a channel document
+
+`generate-channel.sh` reads the registry and OTA URL from
+`branding/identity.env` (the single source of truth) so the registry and OS
+download host never drift between the image build and the channel:
+
+```sh
+./version-service/generate-channel.sh \
+    --channel stable --supervisor 2026.05.0 --core 2026.5.0 \
+    --os-board generic-x86-64 --os-version 17.3 --out stable.json
+```
+
+Plugin versions (`--dns/--audio/--cli/--multicast/--observer`) default to the
+supervisor version. When `check-jsonschema` or `python3`+`jsonschema` is
+available the output is validated against `schema/channel.schema.json` before
+it is written (CI installs a validator); otherwise it is emitted with a
+warning. The schema is **advisory** — it encodes the shape of the example, not
+a guarantee about a future Supervisor. Always re-validate against the pinned
+Supervisor's updater before publishing (next paragraph).
+
 Operational requirements (Phase 2):
 
 - Static hosting with TLS is sufficient (object storage / pages hosting).

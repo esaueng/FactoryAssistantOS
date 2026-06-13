@@ -1,13 +1,13 @@
 {
-  "_comment": "ILLUSTRATIVE example of a Factory Assistant stable channel document. Derive the authoritative schema from the upstream home-assistant/version repo at the pinned Supervisor version (Phase 2). REPLACE-ORG and .example values are placeholders.",
+  "_comment": "ILLUSTRATIVE / NON-LIVE placeholder — mirrors version-service/generate-channel.sh output from branding/identity.env. Derive the authoritative schema from the upstream home-assistant/version repo at the pinned Supervisor version and validate against the pinned Supervisor before publishing (version-service/README.md). Placeholders (REPLACE-ORG, .example) are not live.",
   "channel": "stable",
   "supervisor": "2026.05.0",
   "homeassistant": {
     "default": "2026.5.0"
   },
   "hassos": {
-    "generic-x86-64": "17.3",
-    "ota": "https://github.com/REPLACE-ORG/operating-system/releases/download/{version}/faos_{board}-{version}.raucb"
+    "ota": "https://github.com/REPLACE-ORG/operating-system/releases/download/{version}/faos_{board}-{version}.raucb",
+    "generic-x86-64": "17.3"
   },
   "dns": "2026.05.0",
   "audio": "2026.05.0",

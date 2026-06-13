@@ -1,0 +1,86 @@
+# Factory Assistant — plant KPI template sensors package.
+#
+# Defines the plant-wide KPI sensors the dashboards reference in their "Shift
+# status" strip (dashboards/factory-overview.yaml) but that nothing else
+# provides yet. These are the template sensors drafted in the commented block
+# in configuration.yaml (~§"Plant KPI sensors"), promoted to a real package and
+# hardened with availability guards.
+#
+# Loaded via `homeassistant: packages: !include_dir_named packages` in
+# configuration.yaml. Until the config tree is seeded into /config
+# (docs/INDUSTRIAL_DEFAULTS.md §4) this is a template, copied manually.
+#
+# The running/alert counts derive automatically from the *_running / *_alert
+# entity-ID naming convention (docs/INDUSTRIAL_DEFAULTS.md §2) — no per-machine
+# wiring needed; they pick up machines as you map their entities.
+#
+# OWNERSHIP — the other two KPI-strip sensors are defined elsewhere; do NOT
+# redefine them here:
+#   sensor.plant_oee        the OEE KPI       → packages/oee_example.yaml
+#   sensor.plant_power_now  the incomer power → packages/energy_example.yaml
+#
+# SAFETY: derived/read-only metrics; reads no control path. They render
+# "unavailable" until mapped to real plant entities at commissioning
+# (docs/SAFETY_BOUNDARY.md).
+
+template:
+  - sensor:
+      # Machines running — count of every binary_sensor.*_running that is 'on'.
+      # Picks up machines automatically as their *_running entities are mapped.
+      - name: "Plant machines running"
+        unique_id: plant_machines_running
+        state_class: measurement
+        icon: mdi:robot-industrial
+        availability: >-
+          {{ states.binary_sensor
+             | selectattr('entity_id', 'match', 'binary_sensor\\..*_running$')
+             | list | count > 0 }}
+        state: >-
+          {{ states.binary_sensor
+             | selectattr('entity_id', 'match', 'binary_sensor\\..*_running$')
+             | selectattr('state', 'eq', 'on') | list | count }}
+
+      # Active alerts — count of every binary_sensor.*_alert that is 'on'.
+      # Feeds the overview/wallboard KPI strips (dashboards/factory-overview.yaml,
+      # dashboards/wallboard.yaml); the andon board lists each alert individually.
+      - name: "Plant active alerts"
+        unique_id: plant_active_alerts
+        state_class: measurement
+        icon: mdi:alert
+        availability: >-
+          {{ states.binary_sensor
+             | selectattr('entity_id', 'match', 'binary_sensor\\..*_alert$')
+             | list | count > 0 }}
+        state: >-
+          {{ states.binary_sensor
+             | selectattr('entity_id', 'match', 'binary_sensor\\..*_alert$')
+             | selectattr('state', 'eq', 'on') | list | count }}
+
+      # Shift good-part output — PLACEHOLDER. At commissioning, map this to the
+      # real source for shift good-part count, e.g. a line counter's good-part
+      # tag, or the sum of per-machine sensor.*_good_count (the same good_count
+      # signals the OEE quality factor uses, packages/oee_example.yaml). Until
+      # mapped it deliberately renders "unavailable" — the example sum below is
+      # commented out so it never reports a misleading partial total.
+      #
+      # state_class total_increasing: a shift counter that resets to 0 each
+      # shift (HA treats a drop to a lower value as a counter reset).
+      - name: "Plant shift output"
+        unique_id: plant_shift_output
+        state_class: total_increasing
+        icon: mdi:counter
+        availability: "false"
+        state: "unavailable"
+        # --- Commissioning example: sum of per-machine good-part counters -----
+        # Replace the two lines above (availability/state) with the block below
+        # once sensor.*_good_count entities exist, or point at a line counter.
+        #
+        # availability: >-
+        #   {{ states.sensor
+        #      | selectattr('entity_id', 'match', 'sensor\\..*_good_count$')
+        #      | selectattr('state', 'is_number') | list | count > 0 }}
+        # state: >-
+        #   {{ states.sensor
+        #      | selectattr('entity_id', 'match', 'sensor\\..*_good_count$')
+        #      | selectattr('state', 'is_number')
+        #      | map(attribute='state') | map('float') | sum | round(0) }}

@@ -62,8 +62,11 @@ fi
 cat <<'EOF'
 >>> Overlay applied.
 
+    Covered by the rootfs overlay (usr/sbin/hassos-supervisor):
+      - Supervisor/Core container registry (SUPERVISOR_IMAGE)
+      - Update channel URL (fallback stable.json)
+
     NOT covered yet (Phase 2 — see docs/OS_BUILD.md §Rebrand checklist):
-      - Supervisor/Core container registry + update channel URL (Supervisor fork)
       - RAUC signing keys/keyring (REQUIRED before shipping OTA updates)
       - Landing page + containerized CLI-plugin banner (landingpage/plugin-cli forks)
       - os-release ID compatibility check against the unmodified Supervisor

@@ -105,8 +105,8 @@ paths move between upstream releases).
 | Console banner with attribution | rootfs overlay `etc/issue` + defconfig fragment | A |
 | Industrial default Core config template | rootfs overlay `usr/share/factory-assistant/` | A (seeding: P3) |
 | os-release `ID` change vs **unmodified** Supervisor OS-detection checks | verify on first boot; if OS update/management features degrade, keep functional ID fields compatible until the Supervisor fork lands | P1 verify |
-| Supervisor/Core container registry + machine image names | upstream `hassio` package config + Supervisor fork constants | P2 |
-| Update channel URL → FA version service | `hassio` package config / Supervisor fork | P2 |
+| Supervisor/Core container registry + machine image names | rootfs overlay `usr/sbin/hassos-supervisor` (`SUPERVISOR_IMAGE`) | A (overlay — hassos-supervisor) |
+| Update channel URL → FA version service | rootfs overlay `usr/sbin/hassos-supervisor` (fallback `stable.json`) | A (overlay — hassos-supervisor) |
 | **RAUC signing keys + device keyring + OTA URL** | build config + `version-service/` | **P2 — required before any OTA** |
 | Host login banner (MOTD) | rootfs overlay `etc/motd` (replaces upstream's HA MOTD) | A |
 | GRUB menu title / boot splash | generic-x86-64 `board/pc/grub.cfg` is a functional A/B slot menu with **no product branding** — nothing to rebrand for this board (the separate `ova` image's `home-assistant.ovf` would need it if that target is built) | N/A (x86-64) |
@@ -124,20 +124,77 @@ invariant 4). Record the result in `RELEASE.md`.
 
 ## 5. Signing (RAUC) — Phase 2, blocking for OTA
 
-Until done, images are flash-only (no OTA), which is acceptable for P1.
+RAUC update bundles (`.raucb`) are signed with a Factory Assistant key and
+verified on-device against a keyring baked into the image at build time. A
+device must only ever trust Factory Assistant certificates — never upstream's,
+and never development certificates in shipped images. Until this is wired,
+images are flash-only (no OTA), which is acceptable for P1.
 
-1. Generate a Factory Assistant CA + signing certificate (offline key
-   storage; never in git — `.gitignore` already refuses `*.pem/*.key/*.crt`):
-   `openssl req -x509 -newkey rsa:4096 -keyout faos-ota.key -out faos-ota.crt -days 3650 -nodes -subj "/CN=Factory Assistant OS OTA"`
-2. Configure the build so the **device keyring trusts the FA certificate**
-   (upstream wires the keyring through the `BR2_EXTERNAL` tree — follow the
-   OTA/RAUC section of upstream `Documentation/` at the pinned tag) and sign
-   release bundles with the FA key.
-3. Publish bundles at the OTA URL template in `branding/identity.env`, and
-   reference them from the channel JSON (`version-service/`).
+> **Private keys are NEVER committed.** `.gitignore` refuses `*.pem`, `*.key`,
+> and `*.crt` repo-wide (confirm with `git check-ignore faos-ota.key`). The CA
+> private key and the signing private key live on offline/HSM-backed storage,
+> not on the build host's working tree and not in CI secrets that land on disk.
 
-Rule: a device must only ever trust Factory Assistant certificates — never
-upstream's, and never development certificates in shipped images.
+### 5.1 Generate the CA and signing certificate (offline, one time)
+
+Do this on an air-gapped machine. The CA private key signs the signing cert
+and is then locked away; day-to-day bundle signing uses only the signing key.
+
+```sh
+# 1. Root CA (long-lived; key stays offline / on HSM)
+openssl genrsa -out faos-ca.key 4096
+openssl req -x509 -new -key faos-ca.key -sha256 -days 7300 \
+  -out faos-ca.crt \
+  -subj "/O=Factory Assistant/CN=Factory Assistant OS OTA Root CA"
+
+# 2. Signing key + CSR (this key signs release bundles)
+openssl genrsa -out faos-ota.key 4096
+openssl req -new -key faos-ota.key \
+  -out faos-ota.csr \
+  -subj "/O=Factory Assistant/CN=Factory Assistant OS OTA Signing"
+
+# 3. Sign the signing cert with the CA (codesign EKU)
+openssl x509 -req -in faos-ota.csr -CA faos-ca.crt -CAkey faos-ca.key \
+  -CAcreateserial -sha256 -days 1825 \
+  -extfile <(printf 'keyUsage=digitalSignature\nextendedKeyUsage=codeSigning\n') \
+  -out faos-ota.crt
+```
+
+Keep `faos-ca.key` and `faos-ota.key` offline. Only the **public**
+`faos-ca.crt` (the keyring) is needed on the build host, and even that is
+referenced from outside the repo — it is gitignored as a `*.crt`.
+
+### 5.2 Wire the device keyring at build time
+
+RAUC on the device verifies bundles against `/etc/rauc/keyring.pem`, which
+upstream installs from the `BR2_EXTERNAL` tree. Point that keyring at the
+Factory Assistant CA certificate so a flashed device trusts FA bundles only:
+
+- Supply `faos-ca.crt` as the RAUC keyring used for the image (HAOS sources it
+  via the `BR2_PACKAGE_RAUC*` / system config at the pinned tag — follow the
+  OTA/RAUC section of upstream `Documentation/` in the checkout). Provide it
+  from a path **outside** the repo (e.g. `RAUC_KEYRING=/secure/faos-ca.crt`),
+  never by committing it under `buildroot-external/`.
+- Verify the baked keyring after a build: `rauc info --keyring=… <bundle>`
+  must validate FA-signed bundles and reject upstream/dev-signed ones.
+
+### 5.3 Sign release bundles
+
+```sh
+rauc bundle \
+  --cert=faos-ota.crt --key=faos-ota.key \
+  output/images/faos_generic-x86-64-<version>.raucb \
+  faos_generic-x86-64-<version>-signed.raucb
+```
+
+Run signing where the signing key is available (ideally the offline/HSM host),
+not in a shared CI runner that persists secrets to disk.
+
+### 5.4 Publish
+
+Publish signed bundles at the OTA URL template in `branding/identity.env`
+(`FAOS_OTA_URL_TEMPLATE`) and reference them from the channel JSON under
+`version-service/` (validated by `version-service/schema/channel.schema.json`).
 
 ## 6. Versioning policy
 

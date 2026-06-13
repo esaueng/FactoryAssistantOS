@@ -108,9 +108,19 @@ paths move between upstream releases).
 | Supervisor/Core container registry + machine image names | upstream `hassio` package config + Supervisor fork constants | P2 |
 | Update channel URL → FA version service | `hassio` package config / Supervisor fork | P2 |
 | **RAUC signing keys + device keyring + OTA URL** | build config + `version-service/` | **P2 — required before any OTA** |
-| GRUB menu title, boot splash | `buildroot-external/bootloader` & board files | P2 |
-| Landing page, CLI plugin banner (MOTD) | `landingpage` / `plugin-cli` forks | P2 |
+| Host login banner (MOTD) | rootfs overlay `etc/motd` (replaces upstream's HA MOTD) | A |
+| GRUB menu title / boot splash | generic-x86-64 `board/pc/grub.cfg` is a functional A/B slot menu with **no product branding** — nothing to rebrand for this board (the separate `ova` image's `home-assistant.ovf` would need it if that target is built) | N/A (x86-64) |
+| Landing page + containerized CLI-plugin banner | `landingpage` / `plugin-cli` forks | P2 |
 | Frontend branding, default factory dashboard, onboarding wording | `frontend` fork | P3 |
+
+**os-release ID verification (P1).** After first boot, confirm the Supervisor
+accepts the `faos` OS identity: Settings → About reports "Factory Assistant
+OS"; `ha os info` and `ha supervisor info` succeed with no "unsupported OS"
+health warning; OS updates and backups are offered; the observer page
+(`:4357`) is healthy. If any of these degrade, keep the functional os-release
+ID fields upstream-compatible until the Supervisor fork lands — do **not**
+change `HASSOS_ID` away from `faos` without a documented decision (AGENTS.md
+invariant 4). Record the result in `RELEASE.md`.
 
 ## 5. Signing (RAUC) — Phase 2, blocking for OTA
 
@@ -145,7 +155,9 @@ Supervisor's OS-version expectations simple.
    `main`) on a cadence — at minimum for upstream security releases.
 3. Conflict policy: branding/identity files → ours; everything else →
    take upstream and re-apply the minimal delta; every merge re-walks the §4
-   checklist.
+   checklist. Any divergence of internal identifiers (`HASSOS_*`, `hassio`,
+   board names, port 8123) still requires a documented decision (AGENTS.md
+   invariant 4) — the fork does not relax that.
 4. CI: adapt upstream's GitHub Actions build workflows to build
    `generic_x86_64` on PR (artifact upload) and signed release bundles on
    tags.

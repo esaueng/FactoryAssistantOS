@@ -59,47 +59,29 @@ lovelace:
       filename: dashboards/wallboard.yaml
 
 # --- Plant KPI sensors (drive the overview dashboard's "Shift status") ------
-# Uncomment and adapt; the running/alert counts derive automatically from the
-# *_running / *_alert naming convention (docs/INDUSTRIAL_DEFAULTS.md §2).
-#
-# template:
-#   - sensor:
-#       - name: "Plant machines running"
-#         state: >
-#           {{ states.binary_sensor
-#              | selectattr('entity_id', 'match', 'binary_sensor\..*_running$')
-#              | selectattr('state', 'eq', 'on') | list | count }}
-#       - name: "Plant active alerts"
-#         state: >
-#           {{ states.binary_sensor
-#              | selectattr('entity_id', 'match', 'binary_sensor\..*_alert$')
-#              | selectattr('state', 'eq', 'on') | list | count }}
-#       # sensor.plant_shift_output and sensor.plant_power_now come from the
-#       # line counter and the incomer meter — map them to real sources.
-#       # sensor.plant_oee (the OEE KPI) is provided by packages/oee_example.yaml.
+# Defined as a ready-to-adapt package in packages/kpi_example.yaml (loaded via
+# the `packages:` include above). It provides:
+#   sensor.plant_machines_running / sensor.plant_active_alerts — derived
+#     automatically from the *_running / *_alert naming convention
+#     (docs/INDUSTRIAL_DEFAULTS.md §2);
+#   sensor.plant_shift_output — shift good-part output (map to a line counter
+#     at commissioning).
+# Two related KPIs live with their domain packages:
+#   sensor.plant_power_now — incomer meter, packages/energy_example.yaml;
+#   sensor.plant_oee       — plant-wide OEE, packages/oee_example.yaml.
 
 # --- MQTT (sensors, gateways, machine data) --------------------------------
 # 1. Install the Mosquitto broker add-on (Settings -> Add-ons).
 # 2. Add the MQTT integration (Settings -> Devices & Services).
-# Topic convention (see docs/INDUSTRIAL_DEFAULTS.md):
+# Topic convention (see docs/INDUSTRIAL_DEFAULTS.md §2):
 #   fa/<site>/<area>/<device>/<measurement>
+# Worked READ-ONLY example (MQTT discovery + manual sensors):
+#   examples/mqtt_example.yaml  (conventions: examples/README.md)
 
 # --- Modbus TCP (PLC gateways, energy meters) — READ-ONLY -------------------
-# Uncomment and adapt. Register addresses are 0-based. Only input/holding
-# register READS are permitted by policy; never configure write calls.
-#
-# modbus:
-#   - name: plc_line1
-#     type: tcp
-#     host: 192.0.2.10        # documentation address — replace
-#     port: 502
-#     sensors:
-#       - name: line1_press_temperature
-#         address: 0
-#         input_type: input
-#         unit_of_measurement: "°C"
-#         device_class: temperature
-#         scan_interval: 5
+# Reads only (input/holding registers, function codes 3/4); write calls are
+# prohibited by policy (docs/SAFETY_BOUNDARY.md). Worked read-only example:
+#   examples/modbus_example.yaml  (conventions: examples/README.md)
 
 # --- OPC UA ------------------------------------------------------------------
 # OPC UA servers are integrated through the planned OPC UA bridge add-on,

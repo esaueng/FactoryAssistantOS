@@ -1,0 +1,100 @@
+# Factory Assistant — energy metering example package.
+#
+# Read-only plant energy metering wired so the pattern is obvious; copy the
+# per-line block at commissioning. This OWNS sensor.plant_power_now — the
+# plant incomer real-time power KPI shown on the overview / wallboard KPI strip
+# and the overview Energy view (docs/UI_DESIGN.md §6, dashboards/
+# factory-overview.yaml, dashboards/wallboard.yaml). The configuration.yaml KPI
+# block intentionally does NOT define it; this package does.
+#
+# Energy follows Core's native Energy dashboard rather than a bespoke surface
+# (docs/UI_DESIGN.md §6 "Energy"): an incomer meter plus per-line/per-machine
+# CT clamps, with shift and daily views. The utility_meter helpers below feed
+# Settings → Dashboards → Energy directly (kWh rollups), so the stock Energy
+# dashboard "comes alive" once they are mapped.
+#
+# Loaded via `homeassistant: packages: !include_dir_named packages` in
+# configuration.yaml. Until the config tree is seeded into /config
+# (docs/INDUSTRIAL_DEFAULTS.md §4) this is a template, copied manually.
+#
+# COMMISSIONING — map every input below to a real meter / CT-clamp entity
+# (naming: docs/INDUSTRIAL_DEFAULTS.md §2). They render "unavailable" until
+# wired, so nothing ever shows a fabricated value:
+#   sensor.plant_incomer_power_raw   main incomer meter real-time power (kW)
+#   sensor.plant_incomer_energy      main incomer cumulative energy (kWh)
+#   sensor.line1_power_raw           Line 1 CT-clamp real-time power (kW)
+#   sensor.line1_energy              Line 1 CT-clamp cumulative energy (kWh)
+# The *_raw / *_energy sources come from the incomer meter and the per-line/
+# per-machine CT clamps over Modbus TCP (READ-ONLY register reads) or the
+# ESPHome current-clamp retrofit path (docs/INDUSTRIAL_DEFAULTS.md §3).
+#
+# SHIFT ROLLUP — set the shift boundaries in utility_meter (`cycle: daily`
+# anchored with `offset`, or list multiple meters) to match the plant's shift
+# pattern at commissioning; the example uses a single daily cycle plus a
+# shift cycle reset by the existing input_datetime helper pattern.
+#
+# SAFETY: metering only; reads no control path (docs/SAFETY_BOUNDARY.md). CT
+# clamps and meter register reads are non-invasive measurements — this package
+# never writes to a meter and exposes no control affordance.
+
+template:
+  - sensor:
+      # Plant incomer real-time power (kW) — the "Power" KPI on the overview
+      # and wallboard KPI strips. Placeholder mapped to the main meter / CT
+      # clamp at commissioning; "unavailable" until the raw source is wired.
+      - name: "Plant power now"
+        unique_id: plant_power_now
+        unit_of_measurement: kW
+        device_class: power
+        state_class: measurement
+        icon: mdi:transmission-tower
+        availability: >-
+          {{ has_value('sensor.plant_incomer_power_raw') }}
+        state: >-
+          {{ states('sensor.plant_incomer_power_raw') | float(0) | round(1) }}
+
+      # Worked per-line example — copy this block per production line (line2_,
+      # line3_, …) or per machine, repointing the source CT clamp. Same shape
+      # as the incomer: a read-only passthrough that stays "unavailable" until
+      # the clamp is mapped.
+      - name: "Line 1 power"
+        unique_id: line1_power
+        unit_of_measurement: kW
+        device_class: power
+        state_class: measurement
+        icon: mdi:flash
+        availability: >-
+          {{ has_value('sensor.line1_power_raw') }}
+        state: >-
+          {{ states('sensor.line1_power_raw') | float(0) | round(1) }}
+
+# Energy rollups (kWh) for Core's native Energy dashboard (docs/UI_DESIGN.md
+# §6). utility_meter tracks a cumulative energy source and exposes the
+# consumption per cycle; add it under Settings → Dashboards → Energy as the
+# grid/line consumption. Repeat the pair (shift + daily) per metered source.
+utility_meter:
+  # --- Plant incomer ------------------------------------------------------
+  plant_energy_shift:
+    name: Plant energy this shift
+    source: sensor.plant_incomer_energy
+    # Anchor to the start of the morning shift; add `tariffs:` or extra meters
+    # to model multi-shift patterns at commissioning.
+    cycle: daily
+    offset:
+      hours: 6
+  plant_energy_daily:
+    name: Plant energy today
+    source: sensor.plant_incomer_energy
+    cycle: daily
+
+  # --- Line 1 (copy per line / per machine) -------------------------------
+  line1_energy_shift:
+    name: Line 1 energy this shift
+    source: sensor.line1_energy
+    cycle: daily
+    offset:
+      hours: 6
+  line1_energy_daily:
+    name: Line 1 energy today
+    source: sensor.line1_energy
+    cycle: daily

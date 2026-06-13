@@ -73,13 +73,21 @@ root of the system and the place where the appliance image is built.
 
 ## Validation before committing
 
-There is no compiled code here yet. Minimum checks:
+There is no compiled OS code here, but the overlay templates, the update
+channel document, and the docs are validated without a full build:
 
 ```sh
-bash -n scripts/*.sh                 # shell syntax
-shellcheck scripts/*.sh || true      # if installed
-git status --short                   # no upstream/ or artifacts staged
+make lint            # scripts (bash -n + shellcheck), YAML parse + yamllint,
+                     # channel JSON + schema, Markdown cross-links
+git status --short   # no upstream/ or artifacts staged
 ```
+
+`make lint` runs `scripts/lint.sh`; it degrades gracefully when optional tools
+(`shellcheck`, `yamllint`, `check-jsonschema`) are absent locally and runs them
+strictly in CI (`.github/workflows/lint.yml`). Lint config lives in
+`.shellcheckrc` and `.yamllint`. The same checks run on every push/PR, so keep
+the tree green — a renamed doc with a dangling cross-link or a malformed
+template fails the lint, not just review.
 
 ## Things you must not do
 

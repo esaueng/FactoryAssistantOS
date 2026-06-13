@@ -52,6 +52,7 @@ release (CI or local host) is in [`RELEASE.md`](RELEASE.md).
 | `AGENTS.md` | Working rules for human and AI contributors |
 | `RELEASE.md` | Runbook for cutting a flashable release image (CI or local host) |
 | `.github/workflows/build-os-image.yml` | CI pipeline that builds the x86-64 image and publishes a Release |
+| `.github/workflows/lint.yml` | Fast CI: validates scripts, overlay YAML, channel JSON/schema, doc links (`make lint`) |
 | `docs/ARCHITECTURE.md` | Full stack: OS layer, Supervisor, Core, frontend, add-ons, updates, first boot |
 | `docs/UI_DESIGN.md` | Factory/manufacturing UI design: personas, machine tiles, screens, tokens, wallboard mode |
 | `docs/OS_BUILD.md` | How to build, flash, and boot the x86-64 image; fork strategy |
@@ -62,8 +63,8 @@ release (CI or local host) is in [`RELEASE.md`](RELEASE.md).
 | `buildroot-external/` | Factory Assistant delta files overlaid onto the upstream Buildroot external tree |
 | `branding/identity.env` | Single source of truth for product identity values |
 | `upstream.env` | Pinned upstream repositories and tags |
-| `scripts/` | `bootstrap.sh`, `apply-overlay.sh`, `build.sh` |
-| `version-service/` | Update-channel JSON format for the Factory Assistant update mechanism |
+| `scripts/` | `bootstrap.sh`, `apply-overlay.sh`, `build.sh`, `lint.sh` (+ `lint_yaml.py`, `lint_links.py`) |
+| `version-service/` | Update-channel JSON: example, `schema/channel.schema.json`, and `generate-channel.sh` |
 
 ## Scope (first target)
 

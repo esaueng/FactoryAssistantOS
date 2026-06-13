@@ -35,6 +35,9 @@ in prose (repo slugs excepted); never abbreviate to "FA" in user-facing UI.
 | Update/version host | `version.factory-assistant.example` | `.example` until a real domain is secured |
 | Internal symbols | **unchanged from upstream** (`HASSOS_*`, `hassio`, D-Bus names, API paths) | AGENTS.md invariant 4 — branding is user-visible only |
 
+Before any real release/OTA, replace every `REPLACE-ORG` / `.example`
+placeholder; the four-item go-live checklist lives in `branding/identity.env`.
+
 Versioning: FA OS tracks upstream MAJOR.MINOR (`docs/OS_BUILD.md` §6); Core/
 Supervisor forks keep upstream version numbers with the FA registry namespace.
 
@@ -53,7 +56,9 @@ Supervisor forks keep upstream version numbers with the FA registry namespace.
   page art, boot console text (no splash needed for v1), About-dialog logo,
   documentation header.
 - All assets live in a `factory-assistant/brands`-equivalent directory in the
-  frontend fork, Apache-2.0 like the code, with provenance recorded.
+  frontend fork, Apache-2.0 like the code, with provenance recorded. The
+  authoritative asset spec (inventory, sizes, the original-artwork mandate, and
+  the state-color disclaimer) is [`branding/assets/README.md`](../branding/assets/README.md).
 
 ## 4. Where branding lives, per repo (string inventory plan)
 

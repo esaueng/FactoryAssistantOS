@@ -63,10 +63,14 @@ cat <<'EOF'
 >>> Overlay applied.
 
     NOT covered yet (Phase 2 — see docs/OS_BUILD.md §Rebrand checklist):
-      - Supervisor/Core container registry + update channel URL
+      - Supervisor/Core container registry + update channel URL (Supervisor fork)
       - RAUC signing keys/keyring (REQUIRED before shipping OTA updates)
-      - Landing page, CLI banner, bootloader menu title
+      - Landing page + containerized CLI-plugin banner (landingpage/plugin-cli forks)
       - os-release ID compatibility check against the unmodified Supervisor
+
+    Host console banner IS rebranded here (rootfs-overlay etc/issue + etc/motd).
+    The generic-x86-64 GRUB config carries no product branding (functional A/B
+    slot menu) — nothing to rebrand there; see docs/OS_BUILD.md §4.
 
     Next: scripts/build.sh  (or: cd upstream/operating-system && scripts/enter.sh make generic_x86_64)
 EOF

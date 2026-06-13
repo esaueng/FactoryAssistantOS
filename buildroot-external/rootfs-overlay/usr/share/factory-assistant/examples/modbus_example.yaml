@@ -1,0 +1,137 @@
+# Factory Assistant — Modbus TCP example (READ-ONLY).
+#
+# Polling examples for PLC *gateways* and energy meters over Modbus TCP. This
+# expands the commented Modbus block in ../configuration.yaml (the "Modbus TCP
+# (PLC gateways, energy meters) — READ-ONLY" section) into a couple of worked
+# devices you copy and adapt at commissioning.
+#
+# SAFETY — WRITES ARE PROHIBITED (docs/SAFETY_BOUNDARY.md §2, §4):
+#   Factory Assistant is a monitoring appliance, not a safety or control
+#   device. Writing to PLC registers is forbidden by the project safety
+#   boundary and rejected at review (docs/SAFETY_BOUNDARY.md §2 "Writing to
+#   PLC registers … in v1", §4 "Modbus examples use read calls only").
+#   Therefore this file uses READS ONLY:
+#     * sensors poll input/holding registers — Modbus function codes 4 and 3;
+#     * NO switch / climate / fan / cover platforms, NO `write_*` options, and
+#       NEVER function codes 5/6/15/16 (write single/multiple coil/register).
+#   Poll PLC *gateways* and meters, not safety controllers, and only over a
+#   non-safety data interface on a monitoring VLAN (docs/SAFETY_BOUNDARY.md §5).
+#   Do not add any write/control path here; that is a P4 roadmap gate, not an
+#   edit (docs/SAFETY_BOUNDARY.md §6).
+#
+# OPC UA is NOT handled here: OPC UA servers are integrated read-only through
+# the planned OPC UA bridge add-on, which subscribes to a curated node set and
+# republishes on the `fa/...` MQTT convention (docs/ARCHITECTURE.md, see
+# ../configuration.yaml "OPC UA" section).
+#
+# Conventions (docs/INDUSTRIAL_DEFAULTS.md §3 Protocol guidance):
+#   * reads only — function codes 3 (holding) / 4 (input); never writes;
+#   * register addresses are 0-based; map per machine in the site repo;
+#   * scan intervals >= 1 s unless a faster rate is justified;
+#   * sensible device_class / unit_of_measurement / state_class so history and
+#     the dashboards render correctly;
+#   * entity naming follows <area>_<machine>_<measurement>
+#     (docs/INDUSTRIAL_DEFAULTS.md §2).
+#
+# Hosts below use the TEST-NET-1 documentation range 192.0.2.0/24 (RFC 5737) —
+# replace with the real gateway/meter addresses at commissioning. Set `slave`
+# (unit id) to match each device.
+#
+# To use: merge into ../configuration.yaml (or a package). Until the config
+# tree is seeded into /config (docs/INDUSTRIAL_DEFAULTS.md §4) this is a
+# template you copy manually.
+
+modbus:
+  # --- Line 1 press PLC, reached via a Modbus TCP gateway ---------------------
+  # Status/telemetry registers exposed by the standard (non-safety) PLC program.
+  - name: plc_line1
+    type: tcp
+    host: 192.0.2.10          # documentation address (RFC 5737) — replace
+    port: 502
+    delay: 1                  # let the gateway settle before first poll
+    timeout: 5
+    sensors:
+      # Process temperature from an input register (FC 4), scaled tenths -> °C.
+      - name: line1_press03_motor_temp
+        slave: 1
+        address: 0
+        input_type: input
+        data_type: int16
+        scale: 0.1
+        precision: 1
+        scan_interval: 5
+        unit_of_measurement: "°C"
+        device_class: temperature
+        state_class: measurement
+
+      # Hydraulic pressure from a holding register (FC 3), in bar.
+      - name: line1_press03_hyd_pressure
+        slave: 1
+        address: 10
+        input_type: holding
+        data_type: int16
+        scale: 0.1
+        precision: 1
+        scan_interval: 5
+        unit_of_measurement: "bar"
+        device_class: pressure
+        state_class: measurement
+
+      # Shift part counter — 32-bit total across two holding registers (FC 3).
+      - name: line1_press03_total_count
+        slave: 1
+        address: 20
+        input_type: holding
+        data_type: uint32
+        count: 2
+        scan_interval: 10
+        state_class: total_increasing
+
+  # --- Incomer energy meter (Modbus TCP) -------------------------------------
+  # Power-quality meter on the main incomer; drives the energy views and the
+  # overview "power now" KPI. Reads only — input registers (FC 4).
+  - name: meter_incomer
+    type: tcp
+    host: 192.0.2.20          # documentation address (RFC 5737) — replace
+    port: 502
+    delay: 1
+    timeout: 5
+    sensors:
+      # Active power, 32-bit float in kW.
+      - name: plant_incomer_active_power
+        slave: 1
+        address: 0
+        input_type: input
+        data_type: float32
+        count: 2
+        precision: 2
+        scan_interval: 5
+        unit_of_measurement: "kW"
+        device_class: power
+        state_class: measurement
+
+      # Imported active energy, 32-bit float in kWh (monotonic meter total).
+      - name: plant_incomer_energy
+        slave: 1
+        address: 12
+        input_type: input
+        data_type: float32
+        count: 2
+        precision: 1
+        scan_interval: 30
+        unit_of_measurement: "kWh"
+        device_class: energy
+        state_class: total_increasing
+
+      # Line voltage L1-N, 16-bit in volts.
+      - name: plant_incomer_voltage_l1
+        slave: 1
+        address: 20
+        input_type: input
+        data_type: uint16
+        scale: 0.1
+        precision: 1
+        scan_interval: 10
+        unit_of_measurement: "V"
+        device_class: voltage
+        state_class: measurement

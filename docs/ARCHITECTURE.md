@@ -182,6 +182,12 @@ Initial set, in priority order:
 5. **Historian (InfluxDB or TimescaleDB)** (planned) — long-term telemetry.
 6. **ESPHome dashboard** (upstream add-on) — retrofit sensor fleet management.
 
+The OS image ships an industrial add-on catalog at
+`/usr/share/factory-assistant/addons/industrial_addons.catalog.yaml`. It is a
+contract for the separate `addons-industrial` repository, not executable add-on
+code: OPC UA, PLC gateway helper, and historian entries are local-first,
+monitoring-only, and explicitly disallow machine control or safety functions.
+
 ## 9. First boot and onboarding
 
 1. Flash image → boot: system expands the data partition on first start.
@@ -216,5 +222,5 @@ Initial set, in priority order:
 | P0 | This repo: architecture, build path, licensing, branding, safety boundary | complete |
 | P1 | Verified x86-64 image build via overlay; boots to onboarding on real hardware/VM | complete for generic x86-64 17.3 release |
 | P2 | True forks, FA registry, version service, branded landingpage, RAUC keys, CI release pipeline | partial: registry/channel/release wiring and branded landingpage image exist; trusted OTA requires real external RAUC keys/secrets and final release verification |
-| P3 | Industrial onboarding, config seeding, OPC UA bridge add-on, frontend fork implementing the factory UI (`docs/UI_DESIGN.md`) | partial: seed config, Plant overview default dashboard, examples, site/line/cell onboarding scaffold, wallboard, theme, OS-level network/time posture helper, and local-first Core defaults exist; cloud/analytics defaults are off in the shipped template; add-ons/frontend fork remain |
+| P3 | Industrial onboarding, config seeding, OPC UA bridge add-on, frontend fork implementing the factory UI (`docs/UI_DESIGN.md`) | partial: seed config, Plant overview default dashboard, examples, site/line/cell onboarding scaffold, industrial add-on catalog, wallboard, theme, OS-level network/time posture helper, and local-first Core defaults exist; cloud/analytics defaults are off in the shipped template; add-ons/frontend fork remain |
 | P4 | Limited **non-safety** machine control behind an explicit gate (see `docs/SAFETY_BOUNDARY.md` §Control roadmap gate) | gated |

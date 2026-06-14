@@ -34,8 +34,10 @@ verification are configured.
 P3 industrial product experience is partial. The OS image ships industrial
 defaults, a Plant overview dashboard, andon/wallboard templates, network/NTP
 posture handoffs, onboarding contracts, and industrial add-on catalog
-contracts; the frontend/Core/Supervisor fork work still needs to complete the
-native industrial onboarding and default factory UI experience.
+contracts. The frontend fork has the visible product rebrand, About panel
+contract, branded landing/onboarding links, and local-first onboarding bridge;
+the frontend/Core/Supervisor fork work still needs to complete the native
+industrial onboarding wizard and native factory UI experience.
 
 ## Quick start (build an x86-64 image)
 

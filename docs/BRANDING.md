@@ -89,7 +89,8 @@ Supervisor forks keep upstream version numbers with the FA registry namespace.
 | Landing page text/art | this repo (`landingpage/` image context) | done |
 | CLI banner/MOTD | this repo (`plugin-cli/` image context) | done |
 | Plant overview default dashboard | this repo (`configuration.yaml` + `dashboards/factory-overview.yaml`) | done |
-| UI product name, logo, About dialog, native cards, kiosk toggle, onboarding wording | `frontend` fork | P3 |
+| UI product name, logo, About dialog, and local-first onboarding bridge | `frontend` fork | visible bridge done in fork |
+| Native cards, kiosk toggle, full industrial onboarding wizard | `frontend` fork | P3 |
 | Supervisor product strings/log prefixes | `supervisor` fork | P2 |
 | Core: keep delta near zero; visible naming comes from the frontend | `core` fork | P3 |
 
@@ -103,8 +104,8 @@ upstream attribution and known upstream-branded UI hooks.
 ## 5. Attribution placement
 
 The canonical sentence (plus non-affiliation where space allows) appears in:
-`README.md`, `NOTICE`, the console `/etc/issue`, the frontend About dialog
-(P3), and release notes. It is not decorated, reworded into endorsement, or
+`README.md`, `NOTICE`, the console `/etc/issue`, the frontend fork's About
+dialog, and release notes. It is not decorated, reworded into endorsement, or
 accompanied by upstream logos.
 
 ## 6. Compatibility notes (not branding, but adjacent)

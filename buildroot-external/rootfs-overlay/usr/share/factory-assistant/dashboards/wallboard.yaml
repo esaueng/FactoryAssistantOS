@@ -3,9 +3,9 @@
 # Design spec: docs/UI_DESIGN.md §6 (screen inventory) and §7 (wallboard /
 # kiosk mode). A dedicated, view-only board for an unattended HDMI/panel-PC
 # display viewed at 3–8 m: plant + per-line status and active alerts, no
-# interaction. Built from stock cards so it runs on an unmodified Core; the
-# frontend fork now ships the native factory-wallboard-kiosk wrapper for type
-# ×1.6, hidden chrome, and view-only interaction blocking.
+# interaction. The frontend fork ships the native
+# custom:factory-wallboard-kiosk wrapper for type ×1.6, hidden chrome, and
+# view-only interaction blocking.
 #
 # DEPLOY:
 #   1. Dedicate a NON-ADMIN, view-only user for the display (UI_DESIGN §7).
@@ -14,8 +14,8 @@
 #      Chromium:  --kiosk --noerrdialogs --disable-pinch
 #                 --autoplay-policy=no-user-gesture-required
 #   3. The factory-assistant dark theme renders regardless of profile
-#      (UI_DESIGN §7). The stock dashboard remains the shipped fallback until
-#      dashboard wiring promotes custom:factory-wallboard-kiosk by default.
+#      (UI_DESIGN §7). custom:factory-wallboard-kiosk is wired below so the
+#      native frontend can apply kiosk chrome and interaction rules.
 #
 # COMMISSIONING: entity IDs are EXAMPLES following docs/INDUSTRIAL_DEFAULTS.md
 # §2 (sensor.<area>_<machine>_<measurement>). They render "entity not found"
@@ -36,6 +36,18 @@ views:
     max_columns: 4
     cards: []
     sections:
+      # Native kiosk wrapper. The rest of this dashboard remains explicit so
+      # commissioning can still inspect and adapt every entity binding.
+      - type: grid
+        title: Kiosk shell
+        cards:
+          - type: custom:factory-wallboard-kiosk
+            hide_sidebar: true
+            hide_header: true
+            interaction: view_only
+            type_scale: 1.6
+            auto_cycle_optional: true
+
       # KPI strip — the four numbers a passing line lead reads in one glance.
       - type: grid
         title: Plant

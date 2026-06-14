@@ -104,9 +104,8 @@ visually, because unknown must never look like OK.
 ## 5. The machine tile (core UI unit)
 
 Everything aggregates from one tile grammar. The frontend fork now ships the
-read-only `fa-machine-card`; the stock Lovelace templates still approximate
-it until the image consumes that forked frontend and the dashboard templates
-switch to `type: custom:fa-machine-card`:
+read-only `fa-machine-card`, and dashboard wiring is implemented in the
+shipped YAML templates with `type: custom:fa-machine-card`:
 
 ```
 ┌──────────────────────────────┐
@@ -176,9 +175,8 @@ Open source licenses link to the per-release `legal-info` bundle.
 - Frontend fork implements the native `factory-wallboard-kiosk`: hides
   sidebar/header chrome, scales type ×1.6 (KPI numerals ≥ 64 px), disables
   dashboard interaction, and leaves optional view auto-cycling as a contract
-  flag. The shipped YAML still provides a dedicated wallboard dashboard view
-  that can be opened directly by kiosk browsers until dashboard wiring promotes
-  the native card by default.
+  flag. The shipped YAML includes `custom:factory-wallboard-kiosk` so kiosk
+  chrome and interaction rules are applied by the native frontend.
 - Wallboards render the `factory-assistant` dark theme regardless of profile.
 
 ## 8. Design tokens (implemented in the shipped theme)
@@ -210,8 +208,8 @@ wallboard scale ×1.6.
 |---|---|---|
 | `factory-assistant` theme (dark+light) | `themes/factory-assistant.yaml` template in the image | **now** |
 | "Plant overview" dashboard (views: Overview, Line, Alerts, OEE, Energy, Maintenance) | `dashboards/factory-overview.yaml` template + `configuration.yaml` wiring | default landing now (adapted at commissioning) |
-| Andon board (severity sections + ack indicators, stock-card approximation) | `dashboards/andon.yaml` + `packages/andon_example.yaml` (ack helpers) | **now** |
-| Wallboard / kiosk board (full-screen status, view-only, browser kiosk flags) | `dashboards/wallboard.yaml` | **now** (stock dashboard; native kiosk component implemented in fork) |
+| Andon board (native severity grouping + ack bookkeeping indicators) | `dashboards/andon.yaml` + `packages/andon_example.yaml` (ack helpers) with `custom:fa-andon-view` | **now** |
+| Wallboard / kiosk board (full-screen status, hidden chrome, view-only interaction) | `dashboards/wallboard.yaml` with `custom:factory-wallboard-kiosk` | **now** |
 | OEE (availability×performance×quality) + maintenance reminders | `packages/oee_example.yaml`, `packages/maintenance_example.yaml` (per-machine templates) | **now** |
 | KPI template sensors | commented examples in `configuration.yaml` template | **now** |
 | Landing page restyled to tokens | `landingpage/` image context | **now** |
@@ -220,11 +218,13 @@ wallboard scale ×1.6.
 | Native read-only `fa-andon-view` with severity grouping, ack bookkeeping status, and detail-only alert rows | `frontend` fork consuming the shipped `ui/frontend_contract.yaml` and `dashboards/andon.yaml` contract | implemented in fork |
 | Native read-only `factory-wallboard-kiosk` with hidden chrome, ×1.6 wallboard type scale, and view-only dashboard interaction blocking | `frontend` fork consuming the shipped `ui/frontend_contract.yaml` kiosk contract and `dashboards/wallboard.yaml` source dashboard | implemented in fork |
 | Native plant navigation: Plant overview first, Energy/History/Logbook priority, Map/Media/To-do hidden by default with user opt-in | `frontend` fork consuming the shipped `ui/frontend_contract.yaml` navigation contract | implemented in fork |
-| Terminology pass ("Home"→"Plant overview", areas as lines/cells), dashboard wiring, full industrial onboarding wizard | `frontend` fork consuming the shipped `ui/frontend_contract.yaml` and `onboarding/wizard_steps.yaml` contracts | P3 |
+| Dashboard wiring using `custom:fa-machine-card`, `custom:fa-andon-view`, and `custom:factory-wallboard-kiosk` | shipped YAML templates consuming the frontend fork custom cards | **now** |
+| Terminology pass ("Home"→"Plant overview", areas as lines/cells) and full industrial onboarding wizard | `frontend` fork consuming the shipped `ui/frontend_contract.yaml` and `onboarding/wizard_steps.yaml` contracts | P3 |
 | Auto-generated area dashboards from the line/cell taxonomy | frontend fork consuming the shipped `onboarding/site_model.example.yaml` line/cell taxonomy scaffold | P3 |
 
-Templates are deliberately stock-Lovelace (glance/entities/gauge/history
-cards) so they work on an unmodified Core today and degrade gracefully.
+Templates keep stock Lovelace cards where they are still the right primitive,
+but dashboard wiring is implemented for the native machine, andon, and
+wallboard components.
 
 ## 10. Safety boundary in the UI (normative)
 

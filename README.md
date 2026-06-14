@@ -39,7 +39,8 @@ contract, branded landing/onboarding links, local-first onboarding bridge,
 native plant navigation, native read-only `fa-machine-card`, native read-only
 `fa-andon-view`, and native read-only `factory-wallboard-kiosk`; the
 frontend/Core/Supervisor fork work still needs to complete the native
-industrial onboarding wizard and dashboard wiring experience.
+industrial onboarding wizard, area dashboard generation, and terminology
+polish. Native dashboard wiring is implemented in the shipped YAML templates.
 
 ## Quick start (build an x86-64 image)
 

@@ -79,9 +79,12 @@ if grep -q 'frontend branding/onboarding' "$release_doc"; then
     fail "release runbook still says broad frontend branding/onboarding is unresolved"
 fi
 case "$release_text" in
-    *"dashboard wiring and industrial onboarding wizard integration"*) ;;
+    *"full industrial onboarding wizard integration"*) ;;
     *) fail "release runbook does not name the remaining native frontend P3 work";;
 esac
+if grep -Eq 'dashboard wiring.*remain|dashboard wiring and industrial onboarding wizard integration' "$release_doc"; then
+    fail "release runbook still lists dashboard wiring as remaining P3 work"
+fi
 if grep -q 'native navigation components' "$release_doc"; then
     fail "release runbook still lists native navigation as remaining P3 work"
 fi

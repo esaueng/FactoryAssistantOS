@@ -92,7 +92,8 @@ Supervisor forks keep upstream version numbers with the FA registry namespace.
 | UI product name, logo, About dialog, and local-first onboarding bridge | `frontend` fork | visible bridge done in fork |
 | Native machine, andon, and wallboard kiosk components | `frontend` fork | implemented in fork |
 | Native plant navigation | `frontend` fork | implemented in fork |
-| Dashboard wiring and full industrial onboarding wizard | `frontend` fork | P3 |
+| Dashboard wiring for native machine, andon, and wallboard cards | this repo + `frontend` fork | done |
+| Full industrial onboarding wizard | `frontend` fork | P3 |
 | Supervisor product strings/log prefixes | `supervisor` fork | P2 |
 | Core: keep delta near zero; visible naming comes from the frontend | `core` fork | P3 |
 

@@ -1,8 +1,8 @@
 # Factory Assistant — "Plant overview" dashboard template.
 #
-# Design spec: docs/UI_DESIGN.md (§6 screen inventory). This template uses
-# only stock cards so it runs on an unmodified Core; the frontend fork later
-# replaces the glance approximations with the fa-machine-card tile.
+# Design spec: docs/UI_DESIGN.md (§6 screen inventory). The frontend fork
+# ships custom:fa-machine-card and custom:fa-andon-view; this template wires
+# those native read-only cards by default for the factory UI.
 #
 # COMMISSIONING: entity IDs below are EXAMPLES following the naming
 # convention in docs/INDUSTRIAL_DEFAULTS.md §2 (sensor.<area>_<machine>_
@@ -31,50 +31,80 @@ views:
             name: Output
           - entity: sensor.plant_power_now
             name: Power
-      - type: glance
-        title: Line 1
-        columns: 4
-        show_state: true
-        state_color: true
-        entities:
-          - entity: binary_sensor.line1_press01_running
-            name: Press 01
-          - entity: binary_sensor.line1_press03_running
-            name: Press 03
-          - entity: binary_sensor.line1_weld02_running
-            name: Weld 02
-          - entity: binary_sensor.line1_pack01_running
-            name: Pack 01
-      - type: glance
-        title: Line 2
-        columns: 4
-        show_state: true
-        state_color: true
-        entities:
-          - entity: binary_sensor.line2_extr01_running
-            name: Extruder 01
-          - entity: binary_sensor.line2_extr02_running
-            name: Extruder 02
-          - entity: binary_sensor.line2_wind01_running
-            name: Winder 01
+      - type: custom:fa-machine-card
+        title: Press 01
+        line: Line 1
+        cell: Stamping
+        machine: Press 01
+        status_entity: binary_sensor.line1_press01_running
+        tap_action: detail_only
+        control_affordances_allowed: false
+      - type: custom:fa-machine-card
+        title: Press 03
+        line: Line 1
+        cell: Stamping
+        machine: Press 03
+        status_entity: binary_sensor.line1_press03_running
+        oee_entity: sensor.line1_press03_oee
+        maintenance_entity: binary_sensor.line1_press03_service_due
+        tap_action: detail_only
+        control_affordances_allowed: false
+      - type: custom:fa-machine-card
+        title: Weld 02
+        line: Line 1
+        cell: Weld
+        machine: Weld 02
+        status_entity: binary_sensor.line1_weld02_running
+        tap_action: detail_only
+        control_affordances_allowed: false
+      - type: custom:fa-machine-card
+        title: Pack 01
+        line: Line 1
+        cell: Packaging
+        machine: Pack 01
+        status_entity: binary_sensor.line1_pack01_running
+        tap_action: detail_only
+        control_affordances_allowed: false
+      - type: custom:fa-machine-card
+        title: Extruder 01
+        line: Line 2
+        cell: Extrusion
+        machine: Extruder 01
+        status_entity: binary_sensor.line2_extr01_running
+        tap_action: detail_only
+        control_affordances_allowed: false
+      - type: custom:fa-machine-card
+        title: Extruder 02
+        line: Line 2
+        cell: Extrusion
+        machine: Extruder 02
+        status_entity: binary_sensor.line2_extr02_running
+        tap_action: detail_only
+        control_affordances_allowed: false
+      - type: custom:fa-machine-card
+        title: Winder 01
+        line: Line 2
+        cell: Winding
+        machine: Winder 01
+        status_entity: binary_sensor.line2_wind01_running
+        tap_action: detail_only
+        control_affordances_allowed: false
 
   # ── Line detail: one view per line; duplicate and adapt ──────────────────
   - title: Line 1
     path: line1
     icon: mdi:robot-industrial
     cards:
-      - type: entities
+      - type: custom:fa-machine-card
         title: Press 03
-        state_color: true
-        entities:
-          - entity: binary_sensor.line1_press03_running
-            name: Running
-          - entity: sensor.line1_press03_rate
-            name: Rate
-          - entity: sensor.line1_press03_motor_temp
-            name: Motor temperature
-          - entity: sensor.line1_press03_runtime_today
-            name: Runtime today
+        line: Line 1
+        cell: Stamping
+        machine: Press 03
+        status_entity: binary_sensor.line1_press03_running
+        oee_entity: sensor.line1_press03_oee
+        maintenance_entity: binary_sensor.line1_press03_service_due
+        tap_action: detail_only
+        control_affordances_allowed: false
       - type: gauge
         entity: sensor.line1_press03_motor_temp
         name: Press 03 motor temperature
@@ -98,14 +128,22 @@ views:
     path: alerts
     icon: mdi:alert
     cards:
-      - type: entities
+      - type: custom:fa-andon-view
         title: Active alerts
-        state_color: true
-        entities:
+        acknowledge_is_bookkeeping: true
+        safety_alarm_claim_allowed: false
+        alerts:
           - entity: binary_sensor.line1_press03_overtemp_alert
             name: "Press 03 — motor overtemperature"
+            severity: critical
+            ack_entity: input_boolean.line1_press03_overtemp_ack
           - entity: binary_sensor.line2_extr01_pressure_alert
             name: "Extruder 01 — barrel pressure high"
+            severity: warning
+            ack_entity: input_boolean.line2_extr01_pressure_ack
+          - entity: binary_sensor.line1_press03_service_due
+            name: "Press 03 — service hours reached"
+            severity: info
       - type: markdown
         content: >-
           **Factory Assistant is a monitoring tool, not a safety device.**

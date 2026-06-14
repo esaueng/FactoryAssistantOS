@@ -6,12 +6,11 @@
 # until its underlying condition clears — ack never implies a machine was made
 # safe (UI_DESIGN §10.3, docs/SAFETY_BOUNDARY.md).
 #
-# Built from stock cards so it runs on an unmodified Core. Stock Lovelace
-# cannot dynamically re-sort by severity-then-age; the frontend fork's native
-# fa-andon-view now handles that contract. Here, severity is expressed as fixed
-# sections and age/ack are shown per row. The acknowledge helpers and the
-# "auto-clear ack when the condition clears" automation are defined in
-# packages/andon_example.yaml — copy and adapt them per alert at commissioning.
+# The frontend fork's native custom:fa-andon-view handles the severity
+# grouping, acknowledge state, and read-only detail behavior. The acknowledge
+# helpers and the "auto-clear ack when the condition clears" automation are
+# defined in packages/andon_example.yaml — copy and adapt them per alert at
+# commissioning.
 #
 # DEPLOY as a dedicated alerts wallboard (UI_DESIGN §7):
 #   http://factory-assistant.local:8123/andon/board   (kiosk browser, view-only user)
@@ -31,50 +30,25 @@ views:
     max_columns: 3
     cards: []
     sections:
-      # ── Critical ─────────────────────────────────────────────────────────
-      # Production-stopping faults. Severity is an operator convention here,
-      # NOT an ISO 3864 / ANSI Z535 safety-color claim (UI_DESIGN §2.5).
       - type: grid
-        title: 🔴 Critical
+        title: Active alerts
         cards:
-          - type: entities
-            state_color: true
-            entities:
-              - type: section
-                label: Machine down / fault
+          - type: custom:fa-andon-view
+            title: Active alerts
+            acknowledge_is_bookkeeping: true
+            safety_alarm_claim_allowed: false
+            alerts:
               - entity: binary_sensor.line1_press03_overtemp_alert
                 name: "Press 03 — motor overtemperature"
-                secondary_info: last-changed
-              - entity: input_boolean.line1_press03_overtemp_ack
-                name: "  ↳ acknowledged"
-                icon: mdi:check-decagram
-
-      # ── Warning ──────────────────────────────────────────────────────────
-      # Degraded / approaching-limit; production continues.
-      - type: grid
-        title: 🟠 Warning
-        cards:
-          - type: entities
-            state_color: true
-            entities:
+                severity: critical
+                ack_entity: input_boolean.line1_press03_overtemp_ack
               - entity: binary_sensor.line2_extr01_pressure_alert
                 name: "Extruder 01 — barrel pressure high"
-                secondary_info: last-changed
-              - entity: input_boolean.line2_extr01_pressure_ack
-                name: "  ↳ acknowledged"
-                icon: mdi:check-decagram
-
-      # ── Info ─────────────────────────────────────────────────────────────
-      # Maintenance reminders and non-urgent notices.
-      - type: grid
-        title: 🔵 Info
-        cards:
-          - type: entities
-            state_color: true
-            entities:
+                severity: warning
+                ack_entity: input_boolean.line2_extr01_pressure_ack
               - entity: binary_sensor.line1_press03_service_due
                 name: "Press 03 — service hours reached"
-                secondary_info: last-changed
+                severity: info
 
       # ── Standing disclaimer (UI_DESIGN §10.5, mandatory on this view) ─────
       - type: grid

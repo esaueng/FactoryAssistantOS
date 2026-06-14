@@ -8,6 +8,7 @@ motd="$ROOT/buildroot-external/rootfs-overlay/etc/motd"
 identity="$ROOT/branding/identity.env"
 defconfig="$ROOT/buildroot-external/configs/factory-assistant.config"
 branding_doc="$ROOT/docs/BRANDING.md"
+asset_doc="$ROOT/branding/assets/README.md"
 tmp="$(mktemp -d)"
 trap 'rm -rf "$tmp"' EXIT
 
@@ -42,5 +43,16 @@ done
 
 grep -q 'scripts/verify-shipped-branding.sh' "$branding_doc" \
     || fail "branding docs do not document the shipped branding verifier"
+grep -q 'Master mark landed' "$asset_doc" \
+    || fail "brand asset README does not document the landed master mark"
+grep -q 'logo.svg' "$asset_doc" \
+    || fail "brand asset README does not document logo.svg provenance"
+grep -q 'icon.svg' "$asset_doc" \
+    || fail "brand asset README does not document icon.svg provenance"
+if grep -q 'specs only' "$asset_doc" \
+    || grep -q 'no artwork is created' "$asset_doc" \
+    || grep -q 'holds only this README' "$asset_doc"; then
+    fail "brand asset README still describes the landed SVG assets as absent"
+fi
 
 echo "ok  shipped user-facing branding is broadly audited"

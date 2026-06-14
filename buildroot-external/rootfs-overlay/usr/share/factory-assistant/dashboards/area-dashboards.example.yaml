@@ -3,63 +3,63 @@
 # scripts/generate-area-dashboards.py. Monitoring only; no control paths.
 title: Factory Assistant area dashboards
 views:
-- title: Line 1
-  path: line1
-  icon: mdi:factory
-  cards:
-  - type: custom:fa-machine-card
-    title: Press 03
-    line: Line 1
-    cell: Press cell
-    machine: Press 03
-    status_entity: binary_sensor.line1_press03_running
-    tap_action: detail_only
-    control_affordances_allowed: false
-  - type: custom:fa-andon-view
-    title: Line 1 alerts
-    acknowledge_is_bookkeeping: true
-    safety_alarm_claim_allowed: false
-    alerts:
-    - entity: binary_sensor.line1_press03_overtemp_alert
-      name: Press 03 alert
-      severity: warning
-  - type: history-graph
-    title: Line 1 telemetry - last 8 hours
-    hours_to_show: 8
-    entities:
-    - sensor.line1_press03_state
-    - sensor.line1_press03_rate
-    - sensor.line1_press03_motor_temp
-  - type: markdown
-    content: '**Factory Assistant is a monitoring tool, not a safety device.** Generated area
-      dashboards are read-only and provide no machine control affordances.'
-- title: Line 2
-  path: line2
-  icon: mdi:factory
-  cards:
-  - type: custom:fa-machine-card
-    title: Extruder 01
-    line: Line 2
-    cell: Extrusion cell
-    machine: Extruder 01
-    status_entity: binary_sensor.line2_extr01_running
-    tap_action: detail_only
-    control_affordances_allowed: false
-  - type: custom:fa-andon-view
-    title: Line 2 alerts
-    acknowledge_is_bookkeeping: true
-    safety_alarm_claim_allowed: false
-    alerts:
-    - entity: binary_sensor.line2_extr01_pressure_alert
-      name: Extruder 01 alert
-      severity: warning
-  - type: history-graph
-    title: Line 2 telemetry - last 8 hours
-    hours_to_show: 8
-    entities:
-    - sensor.line2_extr01_state
-    - sensor.line2_extr01_rate
-    - sensor.line2_extr01_pressure
-  - type: markdown
-    content: '**Factory Assistant is a monitoring tool, not a safety device.** Generated area
-      dashboards are read-only and provide no machine control affordances.'
+  - title: Line 1
+    path: line1
+    icon: mdi:factory
+    cards:
+      - type: custom:fa-machine-card
+        title: Press 03
+        line: Line 1
+        cell: Press cell
+        machine: Press 03
+        status_entity: binary_sensor.line1_press03_running
+        tap_action: detail_only
+        control_affordances_allowed: false
+      - type: custom:fa-andon-view
+        title: Line 1 alerts
+        acknowledge_is_bookkeeping: true
+        safety_alarm_claim_allowed: false
+        alerts:
+          - entity: binary_sensor.line1_press03_overtemp_alert
+            name: Press 03 alert
+            severity: warning
+      - type: history-graph
+        title: Line 1 telemetry - last 8 hours
+        hours_to_show: 8
+        entities:
+          - sensor.line1_press03_state
+          - sensor.line1_press03_rate
+          - sensor.line1_press03_motor_temp
+      - type: markdown
+        content: '**Factory Assistant is a monitoring tool, not a safety device.** Generated
+          area dashboards are read-only and provide no machine control affordances.'
+  - title: Line 2
+    path: line2
+    icon: mdi:factory
+    cards:
+      - type: custom:fa-machine-card
+        title: Extruder 01
+        line: Line 2
+        cell: Extrusion cell
+        machine: Extruder 01
+        status_entity: binary_sensor.line2_extr01_running
+        tap_action: detail_only
+        control_affordances_allowed: false
+      - type: custom:fa-andon-view
+        title: Line 2 alerts
+        acknowledge_is_bookkeeping: true
+        safety_alarm_claim_allowed: false
+        alerts:
+          - entity: binary_sensor.line2_extr01_pressure_alert
+            name: Extruder 01 alert
+            severity: warning
+      - type: history-graph
+        title: Line 2 telemetry - last 8 hours
+        hours_to_show: 8
+        entities:
+          - sensor.line2_extr01_state
+          - sensor.line2_extr01_rate
+          - sensor.line2_extr01_pressure
+      - type: markdown
+        content: '**Factory Assistant is a monitoring tool, not a safety device.** Generated
+          area dashboards are read-only and provide no machine control affordances.'

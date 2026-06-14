@@ -74,6 +74,11 @@ lovelace:
   # the first UI landing surface the factory dashboard instead of the upstream
   # home/areas dashboard. Site engineers can later move back to UI-managed
   # dashboards deliberately from Settings -> Dashboards.
+  # Area dashboards can be generated from onboarding/site_model.example.yaml
+  # with the build repo's area dashboard generator. The checked-in reference
+  # output is dashboards/area-dashboards.example.yaml; copy it to a site
+  # dashboard path and register it below after commissioning the real line/cell
+  # taxonomy.
   mode: yaml
   filename: dashboards/factory-overview.yaml
   dashboards:
@@ -93,11 +98,6 @@ lovelace:
       icon: mdi:monitor-dashboard
       show_in_sidebar: false
       filename: dashboards/wallboard.yaml
-    # Area dashboards can be generated from onboarding/site_model.example.yaml
-    # with the build repo's area dashboard generator. The checked-in reference
-    # output is dashboards/area-dashboards.example.yaml; copy it to a site
-    # dashboard path and register it here after commissioning the real line/cell
-    # taxonomy.
 
 # --- Plant KPI sensors (drive the overview dashboard's "Shift status") ------
 # Defined as a ready-to-adapt package in packages/kpi_example.yaml (loaded via

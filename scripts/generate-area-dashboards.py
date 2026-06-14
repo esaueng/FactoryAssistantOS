@@ -10,6 +10,13 @@ from typing import Any
 import yaml
 
 
+class IndentedDumper(yaml.SafeDumper):
+    """Emit block sequences indented enough for strict yamllint."""
+
+    def increase_indent(self, flow: bool = False, indentless: bool = False) -> None:
+        return super().increase_indent(flow, False)
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description=(
@@ -152,8 +159,9 @@ def build_dashboard(model: dict[str, Any]) -> dict[str, Any]:
 
 def write_dashboard(path: Path, dashboard: dict[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    yaml_text = yaml.safe_dump(
+    yaml_text = yaml.dump(
         dashboard,
+        Dumper=IndentedDumper,
         allow_unicode=False,
         sort_keys=False,
         width=88,

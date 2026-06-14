@@ -27,6 +27,10 @@ trap 'rm -rf "$tmp"' EXIT
 PYTHONPYCACHEPREFIX="$tmp/pycache" python3 -m py_compile "$generator"
 python3 "$generator" --site-model "$model" --output "$tmp/area-dashboards.yaml"
 
+if grep -Eq '^- ' "$tmp/area-dashboards.yaml"; then
+    fail "generated dashboard uses yamllint-hostile top-level list indentation"
+fi
+
 cmp -s "$tmp/area-dashboards.yaml" "$example" \
     || fail "checked-in area dashboard example is not generated from site_model.example.yaml"
 

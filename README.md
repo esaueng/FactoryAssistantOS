@@ -39,10 +39,12 @@ contract, branded landing/onboarding links, local-first onboarding bridge,
 native plant navigation, native read-only `fa-machine-card`, native read-only
 `fa-andon-view`, and native read-only `factory-wallboard-kiosk`; the
 frontend/Core/Supervisor fork work still needs to complete the native
-industrial onboarding wizard integration and terminology polish. Native
-dashboard wiring is implemented in the shipped YAML templates, and the area
-dashboard generator now emits `area-dashboards.example.yaml` from the shipped
-line/cell model using `custom:fa-machine-card` and `custom:fa-andon-view`.
+industrial onboarding wizard integration. Native dashboard wiring is
+implemented in the shipped YAML templates, the area dashboard generator now
+emits `area-dashboards.example.yaml` from the shipped line/cell model using
+`custom:fa-machine-card` and `custom:fa-andon-view`, and the terminology
+contract keeps `Plant overview`, line or cell taxonomy, `Factory Assistant
+CLI`, and “Factory Assistant is based on Home Assistant.” aligned.
 
 ## Quick start (build an x86-64 image)
 

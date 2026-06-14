@@ -94,6 +94,7 @@ Supervisor forks keep upstream version numbers with the FA registry namespace.
 | Native plant navigation | `frontend` fork | implemented in fork |
 | Dashboard wiring for native machine, andon, and wallboard cards | this repo + `frontend` fork | done |
 | Area dashboard generator | this repo (`scripts/generate-area-dashboards.py` + `dashboards/area-dashboards.example.yaml`) | done |
+| Terminology contract (`Plant overview`, line/cell taxonomy, `Factory Assistant CLI`) | this repo (`ui/frontend_contract.yaml`) | done |
 | Full industrial onboarding wizard | `frontend` fork | P3 |
 | Supervisor product strings/log prefixes | `supervisor` fork | P2 |
 | Core: keep delta near zero; visible naming comes from the frontend | `core` fork | P3 |
@@ -104,6 +105,9 @@ another repo, or the ecosystem depends on it → keep upstream.
 Run `scripts/verify-shipped-branding.sh` before release work. It audits the
 shipped console, landing page, CLI, onboarding, and example text for canonical
 upstream attribution and known upstream-branded UI hooks.
+`ui/frontend_contract.yaml` is the terminology contract for
+frontend/Supervisor/CLI copy: `Plant overview`, line or cell taxonomy,
+`Factory Assistant CLI`, and “Factory Assistant is based on Home Assistant.”
 
 ## 5. Attribution placement
 

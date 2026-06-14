@@ -120,6 +120,7 @@ paths move between upstream releases).
 | Native plant navigation | `frontend` fork (`ha-sidebar`) | P3 implemented in fork |
 | Dashboard wiring for native machine, andon, and wallboard cards | this repo + `frontend` fork | A |
 | Area dashboard generator | `scripts/generate-area-dashboards.py` + `dashboards/area-dashboards.example.yaml` | A |
+| Terminology contract (`Plant overview`, line/cell taxonomy, Factory Assistant CLI) | `ui/frontend_contract.yaml` | A |
 | Full industrial onboarding wizard | `frontend` fork | P3 |
 
 **Component ownership preflight.** Before cutting a trusted tag, run

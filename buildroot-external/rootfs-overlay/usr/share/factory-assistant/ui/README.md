@@ -4,6 +4,11 @@
 frontend fork. It turns the UI design spec into a small contract for the
 native plant experience: default Plant overview route, trimmed navigation,
 `fa-machine-card`, andon view, `factory-wallboard-kiosk`, and the About panel.
+Its terminology contract keeps product labels aligned across frontend
+translations, onboarding copy, network handoffs, and CLI notes: `Plant
+overview` for the default landing view, site -> line or cell taxonomy for the
+factory model, and `Factory Assistant CLI` for the upstream-compatible `ha`
+command.
 
 The contract is deliberately monitoring-only. Machine tiles open detail views
 instead of controls, the wallboard is view-only, and the andon acknowledge flow

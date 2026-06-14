@@ -12,6 +12,10 @@ site guidance, `zeroconf` remains enabled for plant LAN discovery, and
 routes, static IP posture, and the Mosquitto offer. Onboarding, Supervisor,
 frontend, and CLI consumers should call `fa-network-posture --json` when they
 need stable check IDs instead of operator-facing text.
+The terminology contract keeps this network copy aligned with the rest of the
+product: use `Plant overview` for the default landing view, line or cell for
+factory areas, and `Factory Assistant CLI` for operator-facing notes. Factory
+Assistant is based on Home Assistant.
 
 The contract is monitoring-only. It must not create machine-control paths,
 claim safety-network placement, or change the upstream-compatible UI port 8123.

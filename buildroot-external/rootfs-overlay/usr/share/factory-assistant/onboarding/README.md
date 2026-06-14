@@ -28,6 +28,12 @@ The build repo's area dashboard generator consumes this scaffold and emits
 `custom:fa-machine-card`, `custom:fa-andon-view`, and telemetry history cards.
 The generated dashboards stay read-only and provide no machine-control path.
 
+The frontend terminology contract keeps onboarding labels plant-floor specific:
+`Plant overview` is the default landing view, the hierarchy is site -> line or
+cell -> station -> machine, and operator-facing CLI notes say `Factory Assistant
+CLI` even though the upstream-compatible command remains `ha`. Factory
+Assistant is based on Home Assistant.
+
 Required commissioning posture:
 
 - Factory Assistant is a monitoring tool, not a safety device.

@@ -181,7 +181,9 @@ Local build wiring:
   scripts/configure-rauc-signing.sh --keyring "$ca_crt" --cert "$signing_crt" --key "$signing_key"
 
 GitHub release secrets:
-  gh secret set FAOS_RAUC_KEYRING_PEM < "$ca_crt"
-  gh secret set FAOS_RAUC_CERT_PEM < "$signing_crt"
-  gh secret set FAOS_RAUC_KEY_PEM < "$signing_key"
+  scripts/configure-github-rauc-secrets.sh \\
+    --repo esaueng/FactoryAssistantOS \\
+    --keyring "$ca_crt" \\
+    --cert "$signing_crt" \\
+    --key "$signing_key"
 EOF

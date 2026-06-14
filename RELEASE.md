@@ -111,10 +111,18 @@ and complete onboarding. Full flashing/VM notes: `docs/OS_BUILD.md` §3.
       trusted RAUC secrets configured:
 
       ```sh
+      scripts/configure-github-rauc-secrets.sh \
+        --repo esaueng/FactoryAssistantOS \
+        --keyring /secure/faos-rauc/faos-rauc-ca.crt \
+        --cert /secure/faos-rauc/faos-rauc-signing.crt \
+        --key /secure/faos-rauc/faos-rauc-signing.key
+
       scripts/verify-github-rauc-secrets.sh --repo esaueng/FactoryAssistantOS
       ```
 
-      This checks secret names only (`FAOS_RAUC_KEYRING_PEM`,
+      The installer validates the external RAUC certificate/key relationship
+      and streams the three PEM values to GitHub without printing them. The
+      verifier checks secret names only (`FAOS_RAUC_KEYRING_PEM`,
       `FAOS_RAUC_CERT_PEM`, `FAOS_RAUC_KEY_PEM`); it does not read or print
       secret values.
 - [ ] Verify component fork ownership and exact channel image tags before

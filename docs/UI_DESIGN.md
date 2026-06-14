@@ -197,7 +197,7 @@ wallboard scale ×1.6.
 | Deliverable | Mechanism | Phase |
 |---|---|---|
 | `factory-assistant` theme (dark+light) | `themes/factory-assistant.yaml` template in the image | **now** |
-| "Plant overview" dashboard (views: Overview, Line, Alerts, OEE, Energy, Maintenance) | `dashboards/factory-overview.yaml` template + `configuration.yaml` wiring | **now** (adapted at commissioning) |
+| "Plant overview" dashboard (views: Overview, Line, Alerts, OEE, Energy, Maintenance) | `dashboards/factory-overview.yaml` template + `configuration.yaml` wiring | default landing now (adapted at commissioning) |
 | Andon board (severity sections + ack indicators, stock-card approximation) | `dashboards/andon.yaml` + `packages/andon_example.yaml` (ack helpers) | **now** |
 | Wallboard / kiosk board (full-screen status, view-only, browser kiosk flags) | `dashboards/wallboard.yaml` | **now** (interim until the P3 kiosk toggle) |
 | OEE (availability×performance×quality) + maintenance reminders | `packages/oee_example.yaml`, `packages/maintenance_example.yaml` (per-machine templates) | **now** |

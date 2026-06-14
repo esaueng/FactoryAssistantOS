@@ -1,0 +1,104 @@
+# Factory Assistant frontend experience contract.
+#
+# SPDX-License-Identifier: Apache-2.0
+# Copyright Factory Assistant contributors.
+#
+# This is a machine-readable handoff for the frontend fork. The OS image ships
+# stock Lovelace dashboards today; the fork consumes this contract to implement
+# native plant navigation, machine tiles, and kiosk/andon views without adding
+# control surfaces.
+contract:
+  id: factory_assistant_frontend_experience
+  version: 1
+  consumer: frontend
+  status: contract_for_frontend_fork
+
+branding:
+  product_name: Factory Assistant
+  home_assistant_as_brand: false
+  upstream_attribution: Factory Assistant is based on Home Assistant.
+
+default_experience:
+  default_route: /lovelace
+  default_dashboard: dashboards/factory-overview.yaml
+  andon_dashboard: dashboards/andon.yaml
+  wallboard_dashboard: dashboards/wallboard.yaml
+  theme: factory-assistant
+
+navigation:
+  primary_items:
+    - Plant overview
+    - Alerts
+    - Energy
+    - History
+    - Logbook
+    - Maintenance
+  hidden_by_default:
+    - Media
+    - Map
+    - To-do
+  settings_visibility: admin_only
+
+machine_card:
+  component: fa-machine-card
+  tap_action: detail_only
+  control_affordances_allowed: false
+  freshness_required: true
+  stale_after_intervals: 3
+  offline_after_intervals: 10
+  states:
+    running:
+      label: Running
+      icon: mdi:play-circle
+      color_token: --fa-state-running
+    idle:
+      label: Idle
+      icon: mdi:pause-circle
+      color_token: --fa-state-idle
+    blocked:
+      label: Blocked
+      icon: mdi:timer-sand
+      color_token: --fa-state-blocked
+    down:
+      label: Down
+      icon: mdi:alert-octagon
+      color_token: --fa-state-down
+    maintenance:
+      label: Maintenance
+      icon: mdi:wrench
+      color_token: --fa-state-maint
+    offline:
+      label: Offline
+      icon: mdi:lan-disconnect
+      color_token: --fa-state-offline
+
+kiosk_mode:
+  component: factory-wallboard-kiosk
+  source_dashboard: dashboards/wallboard.yaml
+  hide_sidebar: true
+  hide_header: true
+  type_scale: 1.6
+  interaction: view_only
+  auto_cycle_optional: true
+
+andon_view:
+  component: fa-andon-view
+  source_dashboard: dashboards/andon.yaml
+  acknowledge_is_bookkeeping: true
+  safety_alarm_claim_allowed: false
+  severities:
+    - info
+    - warning
+    - critical
+
+onboarding:
+  contract: onboarding/wizard_steps.yaml
+  site_model: onboarding/site_model.example.yaml
+  default_cloud_enabled: false
+  default_analytics_enabled: false
+
+safety:
+  monitoring_only: true
+  machine_control: false
+  control_surfaces_allowed: false
+  required_disclaimer: Factory Assistant is a monitoring tool, not a safety device. Dashboards and notifications must never be the sole means of detecting a hazardous condition.

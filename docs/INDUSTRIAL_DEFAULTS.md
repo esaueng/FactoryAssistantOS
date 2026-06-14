@@ -11,7 +11,8 @@ maintenance reminders, andon acknowledge), the read-only protocol examples
 (`examples/`: MQTT and Modbus, with `examples/README.md` as the naming/topic
 quick reference), and the onboarding scaffold (`onboarding/`:
 `site_model.example.yaml` and `wizard_steps.yaml`), plus the industrial add-on
-contract (`addons/industrial_addons.catalog.yaml`); the UI is specified in
+contract (`addons/industrial_addons.catalog.yaml`) and frontend handoff
+contract (`ui/frontend_contract.yaml`); the UI is specified in
 `docs/UI_DESIGN.md`.
 
 ## 1. Defaults table
@@ -62,6 +63,11 @@ wizard contract for the frontend/Supervisor forks. It replaces the
 home-centric setup path with safety acknowledgement, site identity, line/cell
 hierarchy, network posture, NTP, Mosquitto offer, cloud/analytics-off defaults,
 and the Plant overview/andon/wallboard default experience.
+
+The companion `ui/frontend_contract.yaml` is the native frontend handoff for
+the same default experience: trimmed plant navigation, `fa-machine-card`,
+native andon view, kiosk wallboard mode, and the monitoring-only UI safety
+rules that forbid control affordances.
 
 ## 3. Protocol guidance
 

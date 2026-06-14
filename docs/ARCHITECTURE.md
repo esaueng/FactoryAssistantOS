@@ -142,14 +142,15 @@ add-on; the recorder keeps a bounded local window
 The UI is designed for the plant floor, not the home — the full specification
 (personas, status-first principles, machine-state vocabulary and tile
 grammar, screen inventory, design tokens, wallboard/kiosk mode, and the
-no-control-affordances rule) lives in **`docs/UI_DESIGN.md`**. Shipping
-today inside the OS image: the `factory-assistant` theme (dark default) and
-the "Plant overview" dashboard template under `/usr/share/factory-assistant/`,
-built from stock cards so they run on an unmodified Core. The deeper changes
-— `fa-machine-card` tile, trimmed navigation, andon board, kiosk toggle,
-industrial terminology and onboarding — land with the frontend fork (P3),
-which also carries the visible product identity (`docs/BRANDING.md`). It
-stays API-compatible with Core, served on port **8123** (kept for ecosystem
+no-control-affordances rule) lives in **`docs/UI_DESIGN.md`**. Shipping today
+inside the OS image: the `factory-assistant` theme (dark default), the "Plant
+overview" dashboard template, and the `ui/frontend_contract.yaml` frontend
+experience contract under `/usr/share/factory-assistant/`. Stock dashboards
+run on an unmodified Core now; the frontend fork consumes the contract for
+the deeper P3 changes — `fa-machine-card` tile, trimmed navigation, native
+andon board, kiosk toggle, industrial terminology and onboarding — while
+carrying the visible product identity (`docs/BRANDING.md`). It stays
+API-compatible with Core, served on port **8123** (kept for ecosystem
 compatibility).
 
 ## 7. Update mechanism
@@ -223,5 +224,5 @@ monitoring-only, and explicitly disallow machine control or safety functions.
 | P0 | This repo: architecture, build path, licensing, branding, safety boundary | complete |
 | P1 | Verified x86-64 image build via overlay; boots to onboarding on real hardware/VM | complete for generic x86-64 17.3 release |
 | P2 | True forks, FA registry, version service, branded landingpage, RAUC keys, CI release pipeline | partial: registry/channel/release wiring, branded landingpage image, and upstream release/security tracker exist; trusted OTA requires real external RAUC keys/secrets and final release verification |
-| P3 | Industrial onboarding, config seeding, OPC UA bridge add-on, frontend fork implementing the factory UI (`docs/UI_DESIGN.md`) | partial: seed config, Plant overview default dashboard, examples, site/line/cell onboarding scaffold, industrial onboarding wizard contract, industrial add-on catalog, wallboard, theme, OS-level network/time posture helper, and local-first Core defaults exist; cloud/analytics defaults are off in the shipped template; add-ons/frontend fork remain |
+| P3 | Industrial onboarding, config seeding, OPC UA bridge add-on, frontend fork implementing the factory UI (`docs/UI_DESIGN.md`) | partial: seed config, Plant overview default dashboard, examples, site/line/cell onboarding scaffold, industrial onboarding wizard contract, frontend experience contract, industrial add-on catalog, wallboard, theme, OS-level network/time posture helper, and local-first Core defaults exist; cloud/analytics defaults are off in the shipped template; add-ons/frontend fork remain |
 | P4 | Limited **non-safety** machine control behind an explicit gate (see `docs/SAFETY_BOUNDARY.md` §Control roadmap gate) | gated |

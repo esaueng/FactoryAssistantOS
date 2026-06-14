@@ -1,0 +1,110 @@
+#!/usr/bin/env bash
+# Read-only Factory Assistant commissioning posture check.
+#
+# Reports the host time-sync and network state operators must review before a
+# plant appliance is considered commissioned. This helper never changes
+# NetworkManager, routes, DNS, NTP, add-ons, or machine state.
+set -euo pipefail
+
+TIMEDATECTL="${FA_POSTURE_TIMEDATECTL:-timedatectl}"
+IP="${FA_POSTURE_IP:-ip}"
+NMCLI="${FA_POSTURE_NMCLI:-nmcli}"
+HOSTNAME_CMD="${FA_POSTURE_HOSTNAME:-hostname}"
+
+have_command() {
+    local cmd="$1"
+
+    [ -x "$cmd" ] || command -v "$cmd" >/dev/null 2>&1
+}
+
+run_command() {
+    local cmd="$1"
+    shift
+
+    have_command "$cmd" || return 127
+    "$cmd" "$@"
+}
+
+status() {
+    local level="$1"
+    shift
+
+    printf '[%s] %s\n' "$level" "$*"
+}
+
+first_nonempty_line() {
+    awk 'NF { print; exit }'
+}
+
+printf 'Factory Assistant network/time posture\n'
+printf 'Monitoring only - not a safety device.\n\n'
+
+if ntp_state="$(run_command "$TIMEDATECTL" show -p NTPSynchronized --value 2>/dev/null | first_nonempty_line)"; then
+    case "$ntp_state" in
+        yes)
+            status OK "NTP synchronized"
+            ;;
+        no)
+            status WARN "NTP is not synchronized; point systemd-timesyncd at the plant NTP source before trusting telemetry timestamps"
+            ;;
+        *)
+            status WARN "NTP synchronization state is unknown: $ntp_state"
+            ;;
+    esac
+else
+    status WARN "timedatectl is unavailable; verify host NTP manually"
+fi
+
+if timezone="$(run_command "$TIMEDATECTL" show -p Timezone --value 2>/dev/null | first_nonempty_line)"; then
+    status INFO "Time zone: ${timezone:-unset}"
+fi
+
+if hostname_value="$(run_command "$HOSTNAME_CMD" 2>/dev/null | first_nonempty_line)"; then
+    if [ "$hostname_value" = "factory-assistant" ]; then
+        status OK "Hostname is factory-assistant; mDNS target is factory-assistant.local"
+    else
+        status WARN "Hostname is $hostname_value; expected factory-assistant for predictable mDNS commissioning"
+    fi
+else
+    status WARN "hostname command is unavailable; verify mDNS name manually"
+fi
+
+if default_route="$(run_command "$IP" route show default 2>/dev/null | first_nonempty_line)"; then
+    status OK "Default route present: $default_route"
+else
+    status WARN "No default route detected; initial onboarding and add-on pulls may fail"
+fi
+
+if addresses="$(run_command "$IP" -brief addr show scope global 2>/dev/null | first_nonempty_line)"; then
+    status INFO "Global address: $addresses"
+else
+    status WARN "No global interface address detected"
+fi
+
+if nm_lines="$(run_command "$NMCLI" -t -f NAME,DEVICE,IP4.METHOD connection show --active 2>/dev/null)"; then
+    found_nm=0
+    while IFS=: read -r name device method _rest; do
+        [ -n "${name:-}" ] || continue
+        found_nm=1
+        case "$method" in
+            manual)
+                status INFO "NetworkManager active connection: $name on ${device:-unknown} uses manual IPv4"
+                ;;
+            auto|shared|link-local|disabled)
+                status INFO "NetworkManager active connection: $name on ${device:-unknown} uses ${method:-unknown} IPv4; configure a static IP during commissioning if the plant requires fixed addressing"
+                ;;
+            *)
+                status INFO "NetworkManager active connection: $name on ${device:-unknown}; verify static IP requirements in Settings -> System -> Network"
+                ;;
+        esac
+    done <<< "$nm_lines"
+    [ "$found_nm" -eq 1 ] || status WARN "NetworkManager reported no active connections"
+else
+    status INFO "NetworkManager details unavailable; configure static IP guidance through Settings -> System -> Network or the HA CLI"
+fi
+
+printf '\nCommissioning reminders:\n'
+printf '%s\n' '- Static IP: plants usually require fixed addressing; use Settings -> System -> Network after DHCP discovery.'
+printf '%s\n' '- NTP: use a plant NTP source so recorder, OEE, maintenance, and andon timelines are trustworthy.'
+printf '%s\n' '- MQTT: Install the Mosquitto broker add-on before adding MQTT gateways or the OPC UA bridge.'
+printf '%s\n' '- Safety: monitoring only; do not connect this appliance as a safety controller or interlock.'

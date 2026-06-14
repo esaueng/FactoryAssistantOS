@@ -101,11 +101,14 @@ template headers say exactly that.
 ## 5. Deployment guidance (NTP / static IP / Mosquitto)
 
 These are the commissioning defaults the seeded `configuration.yaml` documents
-in its header. They are **manual steps today**: surfacing them as guided
-**first-boot onboarding steps** requires backend changes in Core/Supervisor
-(and the frontend onboarding flow), which live in other repos and are **out of
-scope** for this OS-overlay repo. See the §1 defaults table for the phase
-markers.
+in its header. The OS image now ships `fa-network-posture`, a read-only host
+helper that reports NTP synchronization, hostname/mDNS, default route, global
+addresses, NetworkManager active connection/static IP posture, and the
+Mosquitto offer. It does not change time, routes, NetworkManager state, add-ons,
+or machine state. Surfacing the same checks as guided **first-boot onboarding
+steps** still requires backend changes in Core/Supervisor (and the frontend
+onboarding flow), which live in other repos. See the §1 defaults table for the
+phase markers.
 
 - **Time / NTP (required).** Trustworthy recorder and history timestamps
   depend on a disciplined clock. The host syncs time with
@@ -121,6 +124,15 @@ markers.
   add the MQTT integration (Settings -> Devices & Services). Follow the
   `fa/<site>/<area>/<device>/<measurement>` topic convention from §2.
   Monitoring only — no command/control topics.
+
+Operators can run:
+
+```sh
+fa-network-posture
+```
+
+The output is advisory and read-only; use it as the commissioning checklist
+before assigning the appliance to a line, wallboard, or historian feed.
 
 ## 6. Site repo pattern (recommended practice, not shipped)
 

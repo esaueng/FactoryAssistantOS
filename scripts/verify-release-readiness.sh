@@ -85,6 +85,7 @@ command -v python3 >/dev/null 2>&1 || die "python3 is required"
 
 "$ROOT/scripts/verify-shipped-branding.sh" >/dev/null
 "$ROOT/scripts/verify-safety-boundary.sh" >/dev/null
+"$ROOT/scripts/verify-identity-go-live.sh" >/dev/null
 
 channel="$(canonical_file "$channel")"
 keyring="$(canonical_file "$keyring")"
@@ -164,6 +165,7 @@ release readiness preflight passed
   OTA template: $FAOS_OTA_URL_TEMPLATE
   shipped branding: verified
   safety boundary: verified
+  identity go-live: verified
   RAUC keyring: $keyring
   RAUC signing cert: $cert
   RAUC signing key: external private key verified

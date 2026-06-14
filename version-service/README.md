@@ -73,12 +73,25 @@ Releases**. The settled URLs live in `branding/identity.env`:
 
 To go live:
 
-1. **Enable GitHub Pages** for `esaueng/FactoryAssistant` (Settings → Pages).
-   Pages must serve `stable.json` at the channel URL above — i.e. publish
-   `version-service/stable.json` to the root of the Pages site (e.g. commit it
-   to the Pages branch / `docs/` source, or copy it in via the Pages build).
-   If the Supervisor's AppArmor profile updates are used, Pages must also serve
-   `apparmor_stable.txt` alongside it.
+1. **Publish the channel via GitHub Pages.** The
+   `.github/workflows/pages.yml` workflow validates `version-service/stable.json`
+   against the schema and serves it (plus `schema/channel.schema.json`) at the
+   channel URL above — `version-service/` stays the single source of truth, with
+   no hand-copied duplicate. It runs on every push to `main` that touches the
+   channel, and on demand (`workflow_dispatch`). Two one-time prerequisites:
+   - **A public Pages site.** The appliance fetches the channel anonymously
+     (the Supervisor `curl`s it with no credentials), so the site must be
+     reachable without auth. On the Free org plan that means the repo must be
+     **public**; alternatively a paid plan (Pro/Team) can serve a public Pages
+     site from a *private* repo. Either way the published `stable.json` is
+     world-readable — that is intended.
+   - **Pages source = GitHub Actions.** Set once under Settings → Pages → Build
+     and deployment → Source: **GitHub Actions** (the default `GITHUB_TOKEN`
+     cannot enable Pages itself, so this toggle is manual). After that, every
+     push to `main` that touches the channel re-publishes automatically.
+
+   If the Supervisor's AppArmor profile updates are later branded to this site,
+   add `apparmor_stable.txt` to the `_site` assembled by the workflow.
 2. **Validate before publishing.** Re-validate the channel against the *pinned
    Supervisor's* updater (not just the advisory schema here) — the authoritative
    parser is whatever Supervisor version the image ships. Only publish a

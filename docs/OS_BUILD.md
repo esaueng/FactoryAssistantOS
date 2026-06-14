@@ -229,11 +229,20 @@ release host). In GitHub Actions, set all three repository secrets together:
 Before cutting a tag through Actions, verify the secret names are present:
 
 ```sh
+scripts/configure-github-rauc-secrets.sh \
+  --repo esaueng/FactoryAssistantOS \
+  --keyring /secure/faos-rauc/faos-rauc-ca.crt \
+  --cert /secure/faos-rauc/faos-rauc-signing.crt \
+  --key /secure/faos-rauc/faos-rauc-signing.key
+
 scripts/verify-github-rauc-secrets.sh --repo esaueng/FactoryAssistantOS
 ```
 
-The helper uses `gh secret list` and checks names only; GitHub does not expose
-secret values.
+The installer validates that the signing certificate chains to the supplied
+Factory Assistant CA, verifies that the signing private key matches the
+certificate, rejects source files from inside this repository, and streams the
+three PEM values to GitHub without printing them. The verifier uses
+`gh secret list` and checks names only; GitHub does not expose secret values.
 
 If all three are present, `.github/workflows/build-os-image.yml` installs them
 with `scripts/configure-rauc-signing.sh` and the generated `.raucb` is trusted

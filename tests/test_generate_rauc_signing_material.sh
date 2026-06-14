@@ -22,6 +22,11 @@ file_mode() {
 }
 
 "$script" --out-dir "$out" --ca-days 3650 --signing-days 825 >"$tmp/generate.out"
+grep -q 'scripts/configure-github-rauc-secrets.sh' "$tmp/generate.out" \
+    || fail "generator output does not point at the validated GitHub secret installer"
+if grep -q 'gh secret set FAOS_RAUC' "$tmp/generate.out"; then
+    fail "generator output still recommends raw gh secret set commands"
+fi
 
 ca_key="$out/faos-rauc-ca.key"
 ca_crt="$out/faos-rauc-ca.crt"

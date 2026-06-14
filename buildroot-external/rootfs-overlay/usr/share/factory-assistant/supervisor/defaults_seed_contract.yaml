@@ -1,0 +1,39 @@
+# Factory Assistant Supervisor first-boot seed contract.
+#
+# SPDX-License-Identifier: Apache-2.0
+# Copyright Factory Assistant contributors.
+#
+# This is a machine-readable handoff for the Supervisor fork. The current host
+# unit is a best-effort scaffold; robust config seeding belongs inside the
+# Supervisor first-boot/config-provisioning flow where /config is authoritative.
+contract:
+  id: factory_assistant_supervisor_seed_defaults
+  version: 1
+  consumer: supervisor
+  status: contract_for_supervisor_fork
+
+seed:
+  source_tree: /usr/share/factory-assistant
+  target_config_dir: /config
+  runs_inside_supervisor_first_boot: true
+  host_path_dependency_allowed: false
+  host_scaffold: /usr/libexec/fa-seed-config
+  first_boot_gate:
+    missing_file: configuration.yaml
+    overwrite_existing_config: false
+    create_stray_host_directory: false
+  copy_entries:
+    - configuration.yaml
+    - themes/
+    - dashboards/
+    - packages/
+    - examples/
+    - onboarding/
+    - addons/
+    - ui/
+    - supervisor/
+
+safety:
+  monitoring_only: true
+  machine_control: false
+  safety_function: false

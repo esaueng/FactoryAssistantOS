@@ -12,7 +12,9 @@ via a `multi-user.target.wants` symlink. It copies the template tree only when
 no `configuration.yaml` exists yet and never overwrites existing config. The
 mechanism and its honest limitation (the config dir is a Supervisor-managed
 volume, so robust seeding ultimately needs a Supervisor-fork hook) are
-documented in `docs/INDUSTRIAL_DEFAULTS.md` §"Config seeding mechanism".
+documented in `docs/INDUSTRIAL_DEFAULTS.md` §"Config seeding mechanism". The
+OS-shipped `supervisor/defaults_seed_contract.yaml` captures the exact
+Supervisor-fork first-boot hook contract for that robust path.
 
 Planned packages:
 

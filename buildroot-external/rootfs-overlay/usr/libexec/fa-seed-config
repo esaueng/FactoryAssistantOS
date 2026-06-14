@@ -7,7 +7,8 @@
 #
 # Copies the shipped read-only template tree
 #   /usr/share/factory-assistant/   (configuration.yaml, themes/, dashboards/,
-#                                    packages/, examples/, onboarding/, addons/)
+#                                    packages/, examples/, onboarding/, addons/,
+#                                    ui/, supervisor/defaults_seed_contract.yaml)
 # into the Home Assistant config directory ONLY on a true first boot — i.e.
 # only when no configuration.yaml exists in the target. Existing config is
 # never overwritten, so user edits, restores, and re-runs are all safe.
@@ -20,7 +21,9 @@
 # implementation detail and the directory may not exist (or may not yet be the
 # mounted volume) at the moment this unit runs. Robust seeding will ultimately
 # need a Supervisor-fork hook that runs inside the Supervisor's own first-boot
-# flow. See docs/INDUSTRIAL_DEFAULTS.md §"Config seeding mechanism".
+# flow. That handoff is captured in
+# /usr/share/factory-assistant/supervisor/defaults_seed_contract.yaml and
+# docs/INDUSTRIAL_DEFAULTS.md §"Config seeding mechanism".
 #
 # Monitoring/READ-ONLY appliance: this script only copies configuration
 # templates; it performs no machine writes and no control actions.

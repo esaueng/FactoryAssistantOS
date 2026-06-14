@@ -11,7 +11,8 @@
 # SCAFFOLD CAVEAT: the Core config directory is a Supervisor-managed volume,
 # not a guaranteed host path. This unit targets the current upstream on-disk
 # location as a best effort and exits cleanly when that volume is not present.
-# Robust seeding may ultimately need a Supervisor-fork hook — see
+# Robust seeding belongs in a Supervisor-fork hook captured by
+# /usr/share/factory-assistant/supervisor/defaults_seed_contract.yaml; see
 # docs/INDUSTRIAL_DEFAULTS.md.
 #
 # Monitoring/READ-ONLY appliance: copies configuration templates only.

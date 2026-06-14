@@ -12,7 +12,8 @@ maintenance reminders, andon acknowledge), the read-only protocol examples
 quick reference), and the onboarding scaffold (`onboarding/`:
 `site_model.example.yaml` and `wizard_steps.yaml`), plus the industrial add-on
 contract (`addons/industrial_addons.catalog.yaml`) and frontend handoff
-contract (`ui/frontend_contract.yaml`); the UI is specified in
+contract (`ui/frontend_contract.yaml`), plus the Supervisor seed handoff
+(`supervisor/defaults_seed_contract.yaml`); the UI is specified in
 `docs/UI_DESIGN.md`.
 
 ## 1. Defaults table
@@ -113,7 +114,8 @@ The templates ship read-only in the image at `/usr/share/factory-assistant/`.
 `fa-seed-config.service`, runs
 `/usr/libexec/fa-seed-config` on boot. It copies the **whole
 `/usr/share/factory-assistant/` tree** (`configuration.yaml`, `themes/`,
-`dashboards/`, `packages/`, `examples/`, `onboarding/`, `addons/`) into the
+`dashboards/`, `packages/`, `examples/`, `onboarding/`, `addons/`, `ui/`,
+`supervisor/`) into the
 Home Assistant config directory **only on a true first boot** — that is, only
 when no `configuration.yaml` exists in the target. It never overwrites existing
 files (`cp -Rn`), so user edits, restores, and re-runs are all safe; running
@@ -134,7 +136,12 @@ directory. So treat this as a **scaffold**: it works opportunistically, but
 robust, ordering-correct seeding will ultimately need a **Supervisor-fork
 hook** that runs inside the Supervisor's own first-boot/config-provisioning
 flow (the Supervisor lives in its own repo — see `docs/ARCHITECTURE.md`). The
-companion `fa-defaults` host package noted in
+OS image now ships `supervisor/defaults_seed_contract.yaml` as the exact
+machine-readable contract for that hook: copy `/usr/share/factory-assistant`
+into `/config` only when `configuration.yaml` is absent, never overwrite
+existing config, and never depend on the host-side
+`/mnt/data/supervisor/homeassistant` path. The companion `fa-defaults` host
+package noted in
 `buildroot-external/package/README.md` may later package the same script with
 its Buildroot wiring; the mechanism is identical.
 

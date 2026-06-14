@@ -1,4 +1,3 @@
 Factory Assistant OS - industrial monitoring appliance
-Based on Home Assistant. Monitoring only: not a safety device.
+Factory Assistant is based on Home Assistant. Monitoring only: not a safety device.
 Web UI: http://factory-assistant.local:8123
-

@@ -78,8 +78,9 @@ while [ $# -gt 0 ]; do
     esac
 done
 
-[ -n "$keyring" ] && [ -n "$cert" ] && [ -n "$key" ] \
-    || die "trusted release readiness requires --keyring, --cert, and --key"
+if [ -z "$keyring" ] || [ -z "$cert" ] || [ -z "$key" ]; then
+    die "trusted release readiness requires --keyring, --cert, and --key"
+fi
 command -v openssl >/dev/null 2>&1 || die "openssl is required"
 command -v python3 >/dev/null 2>&1 || die "python3 is required"
 

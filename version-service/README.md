@@ -96,6 +96,16 @@ To go live:
    Supervisor's* updater (not just the advisory schema here) — the authoritative
    parser is whatever Supervisor version the image ships. Only publish a
    document that the pinned Supervisor accepts.
+   After Pages publishes, run:
+
+   ```sh
+   scripts/verify-published-channel.sh \
+       --local version-service/stable.json \
+       --url https://esaueng.github.io/FactoryAssistantOS/stable.json
+   ```
+
+   This confirms the public document matches the repo source of truth and
+   contains only Factory Assistant-owned registry and OTA references.
 3. **Cut the OS Release.** Attach the signed `.raucb` bundle to a GitHub
    Release of `esaueng/FactoryAssistantOS` tagged with the OS `{version}`, so the
    OTA URL above resolves.

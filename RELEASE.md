@@ -115,6 +115,17 @@ and complete onboarding. Full flashing/VM notes: `docs/OS_BUILD.md` §3.
       This checks secret names only (`FAOS_RAUC_KEYRING_PEM`,
       `FAOS_RAUC_CERT_PEM`, `FAOS_RAUC_KEY_PEM`); it does not read or print
       secret values.
+- [ ] Verify the published channel is live and matches the local stable
+      document before cutting a release tag:
+
+      ```sh
+      scripts/verify-published-channel.sh \
+        --local version-service/stable.json \
+        --url https://esaueng.github.io/FactoryAssistantOS/stable.json
+      ```
+
+      This catches GitHub Pages drift and rejects any upstream or placeholder
+      artifact references in the channel.
 - [ ] After the build produces `release/`, verify the upload set before
       publishing:
 

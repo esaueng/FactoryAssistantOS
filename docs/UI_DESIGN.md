@@ -219,8 +219,9 @@ wallboard scale ×1.6.
 | Native read-only `factory-wallboard-kiosk` with hidden chrome, ×1.6 wallboard type scale, and view-only dashboard interaction blocking | `frontend` fork consuming the shipped `ui/frontend_contract.yaml` kiosk contract and `dashboards/wallboard.yaml` source dashboard | implemented in fork |
 | Native plant navigation: Plant overview first, Energy/History/Logbook priority, Map/Media/To-do hidden by default with user opt-in | `frontend` fork consuming the shipped `ui/frontend_contract.yaml` navigation contract | implemented in fork |
 | Dashboard wiring using `custom:fa-machine-card`, `custom:fa-andon-view`, and `custom:factory-wallboard-kiosk` | shipped YAML templates consuming the frontend fork custom cards | **now** |
+| Area dashboard generator for line-level `custom:fa-machine-card`, `custom:fa-andon-view`, and telemetry history views | `scripts/generate-area-dashboards.py` consuming `onboarding/site_model.example.yaml`; reference output in `dashboards/area-dashboards.example.yaml` | **now** |
 | Terminology pass ("Home"→"Plant overview", areas as lines/cells) and full industrial onboarding wizard | `frontend` fork consuming the shipped `ui/frontend_contract.yaml` and `onboarding/wizard_steps.yaml` contracts | P3 |
-| Auto-generated area dashboards from the line/cell taxonomy | frontend fork consuming the shipped `onboarding/site_model.example.yaml` line/cell taxonomy scaffold | P3 |
+| Frontend onboarding integration that runs the area dashboard generator after site/line/cell setup | frontend fork consuming the shipped `onboarding/site_model.example.yaml` line/cell taxonomy scaffold | P3 |
 
 Templates keep stock Lovelace cards where they are still the right primitive,
 but dashboard wiring is implemented for the native machine, andon, and

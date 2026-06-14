@@ -93,6 +93,7 @@ Supervisor forks keep upstream version numbers with the FA registry namespace.
 | Native machine, andon, and wallboard kiosk components | `frontend` fork | implemented in fork |
 | Native plant navigation | `frontend` fork | implemented in fork |
 | Dashboard wiring for native machine, andon, and wallboard cards | this repo + `frontend` fork | done |
+| Area dashboard generator | this repo (`scripts/generate-area-dashboards.py` + `dashboards/area-dashboards.example.yaml`) | done |
 | Full industrial onboarding wizard | `frontend` fork | P3 |
 | Supervisor product strings/log prefixes | `supervisor` fork | P2 |
 | Core: keep delta near zero; visible naming comes from the frontend | `core` fork | P3 |

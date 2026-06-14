@@ -23,6 +23,11 @@ default experience. The network posture step consumes
 `fa-network-posture --json` so the UI can show the same read-only checks
 without parsing terminal text.
 
+The build repo's area dashboard generator consumes this scaffold and emits
+`dashboards/area-dashboards.example.yaml`: line-level dashboards with
+`custom:fa-machine-card`, `custom:fa-andon-view`, and telemetry history cards.
+The generated dashboards stay read-only and provide no machine-control path.
+
 Required commissioning posture:
 
 - Factory Assistant is a monitoring tool, not a safety device.

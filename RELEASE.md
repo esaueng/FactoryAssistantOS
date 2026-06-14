@@ -217,8 +217,10 @@ and complete onboarding. Full flashing/VM notes: `docs/OS_BUILD.md` §3.
       plus the native read-only `fa-machine-card`, `fa-andon-view`, and
       `factory-wallboard-kiosk`; dashboard wiring is implemented with
       `custom:fa-machine-card`, `custom:fa-andon-view`, and
-      `custom:factory-wallboard-kiosk`; still P3: full industrial onboarding
-      wizard integration, area dashboard generation, and terminology polish.
+      `custom:factory-wallboard-kiosk`; the area dashboard generator emits
+      `area-dashboards.example.yaml` from the line/cell model with
+      `custom:fa-machine-card` and `custom:fa-andon-view`; still P3: full
+      industrial onboarding wizard integration and terminology polish.
 - [ ] Verify the Supervisor accepts the `faos` os-release identity on first
       boot (`docs/OS_BUILD.md` §4 — os-release ID verification).
 - [ ] Verify the settled `branding/identity.env` go-live values before any

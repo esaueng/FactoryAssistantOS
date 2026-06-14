@@ -59,6 +59,10 @@ The onboarding scaffold at `onboarding/site_model.example.yaml` carries the
 same site → line → cell → station → machine hierarchy as data. Copy it into the
 site repository during commissioning, replace the placeholder machine IDs, and
 keep its MQTT/entity IDs aligned with the dashboards and packages.
+The area dashboard generator (`scripts/generate-area-dashboards.py`) consumes
+that scaffold and emits native line dashboards; the shipped reference output is
+`dashboards/area-dashboards.example.yaml` with `custom:fa-machine-card`,
+`custom:fa-andon-view`, and history cards.
 
 The companion `onboarding/wizard_steps.yaml` is the industrial onboarding
 wizard contract for the frontend/Supervisor forks. It replaces the
@@ -157,7 +161,9 @@ Plant overview at `/lovelace`. Andon remains a separate sidebar dashboard, and
 Wallboard remains a direct-URL kiosk dashboard outside the sidebar. The
 frontend fork's native `custom:factory-wallboard-kiosk` wraps the same
 wallboard contract, and dashboard wiring is implemented alongside
-`custom:fa-machine-card` and `custom:fa-andon-view`.
+`custom:fa-machine-card` and `custom:fa-andon-view`. Commissioned line views
+can start from `dashboards/area-dashboards.example.yaml`, generated from the
+site model by the area dashboard generator.
 
 ## 5. Deployment guidance (NTP / static IP / Mosquitto)
 

@@ -215,6 +215,15 @@ release host). In GitHub Actions, set all three repository secrets together:
 - `FAOS_RAUC_CERT_PEM`
 - `FAOS_RAUC_KEY_PEM`
 
+Before cutting a tag through Actions, verify the secret names are present:
+
+```sh
+scripts/verify-github-rauc-secrets.sh --repo esaueng/FactoryAssistantOS
+```
+
+The helper uses `gh secret list` and checks names only; GitHub does not expose
+secret values.
+
 If all three are present, `.github/workflows/build-os-image.yml` installs them
 with `scripts/configure-rauc-signing.sh` and the generated `.raucb` is trusted
 by images from that run. The tag release workflow refuses to publish without

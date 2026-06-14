@@ -62,8 +62,12 @@ case "$readme_text" in
     *) fail "README status does not record the implemented native plant navigation";;
 esac
 case "$readme_text" in
-    *"native industrial onboarding wizard"*) ;;
-    *) fail "README status does not name the remaining native onboarding work";;
+    *"native industrial setup checkpoint"*) ;;
+    *) fail "README status does not record the implemented native industrial setup checkpoint";;
+esac
+case "$readme_text" in
+    *"backend-driven industrial onboarding wizard integration"*) ;;
+    *) fail "README status does not name the remaining backend-driven onboarding work";;
 esac
 grep -q 'frontend fork has visible rebrand/About/local-first onboarding bridge' "$arch_doc" \
     || fail "architecture status does not distinguish completed frontend bridge work"
@@ -75,6 +79,10 @@ grep -q "native read-only \`factory-wallboard-kiosk\`" "$arch_doc" \
     || fail "architecture status does not record the implemented native wallboard kiosk"
 grep -q "native plant navigation" "$arch_doc" \
     || fail "architecture status does not record the implemented native plant navigation"
+grep -q "native industrial setup checkpoint" "$arch_doc" \
+    || fail "architecture status does not record the implemented native industrial setup checkpoint"
+grep -q "P3 backlog is backend-driven industrial onboarding wizard integration" "$arch_doc" \
+    || fail "architecture status does not name the remaining backend-driven onboarding work"
 if grep -q 'frontend branding/onboarding' "$release_doc"; then
     fail "release runbook still says broad frontend branding/onboarding is unresolved"
 fi

@@ -22,6 +22,10 @@ grep -q "scripts/verify-release-readiness.sh" "$workflow" \
     || fail "build workflow does not run the release-readiness preflight before trusted signing"
 grep -q -- "--channel version-service/stable.json" "$workflow" \
     || fail "build workflow release preflight does not validate the stable channel"
+grep -q "scripts/verify-shipped-branding.sh" "$workflow" \
+    || fail "build workflow does not verify shipped branding before release builds"
+grep -q "scripts/verify-safety-boundary.sh" "$workflow" \
+    || fail "build workflow does not verify the shipped safety boundary before release builds"
 grep -q "Scrub RAUC signing inputs" "$workflow" \
     || fail "build workflow does not scrub RAUC signing inputs after build"
 grep -q 'upstream/operating-system/key.pem' "$workflow" \

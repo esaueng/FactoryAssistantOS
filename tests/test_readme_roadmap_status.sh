@@ -62,8 +62,8 @@ case "$readme_text" in
     *) fail "README status does not record the implemented native plant navigation";;
 esac
 case "$readme_text" in
-    *"native industrial setup checkpoint"*) ;;
-    *) fail "README status does not record the implemented native industrial setup checkpoint";;
+    *"native industrial setup handoff"*"frontend system data"*) ;;
+    *) fail "README status does not record the persisted native industrial setup handoff";;
 esac
 case "$readme_text" in
     *"backend-driven industrial onboarding wizard integration"*) ;;
@@ -79,8 +79,8 @@ grep -q "native read-only \`factory-wallboard-kiosk\`" "$arch_doc" \
     || fail "architecture status does not record the implemented native wallboard kiosk"
 grep -q "native plant navigation" "$arch_doc" \
     || fail "architecture status does not record the implemented native plant navigation"
-grep -q "native industrial setup checkpoint" "$arch_doc" \
-    || fail "architecture status does not record the implemented native industrial setup checkpoint"
+grep -q "native industrial setup handoff" "$arch_doc" \
+    || fail "architecture status does not record the persisted native industrial setup handoff"
 grep -q "P3 backlog is backend-driven industrial onboarding wizard integration" "$arch_doc" \
     || fail "architecture status does not name the remaining backend-driven onboarding work"
 if grep -q 'frontend branding/onboarding' "$release_doc"; then

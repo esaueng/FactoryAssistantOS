@@ -105,6 +105,11 @@ jobs:
             printf '%s\n' "${FAOS_RAUC_KEYRING_PEM}" > "${rauc_dir}/keyring.pem"
             printf '%s\n' "${FAOS_RAUC_CERT_PEM}" > "${rauc_dir}/cert.pem"
             printf '%s\n' "${FAOS_RAUC_KEY_PEM}" > "${rauc_dir}/key.pem"
+            ./scripts/verify-release-readiness.sh \
+              --channel version-service/stable.json \
+              --keyring "${rauc_dir}/keyring.pem" \
+              --cert "${rauc_dir}/cert.pem" \
+              --key "${rauc_dir}/key.pem"
             ./scripts/configure-rauc-signing.sh \
               --keyring "${rauc_dir}/keyring.pem" \
               --cert "${rauc_dir}/cert.pem" \

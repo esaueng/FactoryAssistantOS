@@ -10,8 +10,8 @@ industrial example packages (`packages/`: plant KPIs, OEE, energy,
 maintenance reminders, andon acknowledge), the read-only protocol examples
 (`examples/`: MQTT and Modbus, with `examples/README.md` as the naming/topic
 quick reference), and the onboarding scaffold (`onboarding/`:
-`site_model.example.yaml`), plus the industrial add-on contract
-(`addons/industrial_addons.catalog.yaml`); the UI is specified in
+`site_model.example.yaml` and `wizard_steps.yaml`), plus the industrial add-on
+contract (`addons/industrial_addons.catalog.yaml`); the UI is specified in
 `docs/UI_DESIGN.md`.
 
 ## 1. Defaults table
@@ -56,6 +56,12 @@ The onboarding scaffold at `onboarding/site_model.example.yaml` carries the
 same site → line → cell → station → machine hierarchy as data. Copy it into the
 site repository during commissioning, replace the placeholder machine IDs, and
 keep its MQTT/entity IDs aligned with the dashboards and packages.
+
+The companion `onboarding/wizard_steps.yaml` is the industrial onboarding
+wizard contract for the frontend/Supervisor forks. It replaces the
+home-centric setup path with safety acknowledgement, site identity, line/cell
+hierarchy, network posture, NTP, Mosquitto offer, cloud/analytics-off defaults,
+and the Plant overview/andon/wallboard default experience.
 
 ## 3. Protocol guidance
 

@@ -198,8 +198,9 @@ monitoring-only, and explicitly disallow machine control or safety functions.
    account, set site name/location/time zone/units.
 4. **Industrial onboarding (Phase 3 fork work)**: replace home-centric steps
    with site/line/cell area setup using the OS-shipped
-   `onboarding/site_model.example.yaml` scaffold, NTP check, static-IP guidance, offer the
-   Mosquitto add-on, seed the default config template
+   `onboarding/site_model.example.yaml` scaffold and
+   `onboarding/wizard_steps.yaml` industrial onboarding wizard contract, NTP
+   check, static-IP guidance, Mosquitto add-on offer, seed the default config template
    (`buildroot-external/rootfs-overlay/usr/share/factory-assistant/configuration.yaml`),
    and default analytics/cloud features to **off** (local network deployment
    is the product posture).
@@ -222,5 +223,5 @@ monitoring-only, and explicitly disallow machine control or safety functions.
 | P0 | This repo: architecture, build path, licensing, branding, safety boundary | complete |
 | P1 | Verified x86-64 image build via overlay; boots to onboarding on real hardware/VM | complete for generic x86-64 17.3 release |
 | P2 | True forks, FA registry, version service, branded landingpage, RAUC keys, CI release pipeline | partial: registry/channel/release wiring and branded landingpage image exist; trusted OTA requires real external RAUC keys/secrets and final release verification |
-| P3 | Industrial onboarding, config seeding, OPC UA bridge add-on, frontend fork implementing the factory UI (`docs/UI_DESIGN.md`) | partial: seed config, Plant overview default dashboard, examples, site/line/cell onboarding scaffold, industrial add-on catalog, wallboard, theme, OS-level network/time posture helper, and local-first Core defaults exist; cloud/analytics defaults are off in the shipped template; add-ons/frontend fork remain |
+| P3 | Industrial onboarding, config seeding, OPC UA bridge add-on, frontend fork implementing the factory UI (`docs/UI_DESIGN.md`) | partial: seed config, Plant overview default dashboard, examples, site/line/cell onboarding scaffold, industrial onboarding wizard contract, industrial add-on catalog, wallboard, theme, OS-level network/time posture helper, and local-first Core defaults exist; cloud/analytics defaults are off in the shipped template; add-ons/frontend fork remain |
 | P4 | Limited **non-safety** machine control behind an explicit gate (see `docs/SAFETY_BOUNDARY.md` §Control roadmap gate) | gated |

@@ -15,6 +15,12 @@ rename it for the plant, and replace the placeholder IDs with real lines,
 cells, stations, and machines. The IDs should match the entity and MQTT topic
 conventions used by the shipped dashboards and packages.
 
+`wizard_steps.yaml` is the industrial onboarding wizard contract for the
+frontend/Supervisor forks. It sequences safety acknowledgement, site identity,
+line/cell hierarchy, NTP, static IP guidance, the Mosquitto broker add-on
+offer, local-first privacy defaults, and the Plant overview/andon/wallboard
+default experience.
+
 Required commissioning posture:
 
 - Factory Assistant is a monitoring tool, not a safety device.

@@ -1,0 +1,139 @@
+# Factory Assistant industrial onboarding wizard contract.
+#
+# SPDX-License-Identifier: Apache-2.0
+# Copyright Factory Assistant contributors.
+#
+# This file is a versioned contract for the frontend/Supervisor forks. It does
+# not perform onboarding by itself; it describes the industrial, local-first,
+# monitoring-only flow those repos should implement.
+wizard:
+  id: factory_assistant_industrial_onboarding
+  version: 1
+  status: contract_for_frontend_supervisor_forks
+  home_centric_steps_allowed: false
+  requires_external_account: false
+
+steps:
+  - id: safety_boundary
+    title: Safety boundary acknowledgement
+    required: true
+    acknowledgement_required: true
+    copy: Factory Assistant is a monitoring tool, not a safety device.
+    writes_machine_state: false
+    safety:
+      monitoring_only: true
+      machine_control: false
+      safety_function: false
+
+  - id: site_identity
+    title: Site identity
+    required: true
+    required_fields:
+      - site.name
+      - site.slug
+      - site.time_zone
+      - site.ntp_servers
+    output: site_model.example.yaml
+    writes_machine_state: false
+    safety:
+      monitoring_only: true
+      machine_control: false
+      safety_function: false
+
+  - id: plant_hierarchy
+    title: Lines, cells, stations, and machines
+    required: true
+    model_source: site_model.example.yaml
+    taxonomy:
+      - site
+      - line
+      - cell
+      - station
+      - machine
+    entity_convention: sensor.<area>_<machine>_<measurement>
+    topic_shape: fa/<site>/<area>/<device>/<measurement>
+    writes_machine_state: false
+    safety:
+      monitoring_only: true
+      machine_control: false
+      safety_function: false
+
+  - id: network_posture
+    title: Network posture
+    required: true
+    helper: fa-network-posture
+    read_only: true
+    checks:
+      - hostname
+      - default_route
+      - global_address
+      - static_ip_guidance
+    writes_machine_state: false
+    safety:
+      monitoring_only: true
+      machine_control: false
+      safety_function: false
+
+  - id: time_ntp
+    title: Time and NTP
+    required: true
+    source: systemd-timesyncd
+    checks:
+      - ntp_synchronized
+      - time_zone_set
+    writes_machine_state: false
+    safety:
+      monitoring_only: true
+      machine_control: false
+      safety_function: false
+
+  - id: mqtt_broker_offer
+    title: MQTT broker
+    required: false
+    action: offer_addon
+    addon: mosquitto
+    topic_shape: fa/<site>/<area>/<device>/<measurement>
+    command_topics_allowed: false
+    writes_machine_state: false
+    safety:
+      monitoring_only: true
+      machine_control: false
+      safety_function: false
+
+  - id: privacy_defaults
+    title: Local-first defaults
+    required: true
+    cloud_enabled: false
+    analytics_enabled: false
+    external_account_required: false
+    writes_machine_state: false
+    safety:
+      monitoring_only: true
+      machine_control: false
+      safety_function: false
+
+  - id: default_experience
+    title: Factory dashboards
+    required: true
+    default_landing_view: Plant overview
+    dashboards:
+      main: dashboards/factory-overview.yaml
+      andon: dashboards/andon.yaml
+      wallboard: dashboards/wallboard.yaml
+    writes_machine_state: false
+    safety:
+      monitoring_only: true
+      machine_control: false
+      safety_function: false
+
+  - id: review_and_seed
+    title: Review and seed configuration
+    required: true
+    seed_tree: /usr/share/factory-assistant
+    target: /config
+    overwrite_existing_config: false
+    writes_machine_state: false
+    safety:
+      monitoring_only: true
+      machine_control: false
+      safety_function: false

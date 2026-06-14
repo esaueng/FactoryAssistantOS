@@ -214,8 +214,9 @@ and complete onboarding. Full flashing/VM notes: `docs/OS_BUILD.md` §3.
       branded landing page image, branded CLI plugin image, running Supervisor update-channel URL preflight,
       Plant overview default dashboard, and the frontend product/About/local-first onboarding bridge;
       GRUB is N/A on x86-64. The frontend fork now has the native read-only
-      `fa-machine-card` and `fa-andon-view`; still P3: native navigation/kiosk
-      components and industrial onboarding wizard integration.
+      `fa-machine-card`, `fa-andon-view`, and `factory-wallboard-kiosk`;
+      still P3: native navigation components and industrial onboarding wizard
+      integration.
 - [ ] Verify the Supervisor accepts the `faos` os-release identity on first
       boot (`docs/OS_BUILD.md` §4 — os-release ID verification).
 - [ ] Verify the settled `branding/identity.env` go-live values before any

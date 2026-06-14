@@ -36,10 +36,10 @@ defaults, a Plant overview dashboard, andon/wallboard templates, network/NTP
 posture handoffs, onboarding contracts, and industrial add-on catalog
 contracts. The frontend fork has the visible product rebrand, About panel
 contract, branded landing/onboarding links, local-first onboarding bridge,
-native read-only `fa-machine-card`, and native read-only `fa-andon-view`; the
+native read-only `fa-machine-card`, native read-only `fa-andon-view`, and
+native read-only `factory-wallboard-kiosk`; the
 frontend/Core/Supervisor fork work still needs to complete the native
-industrial onboarding wizard, navigation, kiosk, and dashboard wiring
-experience.
+industrial onboarding wizard, navigation, and dashboard wiring experience.
 
 ## Quick start (build an x86-64 image)
 

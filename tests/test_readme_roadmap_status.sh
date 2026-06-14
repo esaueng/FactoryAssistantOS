@@ -45,17 +45,21 @@ grep -q 'P3 industrial product experience is partial' "$readme" \
     || fail "README status does not summarize partial P3 state"
 grep -q 'frontend fork has the visible product rebrand' "$readme" \
     || fail "README status does not record completed visible frontend rebrand work"
+grep -q "native read-only \`fa-machine-card\`" "$readme" \
+    || fail "README status does not record the implemented native machine card"
 case "$readme_text" in
     *"native industrial onboarding wizard"*) ;;
     *) fail "README status does not name the remaining native onboarding work";;
 esac
 grep -q 'frontend fork has visible rebrand/About/local-first onboarding bridge' "$arch_doc" \
     || fail "architecture status does not distinguish completed frontend bridge work"
+grep -q "native read-only \`fa-machine-card\`" "$arch_doc" \
+    || fail "architecture status does not record the implemented native machine card"
 if grep -q 'frontend branding/onboarding' "$release_doc"; then
     fail "release runbook still says broad frontend branding/onboarding is unresolved"
 fi
 case "$release_text" in
-    *"native factory UI components and industrial onboarding wizard integration"*) ;;
+    *"native navigation/andon/kiosk components and industrial onboarding wizard integration"*) ;;
     *) fail "release runbook does not name the remaining native frontend P3 work";;
 esac
 

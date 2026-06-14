@@ -23,11 +23,29 @@
 #   * Static IP (recommended): plants standardize on static addressing.
 #     Configure it via Settings -> System -> Network (NetworkManager), not in
 #     this file. DHCP works out of the box for initial commissioning.
+#   * Local-first allowlist: default_config is deliberately not used because it
+#     pulls in upstream home/cloud/analytics-oriented defaults. Factory
+#     Assistant loads explicit local integrations below; cloud/analytics
+#     defaults intentionally omitted.
 #   * Mosquitto (offer): for MQTT sensors/gateways, install the Mosquitto
 #     broker add-on (Settings -> Add-ons), then add the MQTT integration —
 #     see the MQTT section below.
 
-default_config:
+# --- Local-first integrations ------------------------------------------------
+# Explicit replacement for default_config. Keep this list local-network focused:
+# backup/config for appliance administration; DHCP/SSDP/zeroconf for plant LAN
+# discovery; history/logbook/energy/system_health for monitoring. Cloud,
+# Usage Prediction, Home Assistant Alerts, and My Home Assistant are
+# intentionally not loaded by the shipped template.
+backup:
+config:
+dhcp:
+energy:
+history:
+logbook:
+ssdp:
+system_health:
+zeroconf:
 
 homeassistant:
   name: "Factory Assistant"        # replaced with the site name during onboarding

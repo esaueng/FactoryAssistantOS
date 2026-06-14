@@ -19,7 +19,7 @@ quick reference); the UI is specified in `docs/UI_DESIGN.md`.
 | Config seeding | first-boot copy of the template tree into `/config` when none exists | reproducible appliance defaults without clobbering user config | overlay scaffold — done (§4); robust path needs Supervisor hook |
 | Network | DHCP out of the box; static IP first-class via NetworkManager | plants standardize on static addressing | OS (upstream capability); manual guidance now (§5), onboarding step P3 |
 | Time | NTP discipline for trustworthy timestamps; UTC recorder timestamps, local-time display | trustworthy telemetry timelines | host timesyncd now; manual guidance (§5); required onboarding step P3 |
-| Cloud/remote access | none; analytics **off** by default | local network deployment posture | P3 (onboarding default) |
+| Cloud/remote access | none; analytics **off** by default | local network deployment posture | template — done; onboarding wording P3 |
 | Units | metric (`unit_system: metric`) | industrial norm; switchable per site | template — done |
 | Recorder retention | `purge_keep_days: 30`, `commit_interval: 5` | bounded local history; long-term data → historian add-on | template — done |
 | Terminology | "site" not "home"; areas model **line → cell → station** | matches plant mental model | template now; onboarding/frontend P3 |
@@ -62,6 +62,21 @@ historian/bridge add-ons, not a v1 commitment.)
   republish on the `fa/...` topic convention, read-only mode hard-default.
 - **ESPHome**: the retrofit path for unsensored legacy machines (vibration,
   current clamps, temperatures, andon light states).
+
+## 3.1 Local-first Core defaults
+
+In the shipped `configuration.yaml`, `default_config is deliberately not used`.
+Home Assistant's upstream `default_config` meta integration currently includes
+home/cloud-oriented services such as Cloud, Usage Prediction, Home Assistant
+Alerts, and My Home Assistant. Factory Assistant replaces it with an explicit
+local-first allowlist: `backup`, `config`, `dhcp`, `energy`, `history`,
+`logbook`, `ssdp`, `system_health`, and `zeroconf`, plus the industrial
+recorder/frontend/Lovelace sections below it.
+
+This means cloud/analytics defaults are off in the shipped template. Operators
+can still add integrations deliberately at a site, but no remote-access,
+analytics, or upstream alerting defaults are loaded just because the appliance
+booted.
 
 ## 4. Config seeding mechanism
 

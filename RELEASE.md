@@ -127,6 +127,18 @@ and complete onboarding. Full flashing/VM notes: `docs/OS_BUILD.md` §3.
 
       This catches GitHub Pages drift and rejects any upstream or placeholder
       artifact references in the channel.
+- [ ] Verify each RAUC bundle signature against the Factory Assistant OTA CA
+      keyring before publishing:
+
+      ```sh
+      scripts/verify-rauc-bundle-signature.sh \
+        --release-dir release \
+        --board generic-x86-64 \
+        --keyring /secure/faos-rauc/faos-rauc-ca.crt
+      ```
+
+      This runs `rauc info --keyring` for the release bundle and fails if the
+      bundle is not trusted by the configured device keyring.
 - [ ] After the build produces `release/`, verify the upload set before
       publishing:
 

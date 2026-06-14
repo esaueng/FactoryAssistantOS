@@ -222,6 +222,20 @@ jobs:
             --cert "${RUNNER_TEMP}/faos-rauc/cert.pem" \
             --out release/RAUC_TRUST.json
 
+      - name: Install RAUC verification tool
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y rauc
+
+      - name: Verify RAUC bundle signature
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          ./scripts/verify-rauc-bundle-signature.sh \
+            --release-dir release \
+            --board "${BOARD_ID}" \
+            --keyring "${RUNNER_TEMP}/faos-rauc/keyring.pem"
+
       - name: Refresh release checksums
         if: startsWith(github.ref, 'refs/tags/')
         run: |

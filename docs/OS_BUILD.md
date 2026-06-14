@@ -113,7 +113,8 @@ paths move between upstream releases).
 | Landing page text/art | `landingpage/` image context + `.github/workflows/mirror-fa-plugins.yml` | A (workflow-built branded image) |
 | Containerized CLI-plugin banner | `plugin-cli/` image context + `.github/workflows/mirror-fa-plugins.yml` | A (workflow-built branded image) |
 | Plant overview default dashboard | rootfs overlay `usr/share/factory-assistant/configuration.yaml` + `dashboards/factory-overview.yaml` | A |
-| Frontend branding, native machine cards, kiosk toggle, onboarding wording | `frontend` fork | P3 |
+| Frontend product branding, About dialog, and local-first onboarding bridge | `frontend` fork | P3 bridge implemented in fork |
+| Native machine cards, kiosk toggle, and full industrial onboarding wizard | `frontend` fork | P3 |
 
 **Component ownership preflight.** Before cutting a trusted tag, run
 `scripts/verify-component-ownership.sh --channel version-service/stable.json

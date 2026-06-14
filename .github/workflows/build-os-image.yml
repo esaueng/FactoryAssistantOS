@@ -83,6 +83,11 @@ jobs:
       - name: Apply the Factory Assistant overlay
         run: ./scripts/apply-overlay.sh
 
+      - name: Verify shipped branding and safety policy
+        run: |
+          ./scripts/verify-shipped-branding.sh
+          ./scripts/verify-safety-boundary.sh
+
       - name: Configure RAUC signing inputs
         id: rauc_signing
         env:

@@ -46,6 +46,6 @@ Required commissioning posture:
 - Local-first deployment: cloud and analytics remain off unless a site
   deliberately enables them later.
 
-The scaffold intentionally does not create Home Assistant areas by itself and
-does not configure a machine-control path. It is data for commissioning,
+The scaffold intentionally does not create upstream-compatible areas by itself
+and does not configure a machine-control path. It is data for commissioning,
 documentation, and future onboarding code.

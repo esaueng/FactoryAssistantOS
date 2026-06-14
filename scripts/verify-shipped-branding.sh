@@ -38,6 +38,8 @@ else
         "$ROOT/plugin-cli/rootfs/usr/bin/cli.sh"
         "$ROOT/buildroot-external/rootfs-overlay/usr/share/factory-assistant/onboarding/README.md"
         "$ROOT/buildroot-external/rootfs-overlay/usr/share/factory-assistant/examples/README.md"
+        "$ROOT/buildroot-external/rootfs-overlay/usr/share/factory-assistant/network/README.md"
+        "$ROOT/buildroot-external/rootfs-overlay/usr/share/factory-assistant/addons/README.md"
     )
 fi
 
@@ -51,6 +53,10 @@ for file in "${files[@]}"; do
     if grep -Fq "Use \`ha\` to access the CLI" "$file" \
         || grep -Fq 'Use "ha" to access the CLI' "$file"; then
         die "shipped CLI note must use the Factory Assistant CLI product name: $file"
+    fi
+
+    if grep -Fq "Home Assistant areas" "$file"; then
+        die "shipped onboarding notes must say upstream-compatible areas, not Home Assistant areas: $file"
     fi
 
     if grep -q 'Home Assistant' "$file" && ! grep -Fq "$canonical" "$file"; then

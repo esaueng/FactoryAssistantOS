@@ -59,6 +59,18 @@ fi
 grep -q 'Factory Assistant CLI' "$tmp/bad-motd.err" \
     || fail "generic MOTD CLI note rejection did not explain the product-name rule"
 
+bad_onboarding="$tmp/bad-onboarding"
+cat > "$bad_onboarding" <<'EOF'
+Factory Assistant is based on Home Assistant.
+
+The scaffold intentionally does not create Home Assistant areas by itself.
+EOF
+if "$script" "$bad_onboarding" 2> "$tmp/bad-onboarding.err"; then
+    fail "shipped branding verifier allowed upstream product naming in onboarding area notes"
+fi
+grep -q 'upstream-compatible areas' "$tmp/bad-onboarding.err" \
+    || fail "onboarding area wording rejection did not explain the product-name rule"
+
 grep -q 'scripts/verify-shipped-branding.sh' "$branding_doc" \
     || fail "branding docs do not document the shipped branding verifier"
 grep -q 'Master mark landed' "$asset_doc" \

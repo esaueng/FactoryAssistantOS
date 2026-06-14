@@ -100,7 +100,7 @@ if nm_lines="$(run_command "$NMCLI" -t -f NAME,DEVICE,IP4.METHOD connection show
     done <<< "$nm_lines"
     [ "$found_nm" -eq 1 ] || status WARN "NetworkManager reported no active connections"
 else
-    status INFO "NetworkManager details unavailable; configure static IP guidance through Settings -> System -> Network or the HA CLI"
+    status INFO "NetworkManager details unavailable; configure static IP guidance through Settings -> System -> Network or the Factory Assistant CLI"
 fi
 
 printf '\nCommissioning reminders:\n'

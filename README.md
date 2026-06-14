@@ -35,10 +35,11 @@ P3 industrial product experience is partial. The OS image ships industrial
 defaults, a Plant overview dashboard, andon/wallboard templates, network/NTP
 posture handoffs, onboarding contracts, and industrial add-on catalog
 contracts. The frontend fork has the visible product rebrand, About panel
-contract, branded landing/onboarding links, local-first onboarding bridge, and
-native read-only `fa-machine-card`; the frontend/Core/Supervisor fork work
-still needs to complete the native industrial onboarding wizard, navigation,
-andon, kiosk, and dashboard wiring experience.
+contract, branded landing/onboarding links, local-first onboarding bridge,
+native read-only `fa-machine-card`, and native read-only `fa-andon-view`; the
+frontend/Core/Supervisor fork work still needs to complete the native
+industrial onboarding wizard, navigation, kiosk, and dashboard wiring
+experience.
 
 ## Quick start (build an x86-64 image)
 

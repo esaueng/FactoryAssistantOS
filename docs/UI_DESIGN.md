@@ -10,8 +10,8 @@ Related: `docs/ARCHITECTURE.md` §6 (frontend layer), `docs/BRANDING.md`
 (identity), `docs/INDUSTRIAL_DEFAULTS.md` (entity/topic conventions),
 `docs/SAFETY_BOUNDARY.md` (normative for everything below). The OS image also
 ships `ui/frontend_contract.yaml`, a machine-readable handoff for the
-frontend fork's native plant navigation, `fa-machine-card`, kiosk mode, andon
-behavior, and About panel (`about_panel`) obligations.
+frontend fork's native plant navigation, `fa-machine-card`, `fa-andon-view`,
+kiosk mode, and About panel (`about_panel`) obligations.
 
 ## 1. Users and contexts
 
@@ -215,7 +215,8 @@ wallboard scale ×1.6.
 | Landing page restyled to tokens | `landingpage/` image context | **now** |
 | Visible product rebrand, About panel safety/license links, and local-first onboarding bridge | `frontend` fork consuming the shipped `ui/frontend_contract.yaml` and `onboarding/wizard_steps.yaml` contracts | implemented in fork |
 | Native read-only `fa-machine-card` with status/OEE/job/maintenance freshness and detail-only tap behavior | `frontend` fork consuming the shipped `ui/frontend_contract.yaml` machine-card contract | implemented in fork |
-| Trimmed navigation, native andon view + kiosk toggle, terminology pass ("Home"→"Plant overview", areas as lines/cells), full industrial onboarding wizard | `frontend` fork consuming the shipped `ui/frontend_contract.yaml` and `onboarding/wizard_steps.yaml` contracts | P3 |
+| Native read-only `fa-andon-view` with severity grouping, ack bookkeeping status, and detail-only alert rows | `frontend` fork consuming the shipped `ui/frontend_contract.yaml` and `dashboards/andon.yaml` contract | implemented in fork |
+| Trimmed navigation, kiosk toggle, terminology pass ("Home"→"Plant overview", areas as lines/cells), full industrial onboarding wizard | `frontend` fork consuming the shipped `ui/frontend_contract.yaml` and `onboarding/wizard_steps.yaml` contracts | P3 |
 | Auto-generated area dashboards from the line/cell taxonomy | frontend fork consuming the shipped `onboarding/site_model.example.yaml` line/cell taxonomy scaffold | P3 |
 
 Templates are deliberately stock-Lovelace (glance/entities/gauge/history

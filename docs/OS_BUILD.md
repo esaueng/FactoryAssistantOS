@@ -115,6 +115,7 @@ paths move between upstream releases).
 | Plant overview default dashboard | rootfs overlay `usr/share/factory-assistant/configuration.yaml` + `dashboards/factory-overview.yaml` | A |
 | Frontend product branding, About dialog, and local-first onboarding bridge | `frontend` fork | P3 bridge implemented in fork |
 | Native read-only machine card | `frontend` fork (`custom:fa-machine-card`) | P3 implemented in fork |
+| Native read-only andon view | `frontend` fork (`custom:fa-andon-view`) | P3 implemented in fork |
 | Kiosk toggle and full industrial onboarding wizard | `frontend` fork | P3 |
 
 **Component ownership preflight.** Before cutting a trusted tag, run

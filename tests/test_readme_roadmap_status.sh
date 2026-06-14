@@ -47,6 +47,8 @@ grep -q 'frontend fork has the visible product rebrand' "$readme" \
     || fail "README status does not record completed visible frontend rebrand work"
 grep -q "native read-only \`fa-machine-card\`" "$readme" \
     || fail "README status does not record the implemented native machine card"
+grep -q "native read-only \`fa-andon-view\`" "$readme" \
+    || fail "README status does not record the implemented native andon view"
 case "$readme_text" in
     *"native industrial onboarding wizard"*) ;;
     *) fail "README status does not name the remaining native onboarding work";;
@@ -55,12 +57,17 @@ grep -q 'frontend fork has visible rebrand/About/local-first onboarding bridge' 
     || fail "architecture status does not distinguish completed frontend bridge work"
 grep -q "native read-only \`fa-machine-card\`" "$arch_doc" \
     || fail "architecture status does not record the implemented native machine card"
+grep -q "native read-only \`fa-andon-view\`" "$arch_doc" \
+    || fail "architecture status does not record the implemented native andon view"
 if grep -q 'frontend branding/onboarding' "$release_doc"; then
     fail "release runbook still says broad frontend branding/onboarding is unresolved"
 fi
 case "$release_text" in
-    *"native navigation/andon/kiosk components and industrial onboarding wizard integration"*) ;;
+    *"native navigation/kiosk components and industrial onboarding wizard integration"*) ;;
     *) fail "release runbook does not name the remaining native frontend P3 work";;
 esac
+if grep -q 'native navigation/andon/kiosk components' "$release_doc"; then
+    fail "release runbook still lists native andon as remaining P3 work"
+fi
 
 echo "ok  README roadmap status matches current architecture and release evidence"

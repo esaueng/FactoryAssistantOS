@@ -7,8 +7,8 @@
 # safe (UI_DESIGN §10.3, docs/SAFETY_BOUNDARY.md).
 #
 # Built from stock cards so it runs on an unmodified Core. Stock Lovelace
-# cannot dynamically re-sort by severity-then-age (that is the frontend fork's
-# fa-machine-card / andon view, P3); here, severity is expressed as fixed
+# cannot dynamically re-sort by severity-then-age; the frontend fork's native
+# fa-andon-view now handles that contract. Here, severity is expressed as fixed
 # sections and age/ack are shown per row. The acknowledge helpers and the
 # "auto-clear ack when the condition clears" automation are defined in
 # packages/andon_example.yaml — copy and adapt them per alert at commissioning.

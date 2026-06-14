@@ -10,7 +10,9 @@ industrial example packages (`packages/`: plant KPIs, OEE, energy,
 maintenance reminders, andon acknowledge), the read-only protocol examples
 (`examples/`: MQTT and Modbus, with `examples/README.md` as the naming/topic
 quick reference), and the onboarding scaffold (`onboarding/`:
-`site_model.example.yaml`); the UI is specified in `docs/UI_DESIGN.md`.
+`site_model.example.yaml`), plus the industrial add-on contract
+(`addons/industrial_addons.catalog.yaml`); the UI is specified in
+`docs/UI_DESIGN.md`.
 
 ## 1. Defaults table
 
@@ -69,6 +71,11 @@ keep its MQTT/entity IDs aligned with the dashboards and packages.
 - **ESPHome**: the retrofit path for unsensored legacy machines (vibration,
   current clamps, temperatures, andon light states).
 
+The shipped `addons/industrial_addons.catalog.yaml` records the planned
+industrial add-on contract for the separate `addons-industrial` repository:
+OPC UA bridge, PLC gateway helper, and historian storage are local-first,
+monitoring-only, and must not add machine write/control behavior.
+
 ## 3.1 Local-first Core defaults
 
 In the shipped `configuration.yaml`, `default_config is deliberately not used`.
@@ -92,11 +99,12 @@ The templates ship read-only in the image at `/usr/share/factory-assistant/`.
 `fa-seed-config.service`, runs
 `/usr/libexec/fa-seed-config` on boot. It copies the **whole
 `/usr/share/factory-assistant/` tree** (`configuration.yaml`, `themes/`,
-`dashboards/`, `packages/`) into the Home Assistant config directory **only on
-a true first boot** — that is, only when no `configuration.yaml` exists in the
-target. It never overwrites existing files (`cp -Rn`), so user edits, restores,
-and re-runs are all safe; running the unit on every boot is harmless and
-idempotent. The unit is enabled in the rootfs overlay via a
+`dashboards/`, `packages/`, `examples/`, `onboarding/`, `addons/`) into the
+Home Assistant config directory **only on a true first boot** — that is, only
+when no `configuration.yaml` exists in the target. It never overwrites existing
+files (`cp -Rn`), so user edits, restores, and re-runs are all safe; running
+the unit on every boot is harmless and idempotent. The unit is enabled in the
+rootfs overlay via a
 `multi-user.target.wants` symlink. The seed script and unit are part of the
 overlay (`buildroot-external/rootfs-overlay/usr/...`) and are mirrored into the
 upstream build tree by `scripts/apply-overlay.sh` like any other overlay file.

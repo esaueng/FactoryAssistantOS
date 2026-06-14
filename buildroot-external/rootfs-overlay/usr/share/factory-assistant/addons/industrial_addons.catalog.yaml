@@ -1,0 +1,88 @@
+# Factory Assistant industrial add-on catalog.
+#
+# SPDX-License-Identifier: Apache-2.0
+# Copyright Factory Assistant contributors.
+#
+# This catalog is a commissioning contract for add-ons that live outside this
+# OS repository. It intentionally describes monitoring-only, read-only behavior.
+catalog:
+  id: factory_assistant_industrial_addons
+  version: 1
+  repository: addons-industrial
+  mqtt_broker_offer: mosquitto
+  topic_shape: fa/<site>/<area>/<device>/<measurement>
+  safety_posture: monitoring_only
+
+addons:
+  - id: opcua_mqtt_bridge
+    name: OPC UA to MQTT Bridge
+    repository: addons-industrial
+    type: bridge
+    status: planned
+    local_first: true
+    depends_on:
+      - mosquitto
+    summary: Subscribe to curated OPC UA telemetry nodes and publish MQTT discovery.
+    opcua:
+      mode: subscribe_only
+      write_nodes_allowed: false
+      namespace_browse_default: curated_only
+      safety_controller_allowed: false
+    mqtt:
+      discovery: true
+      topic_shape: fa/<site>/<area>/<device>/<measurement>
+      command_topics_allowed: false
+      availability_topics: true
+    safety:
+      monitoring_only: true
+      machine_control: false
+      safety_function: false
+
+  - id: plc_gateway_helper
+    name: PLC Gateway Helper
+    repository: addons-industrial
+    type: helper
+    status: planned
+    local_first: true
+    summary: Normalize read-only telemetry from PLC gateways and meters.
+    targets:
+      - plc_gateway
+      - energy_meter
+      - protocol_converter
+    modbus_tcp:
+      read_only: true
+      allowed_function_codes:
+        - 3
+        - 4
+      write_functions_allowed: false
+      safety_controller_allowed: false
+    output:
+      mqtt_discovery: true
+      topic_shape: fa/<site>/<area>/<device>/<measurement>
+    safety:
+      monitoring_only: true
+      machine_control: false
+      safety_function: false
+
+  - id: historian_storage
+    name: Historian Storage
+    repository: addons-industrial
+    type: historian
+    status: planned
+    local_first: true
+    cloud_required: false
+    machine_control: false
+    summary: Store long-term plant telemetry without making the appliance cloud-dependent.
+    engines:
+      - influxdb
+      - timescaledb
+    inputs:
+      - mqtt
+      - core_recorder_export
+    retention:
+      default_policy: site_defined
+      long_term_storage: true
+    safety:
+      monitoring_only: true
+      machine_control: false
+      safety_function: false

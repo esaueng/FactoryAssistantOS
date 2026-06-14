@@ -219,8 +219,10 @@ and complete onboarding. Full flashing/VM notes: `docs/OS_BUILD.md` §3.
       `custom:fa-machine-card`, `custom:fa-andon-view`, and
       `custom:factory-wallboard-kiosk`; the area dashboard generator emits
       `area-dashboards.example.yaml` from the line/cell model with
-      `custom:fa-machine-card` and `custom:fa-andon-view`; still P3: full
-      industrial onboarding wizard integration and terminology polish.
+      `custom:fa-machine-card` and `custom:fa-andon-view`; the terminology
+      contract aligns `Plant overview`, line or cell taxonomy, `Factory
+      Assistant CLI`, and “Factory Assistant is based on Home Assistant.”;
+      still P3: full industrial onboarding wizard integration.
 - [ ] Verify the Supervisor accepts the `faos` os-release identity on first
       boot (`docs/OS_BUILD.md` §4 — os-release ID verification).
 - [ ] Verify the settled `branding/identity.env` go-live values before any

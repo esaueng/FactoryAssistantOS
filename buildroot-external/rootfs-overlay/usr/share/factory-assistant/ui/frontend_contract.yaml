@@ -39,6 +39,38 @@ navigation:
     - To-do
   settings_visibility: admin_only
 
+terminology:
+  status: os_shipped_handoff
+  home_assistant_attribution: Factory Assistant is based on Home Assistant.
+  cli_command: ha
+  cli_display_name: Factory Assistant CLI
+  canonical_user_terms:
+    product: Factory Assistant
+    os: Factory Assistant OS
+    default_landing: Plant overview
+    site: site
+    line: line
+    cell: cell
+    station: station
+    machine: machine
+    wallboard: Wallboard
+    andon: Andon
+  user_facing_replacements:
+    home: Plant overview
+    household: site
+    area: line or cell
+    Home Assistant CLI: Factory Assistant CLI
+    HA CLI: Factory Assistant CLI
+  forbidden_user_facing_patterns:
+    - Home Assistant CLI
+    - HA CLI
+    - Home dashboard
+    - home-centric setup
+  allowed_home_assistant_contexts:
+    - canonical upstream attribution
+    - internal upstream-compatible identifiers
+    - license and NOTICE provenance
+
 machine_card:
   component: fa-machine-card
   tap_action: detail_only

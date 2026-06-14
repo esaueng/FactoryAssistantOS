@@ -77,7 +77,10 @@ rules that forbid control affordances. The frontend fork now implements the
 trimmed native plant navigation plus the read-only `fa-machine-card`,
 `fa-andon-view`, and `factory-wallboard-kiosk`; its `about_panel` section
 requires the Safety boundary and Open source licenses links in the frontend
-fork's About surface.
+fork's About surface. The same file carries the terminology contract: `Plant
+overview` for the default landing view, site -> line or cell taxonomy,
+`Factory Assistant CLI` for operator-facing CLI notes, and the canonical
+“Factory Assistant is based on Home Assistant.” attribution.
 
 ## 3. Protocol guidance
 

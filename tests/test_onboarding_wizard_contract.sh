@@ -84,6 +84,8 @@ if hierarchy.get("taxonomy") != ["site", "line", "cell", "station", "machine"]:
 network = by_id["network_posture"]
 if network.get("helper") != "fa-network-posture":
     raise SystemExit("network posture step must use fa-network-posture")
+if network.get("helper_output_format") != "json":
+    raise SystemExit("network posture step must consume fa-network-posture JSON")
 if network.get("read_only") is not True:
     raise SystemExit("network posture step must be read-only")
 for check in ("default_route", "global_address", "static_ip_guidance"):

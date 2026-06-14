@@ -26,6 +26,7 @@ commissioning:
   dhcp_default: true
   static_ip_guidance: true
   posture_helper: fa-network-posture
+  posture_output_format: json
   ntp_required: true
   mosquitto_offer: true
 

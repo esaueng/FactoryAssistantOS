@@ -74,6 +74,12 @@ FA_POSTURE_NMCLI="$tmp/nmcli" \
 FA_POSTURE_HOSTNAME="$tmp/hostname" \
     "$helper" > "$tmp/posture.out"
 
+FA_POSTURE_TIMEDATECTL="$tmp/timedatectl" \
+FA_POSTURE_IP="$tmp/ip" \
+FA_POSTURE_NMCLI="$tmp/nmcli" \
+FA_POSTURE_HOSTNAME="$tmp/hostname" \
+    "$helper" --json > "$tmp/posture.json"
+
 grep -q 'Factory Assistant network/time posture' "$tmp/posture.out" \
     || fail "posture output is missing the title"
 grep -q '\[OK\] NTP synchronized' "$tmp/posture.out" \
@@ -90,10 +96,55 @@ if grep -q 'HA CLI' "$tmp/posture.out"; then
     fail "posture output still uses upstream HA CLI wording"
 fi
 
+python3 - "$tmp/posture.json" <<'PY'
+import json
+import sys
+
+with open(sys.argv[1], "r", encoding="utf-8") as fh:
+    data = json.load(fh)
+
+if data.get("schema_version") != 1:
+    raise SystemExit("posture JSON schema_version must be 1")
+if data.get("product") != "Factory Assistant":
+    raise SystemExit("posture JSON product must be Factory Assistant")
+if data.get("helper") != "fa-network-posture":
+    raise SystemExit("posture JSON helper id drifted")
+safety = data.get("safety") or {}
+if safety.get("monitoring_only") is not True:
+    raise SystemExit("posture JSON must state monitoring_only safety posture")
+if safety.get("machine_control") is not False:
+    raise SystemExit("posture JSON must state machine_control is false")
+
+checks = {check.get("id"): check for check in data.get("checks") or []}
+expected = {
+    "ntp_synchronized": ("OK", "yes"),
+    "time_zone": ("INFO", "America/Detroit"),
+    "hostname_mdns": ("OK", "factory-assistant"),
+    "default_route": ("OK", "default via 192.0.2.1 dev eth0 proto dhcp"),
+    "global_address": ("INFO", "eth0             UP             192.0.2.10/24"),
+    "networkmanager_ipv4_method": ("INFO", "manual"),
+}
+for check_id, (level, value) in expected.items():
+    check = checks.get(check_id)
+    if not check:
+        raise SystemExit(f"posture JSON missing check: {check_id}")
+    if check.get("level") != level:
+        raise SystemExit(f"posture JSON {check_id} level drifted: {check.get('level')}")
+    if check.get("value") != value:
+        raise SystemExit(f"posture JSON {check_id} value drifted: {check.get('value')}")
+
+reminders = "\n".join(data.get("reminders") or [])
+for phrase in ("Static IP", "NTP", "Mosquitto", "Safety"):
+    if phrase not in reminders:
+        raise SystemExit(f"posture JSON reminders missing: {phrase}")
+PY
+
 grep -q 'fa-network-posture' "$motd" \
     || fail "MOTD does not tell operators about the posture helper"
 grep -q 'fa-network-posture' "$defaults_doc" \
     || fail "industrial defaults doc does not document the posture helper"
+grep -q -- '--json' "$defaults_doc" \
+    || fail "industrial defaults doc does not document posture JSON output"
 grep -q 'network/time posture helper' "$arch_doc" \
     || fail "architecture status does not mention the posture helper"
 

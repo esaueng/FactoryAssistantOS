@@ -193,7 +193,16 @@ fa-network-posture
 ```
 
 The output is advisory and read-only; use it as the commissioning checklist
-before assigning the appliance to a line, wallboard, or historian feed.
+before assigning the appliance to a line, wallboard, or historian feed. Future
+onboarding/Supervisor/frontend consumers should use:
+
+```sh
+fa-network-posture --json
+```
+
+That mode emits schema version `1`, stable check IDs, monitoring-only safety
+metadata, and the same commissioning reminders without requiring UI code to
+parse terminal text.
 
 ## 6. Site repo pattern (recommended practice, not shipped)
 

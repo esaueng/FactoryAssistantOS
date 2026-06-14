@@ -120,7 +120,8 @@ paths move between upstream releases).
 --owner esaueng` with authenticated `gh` access. It checks the required
 component forks, rejects channel images outside `ghcr.io/esaueng`, and verifies
 the GHCR packages named by the channel are public for anonymous appliance
-pulls.
+pulls. The tag build workflow runs the same check with `GH_COMPONENT_READ_TOKEN`
+when that secret is set, falling back to the workflow token.
 
 **os-release ID verification (P1).** After first boot, confirm the Supervisor
 accepts the `faos` OS identity: Settings → About reports "Factory Assistant

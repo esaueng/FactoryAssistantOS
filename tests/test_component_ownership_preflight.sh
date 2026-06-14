@@ -5,6 +5,7 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 script="$ROOT/scripts/verify-component-ownership.sh"
 release_doc="$ROOT/RELEASE.md"
 build_doc="$ROOT/docs/OS_BUILD.md"
+workflow="$ROOT/.github/workflows/build-os-image.yml"
 tmp="$(mktemp -d)"
 trap 'rm -rf "$tmp"' EXIT
 
@@ -107,5 +108,11 @@ grep -q 'scripts/verify-component-ownership.sh' "$release_doc" \
     || fail "release runbook does not document component ownership preflight"
 grep -q 'scripts/verify-component-ownership.sh' "$build_doc" \
     || fail "OS build docs do not document component ownership preflight"
+grep -q 'scripts/verify-component-ownership.sh' "$workflow" \
+    || fail "build workflow does not verify component ownership before trusted tag releases"
+grep -q 'GH_COMPONENT_READ_TOKEN' "$workflow" \
+    || fail "build workflow does not provide a GitHub token for component ownership verification"
+grep -q 'packages: read' "$workflow" \
+    || fail "build workflow permissions do not allow GHCR package visibility checks"
 
 echo "ok  component ownership preflight validates esaueng repos, channel images, and public GHCR packages"

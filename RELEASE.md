@@ -127,7 +127,9 @@ and complete onboarding. Full flashing/VM notes: `docs/OS_BUILD.md` §3.
       This uses authenticated `gh` access to confirm required component repos
       are reachable under `esaueng`, the channel image map points only at
       `ghcr.io/esaueng`, and all channel GHCR packages are public for
-      anonymous appliance pulls.
+      anonymous appliance pulls. The tag workflow runs the same check with
+      `GH_COMPONENT_READ_TOKEN` when that secret is set, falling back to the
+      workflow token.
 - [ ] Verify the published channel is live and matches the local stable
       document before cutting a release tag:
 

@@ -10,8 +10,8 @@ Related: `docs/ARCHITECTURE.md` §6 (frontend layer), `docs/BRANDING.md`
 (identity), `docs/INDUSTRIAL_DEFAULTS.md` (entity/topic conventions),
 `docs/SAFETY_BOUNDARY.md` (normative for everything below). The OS image also
 ships `ui/frontend_contract.yaml`, a machine-readable handoff for the
-frontend fork's native plant navigation, `fa-machine-card`, kiosk mode, and
-andon behavior.
+frontend fork's native plant navigation, `fa-machine-card`, kiosk mode, andon
+behavior, and About panel (`about_panel`) obligations.
 
 ## 1. Users and contexts
 
@@ -161,6 +161,11 @@ long-range analysis defers to the historian add-on (P3+).
 **Settings.** Upstream settings surface, unchanged, admin-only. Operators
 and wallboards run as non-admin users (upstream supports admin/non-admin
 only; finer roles are a known limitation, revisit in the fork).
+
+**About panel.** The frontend fork implements `about_panel` from
+`ui/frontend_contract.yaml`: Factory Assistant product identity, canonical
+upstream attribution, non-affiliation notice, Safety boundary link, and an
+Open source licenses link to the per-release `legal-info` bundle.
 
 ## 7. Wallboard / kiosk mode
 

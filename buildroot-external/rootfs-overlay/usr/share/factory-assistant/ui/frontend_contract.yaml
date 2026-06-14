@@ -91,6 +91,22 @@ andon_view:
     - warning
     - critical
 
+about_panel:
+  component: factory-about-panel
+  product_name: Factory Assistant
+  upstream_attribution: Factory Assistant is based on Home Assistant.
+  non_affiliation_notice_required: true
+  safety_disclaimer_required: true
+  links:
+    safety_boundary:
+      label: Safety boundary
+      document: docs/SAFETY_BOUNDARY.md
+      required: true
+    open_source_licenses:
+      label: Open source licenses
+      release_artifact: legal-info
+      required: true
+
 onboarding:
   contract: onboarding/wizard_steps.yaml
   site_model: onboarding/site_model.example.yaml

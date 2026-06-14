@@ -1,0 +1,73 @@
+# Build the Factory Assistant Supervisor image — upstream Home Assistant
+# Supervisor with the update-channel URL repointed at the FA version service
+# (forks/supervisor/Dockerfile). Publishes ghcr.io/esaueng/amd64-hassio-supervisor.
+#
+# Trigger: workflow_dispatch (after this lands on main), plus a push trigger on
+# the Phase-1 bring-up branch so the first build can run before merge. The
+# branch push trigger is temporary — drop it (leave workflow_dispatch only)
+# once the image is published and the branch merges.
+#
+# Push auth: prefers the GHCR_PAT secret (a PAT with write:packages — needed
+# because amd64-hassio-supervisor already exists in the org and the default
+# GITHUB_TOKEN may lack write access to a pre-existing package); falls back to
+# GITHUB_TOKEN when GHCR_PAT is absent.
+name: Build FA Supervisor (channel overlay)
+
+on:
+  workflow_dispatch:
+    inputs:
+      supervisor_version:
+        description: "Upstream Supervisor version to base on AND tag (e.g. 2026.06.1)"
+        required: true
+        default: "2026.06.1"
+  push:
+    branches: ["phase1-supervisor-channel"]
+    paths:
+      - "forks/supervisor/**"
+      - ".github/workflows/build-fa-supervisor.yml"
+
+env:
+  DEFAULT_VERSION: "2026.06.1"
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build:
+    name: Build & push amd64-hassio-supervisor
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Resolve version
+        id: ver
+        run: echo "v=${{ inputs.supervisor_version || env.DEFAULT_VERSION }}" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_PAT || secrets.GITHUB_TOKEN }}
+
+      - name: Build & push patched Supervisor (amd64)
+        uses: docker/build-push-action@v6
+        with:
+          context: forks/supervisor
+          file: forks/supervisor/Dockerfile
+          platforms: linux/amd64
+          build-args: |
+            SUPERVISOR_VERSION=${{ steps.ver.outputs.v }}
+          tags: ghcr.io/esaueng/amd64-hassio-supervisor:${{ steps.ver.outputs.v }}
+          push: true
+          provenance: false
+
+      - name: Summary
+        run: |
+          echo "Published ghcr.io/esaueng/amd64-hassio-supervisor:${{ steps.ver.outputs.v }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "Remember: make the package PUBLIC and set version-service/stable.json supervisor=${{ steps.ver.outputs.v }}." >> "$GITHUB_STEP_SUMMARY"

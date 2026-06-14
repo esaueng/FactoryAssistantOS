@@ -4,7 +4,25 @@ This is the **keystone** of the app-layer rebrand (Phase 1). Without it, a
 running Factory Assistant appliance does **not** use the Factory Assistant
 update channel at all.
 
-## Why a source fork is required (it can't be done from this repo)
+## How Phase 1 implements it: a patch-overlay image
+
+The whole Phase-1 delta is a single Supervisor constant. Rather than fork the
+entire `home-assistant/supervisor` repo and re-implement its multi-stage build,
+Phase 1 ships the change as a thin **image overlay**:
+
+- [`forks/supervisor/Dockerfile`](../../../forks/supervisor/Dockerfile) —
+  `FROM ghcr.io/home-assistant/amd64-hassio-supervisor:<ver>` and rewrites the
+  one constant in the installed `supervisor/const.py` (then drops bytecode so it
+  recompiles at runtime). Everything else is upstream-identical.
+- [`.github/workflows/build-fa-supervisor.yml`](../../../.github/workflows/build-fa-supervisor.yml)
+  builds it for `amd64` and pushes `ghcr.io/esaueng/amd64-hassio-supervisor:<ver>`.
+
+This is reproducible, builds in seconds, and re-pins to a new upstream tag by
+changing one build-arg. A **full source fork** (the "## Build & publish" section
+below) remains the eventual P2 path — adopt it when we also rebrand the
+Supervisor's own product strings, not just this URL.
+
+## Why a Supervisor *source* change is required (it can't be done from this repo)
 
 The Supervisor's version-channel URL is a **hardcoded constant** with no env or
 config override (`supervisor/const.py`, verified at tag `2026.06.0`):

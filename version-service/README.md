@@ -11,7 +11,7 @@ How it fits together (details in `docs/ARCHITECTURE.md` §Updates):
 1. **OS** — the channel JSON names the current OS version per board; the
    Supervisor downloads the corresponding signed RAUC bundle (`.raucb`) from
    the Factory Assistant OS release URL and installs it to the inactive A/B
-   slot. The OS bundles ride **GitHub Releases** of `esaueng/FactoryAssistant`.
+   slot. The OS bundles ride **GitHub Releases** of `esaueng/FactoryAssistantOS`.
 2. **Supervisor / plugins / Core** — the channel JSON names container image
    versions; they are pulled from the Factory Assistant container registry
    (`ghcr.io/esaueng`).
@@ -60,13 +60,13 @@ Supervisor's updater before publishing (next paragraph).
 ## Hosting (go-live)
 
 The channel document is served from the **GitHub Pages** site of
-`esaueng/FactoryAssistant`, and the OS OTA bundles ride that repo's **GitHub
+`esaueng/FactoryAssistantOS`, and the OS OTA bundles ride that repo's **GitHub
 Releases**. The settled URLs live in `branding/identity.env`:
 
-- **Channel** — `https://esaueng.github.io/FactoryAssistant/stable.json`
+- **Channel** — `https://esaueng.github.io/FactoryAssistantOS/stable.json`
   (`FAOS_VERSION_CHANNEL_URL`). This is the URL the Supervisor polls.
 - **OTA bundle** —
-  `https://github.com/esaueng/FactoryAssistant/releases/download/{version}/faos_{board}-{version}.raucb`
+  `https://github.com/esaueng/FactoryAssistantOS/releases/download/{version}/faos_{board}-{version}.raucb`
   (`FAOS_OTA_URL_TEMPLATE`). The `{version}`/`{board}` placeholders are
   expanded by the Supervisor.
 - **Registry** — `ghcr.io/esaueng` (`FAOS_CONTAINER_REGISTRY`).
@@ -97,7 +97,7 @@ To go live:
    parser is whatever Supervisor version the image ships. Only publish a
    document that the pinned Supervisor accepts.
 3. **Cut the OS Release.** Attach the signed `.raucb` bundle to a GitHub
-   Release of `esaueng/FactoryAssistant` tagged with the OS `{version}`, so the
+   Release of `esaueng/FactoryAssistantOS` tagged with the OS `{version}`, so the
    OTA URL above resolves.
 
 Other operational requirements:

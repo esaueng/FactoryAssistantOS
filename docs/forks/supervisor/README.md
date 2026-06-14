@@ -19,7 +19,7 @@ the whole `data["images"]` map (core, supervisor, and the 5 plugins) plus `ota`
 from whatever that URL returns. So once the running Supervisor container starts,
 it fetches versions **and image names from `version.home-assistant.io`** and
 pulls Core + plugins from `ghcr.io/home-assistant`, **ignoring**
-`esaueng.github.io/FactoryAssistant/stable.json` entirely.
+`esaueng.github.io/FactoryAssistantOS/stable.json` entirely.
 
 The OS rootfs overlay (`usr/sbin/hassos-supervisor`) only governs the *cold-boot
 bootstrap* pull of the Supervisor image — not steady state. Therefore the
@@ -32,14 +32,14 @@ In the fork, change only `URL_HASSIO_VERSION`:
 
 ```diff
 - URL_HASSIO_VERSION  = "https://version.home-assistant.io/{channel}.json"
-+ URL_HASSIO_VERSION  = "https://esaueng.github.io/FactoryAssistant/{channel}.json"
++ URL_HASSIO_VERSION  = "https://esaueng.github.io/FactoryAssistantOS/{channel}.json"
 ```
 
 Robust, line-number-independent application:
 
 ```sh
 sed -i \
-  's#^URL_HASSIO_VERSION\( *\)= "https://version.home-assistant.io/{channel}.json"#URL_HASSIO_VERSION\1= "https://esaueng.github.io/FactoryAssistant/{channel}.json"#' \
+  's#^URL_HASSIO_VERSION\( *\)= "https://version.home-assistant.io/{channel}.json"#URL_HASSIO_VERSION\1= "https://esaueng.github.io/FactoryAssistantOS/{channel}.json"#' \
   supervisor/const.py
 grep -n 'URL_HASSIO_VERSION' supervisor/const.py   # verify it now reads esaueng.github.io
 ```
@@ -62,7 +62,7 @@ grep -n 'URL_HASSIO_VERSION' supervisor/const.py   # verify it now reads esaueng
 ## Channel coupling (must be true before this ships)
 
 `URL_HASSIO_VERSION` uses `{channel}` → for the default `stable` channel it
-fetches `https://esaueng.github.io/FactoryAssistant/stable.json` (already
+fetches `https://esaueng.github.io/FactoryAssistantOS/stable.json` (already
 served). The Supervisor reads that document's **`images`** map (plural) — which
 this repo's `version-service/stable.json` now provides for all 7 components.
 If you ever switch a device to `beta`/`dev`, you must also publish
@@ -96,7 +96,7 @@ If you ever switch a device to `beta`/`dev`, you must also publish
 
 ```sh
 # The running Supervisor now reads the FA channel (not version.home-assistant.io):
-ha supervisor logs | grep -i 'esaueng.github.io/FactoryAssistant'   # NOT version.home-assistant.io
+ha supervisor logs | grep -i 'esaueng.github.io/FactoryAssistantOS'   # NOT version.home-assistant.io
 # Core + every plugin resolve to esaueng:
 docker ps --format '{{.Image}}'        # all ghcr.io/esaueng/*, none ghcr.io/home-assistant/*
 cat /mnt/data/supervisor/updater.json  # .image map entries all esaueng

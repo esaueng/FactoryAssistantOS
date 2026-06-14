@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://esaueng.github.io/FactoryAssistant/schema/channel.schema.json",
+  "$id": "https://esaueng.github.io/FactoryAssistantOS/schema/channel.schema.json",
   "title": "Factory Assistant update channel document",
   "description": "Shape of a Factory Assistant {stable,beta,dev}.json channel document polled by the Supervisor. ADVISORY: the authoritative schema is whatever the pinned Supervisor parses — derive it from the upstream home-assistant/version repo at fork time and validate against the Supervisor's updater before publishing. See version-service/README.md and docs/ARCHITECTURE.md §7.",
   "type": "object",

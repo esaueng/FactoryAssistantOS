@@ -1,33 +1,15 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img"
      aria-labelledby="fa-logo-title fa-logo-desc" fill="none">
   <title id="fa-logo-title">Factory Assistant</title>
-  <desc id="fa-logo-desc">Original Factory Assistant master mark: an open
-    industrial gauge arc with a live monitoring pulse across its centre.
-    Original work, not derived from, tracing, or resembling any Home Assistant
-    or home-assistant/brands asset. Informational and monitoring-only; the mark
-    is not a safety stack-light and makes no ISO 3864 / ANSI Z535 claim.</desc>
+  <desc id="fa-logo-desc">Original Factory Assistant master mark: an industrial
+    hexagon (modular / industrial) carrying a live monitoring pulse across its
+    centre. Original work, not derived from, tracing, or resembling any Home
+    Assistant or home-assistant/brands asset. Informational and monitoring-only;
+    the mark is not a safety stack-light and makes no ISO 3864 / ANSI Z535
+    claim.</desc>
 
-  <!-- Single brand colour so the mark reads as one mark, never as a state.
-       Default is FA amber #F5A623 (tuned for the graphite product surfaces);
-       override the fa-brand CSS variable to recolour (e.g. #B07300 on light
-       backgrounds). -->
   <g stroke="var(--fa-brand, #F5A623)" stroke-linecap="round" stroke-linejoin="round" fill="none">
-
-    <!-- Gauge arc: ~288deg open-bottom sweep — the instrument body. -->
-    <path d="M 152.55 398.39 A 176 176 0 1 1 359.45 398.39" stroke-width="30"/>
-
-    <!-- Gauge scale ticks: 5 marks evenly spaced 72deg apart along the arc,
-         symmetric about the vertical (instrumentation read). -->
-    <g stroke-width="20">
-      <path d="M 144.32 409.71 L 163.13 383.82"/>  <!-- 234 deg -->
-      <path d="M 75.3 197.29 L 105.73 207.18"/>    <!-- 162 deg -->
-      <path d="M 256 66 L 256 98"/>                 <!--  90 deg -->
-      <path d="M 436.7 197.29 L 406.27 207.18"/>   <!--  18 deg -->
-      <path d="M 367.68 409.71 L 348.87 383.82"/>  <!-- -54 deg -->
-    </g>
-
-    <!-- Live monitoring pulse across the centre (the "signal"). -->
-    <polyline stroke-width="30"
-      points="140,256 188,256 206,236 224,256 244,256 256,288 272,140 288,300 306,256 326,236 344,256 372,256"/>
+    <polygon stroke-width="30" points="256,86 403.2,171 403.2,341 256,426 108.8,341 108.8,171"/>
+    <polyline stroke-width="30" points="120,256 200,256 234,184 282,328 320,256 392,256"/>
   </g>
 </svg>

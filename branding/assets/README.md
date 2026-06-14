@@ -115,18 +115,17 @@ optional.
 | Asset | Provenance |
 |---|---|
 | [`logo.svg`](logo.svg) | **Original work.** Hand-authored vector (plain SVG, no embedded raster, fonts, or external refs). Composed from first principles for Factory Assistant; **not derived from, tracing, recolouring, or resembling the Home Assistant logo or any `home-assistant/brands` asset.** Licensed Apache-2.0. |
-| [`icon.svg`](icon.svg) | **Original work.** A reduction of `logo.svg` (gauge arc + one bold pulse, no fine scale ticks) tuned for the favicon/app-icon and verified legible at 16 px. Same originality and licence as the master. |
+| [`icon.svg`](icon.svg) | **Original work.** A reduction of `logo.svg` (hexagon + one bold pulse) tuned for the favicon/app-icon and verified legible at 16 px. Same originality and licence as the master. |
 
-Design of the master mark (`logo.svg`): a deliberate **industrial gauge** —
-an open, ~288° bottom-gapped arc with evenly spaced scale ticks (the
-monitoring **instrument**) — crossed at its centre by a **live monitoring
-pulse** waveform (the **signal**). It is drawn in a single FA amber `#F5A623`
-so it reads as one mark, never as a state colour. The master is tuned for the
-product-default **graphite** surfaces (`#111418` / `#1E242C`, ≥7.7:1 contrast);
-on light backgrounds the mark is recoloured to the darker amber `#B07300`, the
-same accent the theme uses in light mode (`#F5A623` on `#F2F4F7` is too low-
-contrast for a fill). The arc + pulse motif is the
-direction pinned in §1; the abstract gauge/pulse depicts observation only and
+Design of the master mark (`logo.svg`): a deliberate **industrial hexagon**
+(the modular/industrial **enclosure**) — crossed at its centre by a **live
+monitoring pulse** waveform (the **signal**). It is drawn in a single FA amber
+`#F5A623` so it reads as one mark, never as a state colour. The master is tuned
+for the product-default **graphite** surfaces (`#111418` / `#1E242C`, ≥7.7:1
+contrast); on light backgrounds the mark is recoloured to the darker amber
+`#B07300`, the same accent the theme uses in light mode (`#F5A623` on `#F2F4F7`
+is too low-contrast for a fill). The hexagon + pulse motif is the
+direction pinned in §1; the abstract hexagon/pulse depicts observation only and
 **invites no machine control or actuation** (§4). The mark is **not** a
 safety stack-light and makes **no ISO 3864 / ANSI Z535 safety-colour claim**
 (§4). It rasterises cleanly at 16 px (favicon) and 512 px (PWA / About-dialog),
@@ -136,7 +135,7 @@ verified with `rsvg-convert` (see §6).
 
 **Master mark landed.** The refined original master logo — [`logo.svg`](logo.svg)
 — and its 16 px-tuned app/favicon variant — [`icon.svg`](icon.svg) — are in
-place, with provenance recorded in §5. They honour §1 (original gauge/pulse
+place, with provenance recorded in §5. They honour §1 (original hexagon/pulse
 motif, amber on graphite, legible at 16 px) and §4 (informational, monitoring-
 only, no safety claim). For light surfaces, recolour the amber to `#B07300`
 (§5). Both rasterise cleanly at 16 px and 512 px; verify with:

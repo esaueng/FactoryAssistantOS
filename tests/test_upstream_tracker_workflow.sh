@@ -31,6 +31,14 @@ grep -q 'github.rest.repos.getLatestRelease' "$workflow" \
     || fail "upstream tracker does not check latest upstream releases"
 grep -q 'github.rest.repos.listTags' "$workflow" \
     || fail "upstream tracker does not fall back to upstream tags"
+grep -q 'GET /repos/{owner}/{repo}/security-advisories' "$workflow" \
+    || fail "upstream tracker does not query repository security advisories"
+grep -q 'state: "published"' "$workflow" \
+    || fail "upstream tracker does not limit advisory checks to published advisories"
+grep -q 'Latest published advisory' "$workflow" \
+    || fail "upstream tracker issue table does not surface latest advisory status"
+grep -q 'repository security advisory API' "$workflow" \
+    || fail "upstream tracker does not describe the automated security advisory check"
 grep -q 'Upstream release/security tracking' "$workflow" \
     || fail "upstream tracker does not maintain the expected standing issue"
 

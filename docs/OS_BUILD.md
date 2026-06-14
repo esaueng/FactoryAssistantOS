@@ -290,8 +290,9 @@ Supervisor's OS-version expectations simple.
 2. Add `upstream` as a git remote; merge upstream **release tags** (not
    `main`) on a cadence — at minimum for upstream security releases.
    `.github/workflows/upstream-tracker.yml` maintains a weekly tracking issue
-   with current upstream release/tag state and the manual security-review
-   checklist that must be cleared before bumping pins.
+   with current upstream release/tag state, the latest published repository
+   security advisory found through GitHub's advisory API, and the manual
+   security-review checklist that must be cleared before bumping pins.
 3. Conflict policy: branding/identity files → ours; everything else →
    take upstream and re-apply the minimal delta; every merge re-walks the §4
    checklist. Any divergence of internal identifiers (`HASSOS_*`, `hassio`,

@@ -66,12 +66,53 @@ jobs:
               };
             }
 
+            async function latestPublishedAdvisoryFor(owner, repo) {
+              try {
+                const advisories = await github.paginate(
+                  "GET /repos/{owner}/{repo}/security-advisories",
+                  {
+                    owner,
+                    repo,
+                    state: "published",
+                    sort: "published",
+                    direction: "desc",
+                    per_page: 5,
+                  },
+                );
+                const advisory = advisories.find((item) => !item.withdrawn_at);
+                if (!advisory) {
+                  return {
+                    kind: "none",
+                    value: "no published repository advisories",
+                    url: "",
+                  };
+                }
+                return {
+                  kind: "published",
+                  value: `${advisory.ghsa_id} (${advisory.severity})`,
+                  url: advisory.html_url,
+                  summary: advisory.summary,
+                  publishedAt: advisory.published_at,
+                };
+              } catch (error) {
+                if ([403, 404].includes(error.status)) {
+                  return {
+                    kind: "unavailable",
+                    value: `repository advisory check unavailable (${error.status})`,
+                    url: "",
+                  };
+                }
+                throw error;
+              }
+            }
+
             const rows = [];
             for (const match of repoMatches) {
               const key = match[1];
               const upstreamOwner = match[2];
               const upstreamRepo = match[3];
               const latest = await latestFor(upstreamOwner, upstreamRepo);
+              const advisory = await latestPublishedAdvisoryFor(upstreamOwner, upstreamRepo);
               const pinned = refs.get(key) || "not pinned here";
               const status = refs.has(key) && refs.get(key) !== latest.value
                 ? "review available upstream change"
@@ -81,19 +122,25 @@ jobs:
                 repo: `${upstreamOwner}/${upstreamRepo}`,
                 pinned,
                 latest,
+                advisory,
                 status,
               });
             }
 
             const driftRows = rows.filter((row) => row.status !== "tracked");
+            const advisoryRows = rows.filter((row) => row.advisory.kind === "published");
+            const advisoryUnavailableRows = rows.filter((row) => row.advisory.kind === "unavailable");
             const table = [
-              "| Component | Upstream | Pinned here | Latest upstream | Status |",
-              "|---|---|---|---|---|",
+              "| Component | Upstream | Pinned here | Latest upstream | Latest published advisory | Status |",
+              "|---|---|---|---|---|---|",
               ...rows.map((row) => {
                 const latest = row.latest.url
                   ? `[${row.latest.value}](${row.latest.url})`
                   : row.latest.value;
-                return `| ${row.key} | ${row.repo} | ${row.pinned} | ${latest} (${row.latest.kind}) | ${row.status} |`;
+                const advisory = row.advisory.url
+                  ? `[${row.advisory.value}](${row.advisory.url})`
+                  : row.advisory.value;
+                return `| ${row.key} | ${row.repo} | ${row.pinned} | ${latest} (${row.latest.kind}) | ${advisory} (${row.advisory.kind}) | ${row.status} |`;
               }),
             ].join("\n");
 
@@ -101,6 +148,12 @@ jobs:
             const driftSummary = driftRows.length === 0
               ? "No pinned upstream ref drift was detected."
               : `${driftRows.length} pinned upstream ref(s) need review.`;
+            const advisorySummary = advisoryRows.length === 0
+              ? "No published repository security advisories were found by the repository security advisory API."
+              : `${advisoryRows.length} upstream repo(s) have published security advisories listed below.`;
+            const advisoryAvailability = advisoryUnavailableRows.length === 0
+              ? ""
+              : ` ${advisoryUnavailableRows.length} repository advisory check(s) were unavailable; review those upstream repositories manually.`;
             const body = [
               "<!-- faos-upstream-tracker -->",
               "# Upstream Release/Security Tracking",
@@ -109,18 +162,20 @@ jobs:
               `Workflow run: ${runUrl}`,
               "",
               driftSummary,
+              advisorySummary + advisoryAvailability,
               "",
               table,
               "",
               "## Security Review Queue",
               "",
               "- [ ] Review upstream release notes for each row marked `review available upstream change`.",
-              "- [ ] Check GitHub Security Advisories for the upstream repositories before bumping pins.",
+              "- [ ] Review linked published repository advisories before bumping pins.",
+              "- [ ] Check GitHub Security Advisories manually for rows where the repository advisory check was unavailable.",
               "- [ ] Re-run the `docs/OS_BUILD.md` rebrand checklist against any bumped OS tag.",
               "- [ ] Confirm no Home Assistant/OHF marks re-enter shipped user-facing artifacts.",
               "- [ ] Confirm the monitoring-only safety boundary still holds.",
               "",
-              "This workflow only tracks upstream state. It does not modify pins, merge upstream code, or replace the manual security review required before a release.",
+              "This workflow only tracks upstream state using release/tag lookups and GitHub's public repository security advisory API. It does not modify pins, merge upstream code, or replace the manual security review required before a release.",
             ].join("\n");
 
             const { owner, repo } = context.repo;
@@ -156,6 +211,8 @@ jobs:
             await core.summary
               .addHeading("Upstream release/security tracking")
               .addRaw(driftSummary)
+              .addRaw("\n\n")
+              .addRaw(advisorySummary + advisoryAvailability)
               .addRaw("\n\n")
               .addRaw(table)
               .write();

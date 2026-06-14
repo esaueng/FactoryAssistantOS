@@ -107,7 +107,7 @@ paths move between upstream releases).
 | os-release **CPE product** vs **unmodified** Supervisor OS-detection (allowlist `{hassos, haos}`) | `scripts/apply-overlay.sh` rewrites the `post-build.sh` CPE product to `haos` (keeps `ID=faos` + branded `NAME`); the product is an internal OS-family id (invariant 4) | A |
 | Supervisor/Core/plugin container registry + image names | Supervisor image: rootfs overlay `hassos-supervisor` (`SUPERVISOR_IMAGE`, cold boot). Core + 5 plugins: channel `images` map (`version-service/stable.json`), which the **running** Supervisor reads only after the `const.py` patch | supervisor img: A · core+plugins: needs Supervisor fork |
 | Update channel URL → FA version service | cold boot: rootfs overlay `hassos-supervisor` fallback. **Running Supervisor: hardcoded `const.py` `URL_HASSIO_VERSION`** → see `docs/forks/supervisor/` | overlay: A · running: **P2 (Supervisor fork)** |
-| **RAUC signing keys + device keyring + OTA URL** | build config + `version-service/` | **P2 — required before any OTA** |
+| **RAUC signing keys + device keyring + OTA URL** | `scripts/configure-rauc-signing.sh`, build workflow secrets, `version-service/` | P2 implementation path exists; production OTA requires real external keys/secrets |
 | Host login banner (MOTD) | rootfs overlay `etc/motd` (replaces upstream's HA MOTD) | A |
 | GRUB menu title / boot splash | generic-x86-64 `board/pc/grub.cfg` is a functional A/B slot menu with **no product branding** — nothing to rebrand for this board (the separate `ova` image's `home-assistant.ovf` would need it if that target is built) | N/A (x86-64) |
 | Landing page + containerized CLI-plugin banner | `landingpage` / `plugin-cli` forks | P2 |
@@ -168,27 +168,62 @@ referenced from outside the repo — it is gitignored as a `*.crt`.
 
 RAUC on the device verifies bundles against `/etc/rauc/keyring.pem`, which
 upstream installs from the `BR2_EXTERNAL` tree. Point that keyring at the
-Factory Assistant CA certificate so a flashed device trusts FA bundles only:
+Factory Assistant CA certificate so a flashed device trusts FA bundles only.
+After `make bootstrap && make overlay`, run:
 
-- Supply `faos-ca.crt` as the RAUC keyring used for the image (HAOS sources it
-  via the `BR2_PACKAGE_RAUC*` / system config at the pinned tag — follow the
-  OTA/RAUC section of upstream `Documentation/` in the checkout). Provide it
-  from a path **outside** the repo (e.g. `RAUC_KEYRING=/secure/faos-ca.crt`),
-  never by committing it under `buildroot-external/`.
-- Verify the baked keyring after a build: `rauc info --keyring=… <bundle>`
-  must validate FA-signed bundles and reject upstream/dev-signed ones.
+```sh
+scripts/configure-rauc-signing.sh \
+  --keyring /secure/faos-ca.crt \
+  --cert /secure/faos-ota.crt \
+  --key /secure/faos-ota.key
+```
+
+The script validates that the signing certificate verifies against the supplied
+CA, that the private key matches the signing certificate, and that all three
+source files live outside this repository. It then copies the inputs into the
+gitignored upstream checkout at the locations HAOS 17.3 uses during build:
+
+- `upstream/operating-system/buildroot-external/ota/rel-ca.pem`
+- `upstream/operating-system/buildroot-external/ota/dev-ca.pem`
+- `upstream/operating-system/cert.pem`
+- `upstream/operating-system/key.pem`
+
+Both `rel-ca.pem` and `dev-ca.pem` are replaced with the Factory Assistant CA
+so a production build never bakes upstream or development CA trust into the
+device keyring. Verify the baked keyring after a build: `rauc info
+--keyring=… <bundle>` must validate FA-signed bundles and reject upstream or
+development-signed ones.
 
 ### 5.3 Sign release bundles
 
+HAOS signs the `.raucb` during image assembly with `/build/cert.pem` and
+`/build/key.pem`. Because the build container mounts
+`upstream/operating-system` at `/build`, running
+`scripts/configure-rauc-signing.sh` before `make os` signs the release bundle
+with the Factory Assistant signing key:
+
 ```sh
-rauc bundle \
-  --cert=faos-ota.crt --key=faos-ota.key \
-  output/images/faos_generic-x86-64-<version>.raucb \
-  faos_generic-x86-64-<version>-signed.raucb
+make bootstrap
+make overlay
+scripts/configure-rauc-signing.sh \
+  --keyring /secure/faos-ca.crt \
+  --cert /secure/faos-ota.crt \
+  --key /secure/faos-ota.key
+make os
 ```
 
-Run signing where the signing key is available (ideally the offline/HSM host),
-not in a shared CI runner that persists secrets to disk.
+Run signing where the signing key is available (ideally an offline/HSM-backed
+release host). In GitHub Actions, set all three repository secrets together:
+
+- `FAOS_RAUC_KEYRING_PEM`
+- `FAOS_RAUC_CERT_PEM`
+- `FAOS_RAUC_KEY_PEM`
+
+If all three are present, `.github/workflows/build-os-image.yml` installs them
+with `scripts/configure-rauc-signing.sh` and the generated `.raucb` is trusted
+by images from that run. If none are present, the workflow intentionally falls
+back to a public self-signed development certificate and labels the result
+flash-only. A partial secret configuration fails the build.
 
 ### 5.4 Publish
 
@@ -210,6 +245,9 @@ Supervisor's OS-version expectations simple.
    files land at their final paths; `scripts/apply-overlay.sh` retires).
 2. Add `upstream` as a git remote; merge upstream **release tags** (not
    `main`) on a cadence — at minimum for upstream security releases.
+   `.github/workflows/upstream-tracker.yml` maintains a weekly tracking issue
+   with current upstream release/tag state and the manual security-review
+   checklist that must be cleared before bumping pins.
 3. Conflict policy: branding/identity files → ours; everything else →
    take upstream and re-apply the minimal delta; every merge re-walks the §4
    checklist. Any divergence of internal identifiers (`HASSOS_*`, `hassio`,

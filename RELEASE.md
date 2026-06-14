@@ -15,6 +15,7 @@ flashing details, see [`docs/OS_BUILD.md`](docs/OS_BUILD.md).
 |---|---|---|
 | Upstream pin resolves (17.3) | ✅ | cloned tag `17.3` |
 | `scripts/apply-overlay.sh` against real 17.3 | ✅ | identity rewritten to `Factory Assistant OS`/`faos`, 5 overlay files placed, defconfig fragment appended, idempotent |
+| Trusted RAUC signing input wiring | ✅ | `tests/test_configure_rauc_signing.sh` validates external CA/cert/key installation into the HAOS 17.3 build paths |
 | Builder image + full Buildroot compile | ⛔ not run here | blocked in this environment by disk (<50 GB) and a network policy that 403s the Docker CDN — run on CI or a Linux host (below) |
 
 So the rebrand/overlay is proven against the actual pinned upstream; the
@@ -26,6 +27,17 @@ Workflow: [`.github/workflows/build-os-image.yml`](.github/workflows/build-os-im
 It frees runner disk, runs `bootstrap` + `apply-overlay`, builds inside the
 upstream builder container, then uploads the image (and on a tag, publishes a
 Release with checksums + license bundle).
+
+For a trusted OTA release, configure all three repository secrets before
+running the tag build:
+
+- `FAOS_RAUC_KEYRING_PEM` — Factory Assistant OTA root CA certificate.
+- `FAOS_RAUC_CERT_PEM` — Factory Assistant OTA signing certificate.
+- `FAOS_RAUC_KEY_PEM` — Factory Assistant OTA signing private key.
+
+If none are present, the workflow produces a flash-only build with a public
+self-signed development certificate. If only some are present, the workflow
+fails rather than publishing a misleading OTA bundle.
 
 - **Ad-hoc build**: Actions → *Build Factory Assistant OS image* → *Run
   workflow*. Download the `faos-generic-x86-64` artifact when it finishes.
@@ -50,8 +62,13 @@ On a Linux x86-64 machine with Docker, git, rsync, ~50 GB free:
 git clone <this-repo> && cd FactoryAssistant
 make bootstrap        # clone upstream 17.3 + Buildroot submodule
 make overlay          # apply the Factory Assistant overlay  (verified)
-# self-signed dev cert -> flash-only image (FA RAUC keys are Phase 2)
-( cd upstream/operating-system && buildroot-external/scripts/generate-signing-key.sh cert.pem key.pem )
+# Trusted OTA build: install external FA RAUC inputs into the gitignored
+# upstream checkout. Omit this and use upstream's generate-signing-key.sh only
+# for explicit flash-only development images.
+scripts/configure-rauc-signing.sh \
+  --keyring /secure/faos-ca.crt \
+  --cert /secure/faos-ota.crt \
+  --key /secure/faos-ota.key
 make os               # full build (hours); or: cd upstream/operating-system && scripts/enter.sh make generic_x86_64
 ```
 
@@ -71,9 +88,13 @@ and complete onboarding. Full flashing/VM notes: `docs/OS_BUILD.md` §3.
 
 ## Before calling a build a real "release"
 
-- [ ] This is a **flash-only** image unless Factory Assistant RAUC keys are
-      configured (`docs/OS_BUILD.md` §Signing) — OTA is untrusted with the
-      self-signed cert.
+- [ ] Factory Assistant RAUC keys are configured with
+      `scripts/configure-rauc-signing.sh` or the three GitHub Actions secrets
+      (`docs/OS_BUILD.md` §Signing). Without that, the image is **flash-only**
+      and OTA is untrusted with the self-signed cert.
+- [ ] Review the current "Upstream release/security tracking" issue maintained
+      by `.github/workflows/upstream-tracker.yml`; resolve any pinned upstream
+      drift or security-review checklist items before publishing.
 - [ ] Re-walk the rebrand checklist (`docs/OS_BUILD.md` §4). Applied today:
       product name/ID, hostname, console banner (`etc/issue` + `etc/motd`);
       GRUB is N/A on x86-64. Still Phase 2: container registry, update-channel

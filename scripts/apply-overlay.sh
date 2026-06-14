@@ -92,8 +92,13 @@ cat <<'EOF'
       - OS "supported" acceptance — CPE product kept = haos (post-build.sh), so
         the unmodified Supervisor does not flag the OS unsupported.
 
+    Separate post-overlay step (Phase 2 — see docs/OS_BUILD.md §Signing):
+      - Trusted RAUC signing/keyring:
+        scripts/configure-rauc-signing.sh --keyring ... --cert ... --key ...
+        REQUIRED before shipping OTA updates. Without it, the build workflow
+        intentionally falls back to a flash-only self-signed development bundle.
+
     NOT covered yet (Phase 2 — see docs/OS_BUILD.md §Rebrand checklist):
-      - RAUC signing keys/keyring (REQUIRED before shipping OTA updates)
       - Landing page + containerized CLI-plugin banner (landingpage/plugin-cli forks)
       - Running Supervisor's update-channel URL (hardcoded in supervisor/const.py;
         needs the Supervisor fork — see docs/forks/supervisor/). Until that lands,

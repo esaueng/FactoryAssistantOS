@@ -1,0 +1,161 @@
+# Maintain a standing upstream release/security tracking issue. The workflow is
+# intentionally read-only against source: it reports drift and review work, then
+# humans choose when to bump pins and run the rebrand checklist.
+name: Track upstream releases and security
+
+on:
+  schedule:
+    - cron: "17 10 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  track:
+    name: Update upstream tracking issue
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Update tracking issue
+        uses: actions/github-script@v7
+        env:
+          TRACKER_TITLE: "Upstream release/security tracking"
+        with:
+          script: |
+            const fs = require("fs");
+
+            const upstreamEnv = fs.readFileSync("upstream.env", "utf8");
+            const repoMatches = [...upstreamEnv.matchAll(
+              /^UPSTREAM_([A-Z0-9_]+)_REPO="https:\/\/github\.com\/([^/]+)\/([^"]+?)(?:\.git)?"$/gm,
+            )];
+            const refMatches = [...upstreamEnv.matchAll(
+              /^UPSTREAM_([A-Z0-9_]+)_REF="([^"]+)"$/gm,
+            )];
+            const refs = new Map(refMatches.map((match) => [match[1], match[2]]));
+
+            async function latestFor(owner, repo) {
+              try {
+                const release = await github.rest.repos.getLatestRelease({ owner, repo });
+                return {
+                  kind: "release",
+                  value: release.data.tag_name,
+                  url: release.data.html_url,
+                };
+              } catch (error) {
+                if (error.status !== 404) {
+                  throw error;
+                }
+              }
+
+              const tags = await github.rest.repos.listTags({
+                owner,
+                repo,
+                per_page: 1,
+              });
+              if (tags.data.length === 0) {
+                return { kind: "none", value: "no release/tag found", url: "" };
+              }
+              return {
+                kind: "tag",
+                value: tags.data[0].name,
+                url: `https://github.com/${owner}/${repo}/releases/tag/${tags.data[0].name}`,
+              };
+            }
+
+            const rows = [];
+            for (const match of repoMatches) {
+              const key = match[1];
+              const upstreamOwner = match[2];
+              const upstreamRepo = match[3];
+              const latest = await latestFor(upstreamOwner, upstreamRepo);
+              const pinned = refs.get(key) || "not pinned here";
+              const status = refs.has(key) && refs.get(key) !== latest.value
+                ? "review available upstream change"
+                : "tracked";
+              rows.push({
+                key,
+                repo: `${upstreamOwner}/${upstreamRepo}`,
+                pinned,
+                latest,
+                status,
+              });
+            }
+
+            const driftRows = rows.filter((row) => row.status !== "tracked");
+            const table = [
+              "| Component | Upstream | Pinned here | Latest upstream | Status |",
+              "|---|---|---|---|---|",
+              ...rows.map((row) => {
+                const latest = row.latest.url
+                  ? `[${row.latest.value}](${row.latest.url})`
+                  : row.latest.value;
+                return `| ${row.key} | ${row.repo} | ${row.pinned} | ${latest} (${row.latest.kind}) | ${row.status} |`;
+              }),
+            ].join("\n");
+
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const driftSummary = driftRows.length === 0
+              ? "No pinned upstream ref drift was detected."
+              : `${driftRows.length} pinned upstream ref(s) need review.`;
+            const body = [
+              "<!-- faos-upstream-tracker -->",
+              "# Upstream Release/Security Tracking",
+              "",
+              `Last automated check: ${new Date().toISOString()}`,
+              `Workflow run: ${runUrl}`,
+              "",
+              driftSummary,
+              "",
+              table,
+              "",
+              "## Security Review Queue",
+              "",
+              "- [ ] Review upstream release notes for each row marked `review available upstream change`.",
+              "- [ ] Check GitHub Security Advisories for the upstream repositories before bumping pins.",
+              "- [ ] Re-run the `docs/OS_BUILD.md` rebrand checklist against any bumped OS tag.",
+              "- [ ] Confirm no Home Assistant/OHF marks re-enter shipped user-facing artifacts.",
+              "- [ ] Confirm the monitoring-only safety boundary still holds.",
+              "",
+              "This workflow only tracks upstream state. It does not modify pins, merge upstream code, or replace the manual security review required before a release.",
+            ].join("\n");
+
+            const { owner, repo } = context.repo;
+            const title = process.env.TRACKER_TITLE;
+            const issues = await github.paginate(github.rest.issues.listForRepo, {
+              owner,
+              repo,
+              state: "open",
+              per_page: 100,
+            });
+            const existing = issues.find((issue) => (
+              issue.title === title && !issue.pull_request
+            ));
+
+            if (existing) {
+              await github.rest.issues.update({
+                owner,
+                repo,
+                issue_number: existing.number,
+                body,
+              });
+              core.notice(`Updated issue #${existing.number}: ${title}`);
+            } else {
+              const created = await github.rest.issues.create({
+                owner,
+                repo,
+                title,
+                body,
+              });
+              core.notice(`Created issue #${created.data.number}: ${title}`);
+            }
+
+            await core.summary
+              .addHeading("Upstream release/security tracking")
+              .addRaw(driftSummary)
+              .addRaw("\n\n")
+              .addRaw(table)
+              .write();

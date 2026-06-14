@@ -12,11 +12,10 @@
 #   * push of a tag like v17.3-fa.1 — build AND attach the image, checksum,
 #     and license bundle to a GitHub Release.
 #
-# Signing: until Factory Assistant RAUC keys exist (Phase 2 — see
-# docs/OS_BUILD.md §Signing), the build uses upstream's public self-signed
-# dev certificate. The resulting .img.xz is FLASH-ONLY and its .raucb OTA
-# bundle is NOT trusted for over-the-air updates. This is expected for the
-# first release.
+# Signing: set the FAOS_RAUC_KEYRING_PEM, FAOS_RAUC_CERT_PEM, and
+# FAOS_RAUC_KEY_PEM repository secrets to produce trusted OTA bundles. If none
+# are set, the workflow deliberately falls back to upstream's public self-signed
+# dev certificate and marks the result flash-only.
 name: Build Factory Assistant OS image
 
 on:
@@ -83,11 +82,51 @@ jobs:
       - name: Apply the Factory Assistant overlay
         run: ./scripts/apply-overlay.sh
 
-      - name: Generate self-signed RAUC signing key (flash-only)
-        working-directory: upstream/operating-system
+      - name: Configure RAUC signing inputs
+        id: rauc_signing
+        env:
+          FAOS_RAUC_KEYRING_PEM: ${{ secrets.FAOS_RAUC_KEYRING_PEM }}
+          FAOS_RAUC_CERT_PEM: ${{ secrets.FAOS_RAUC_CERT_PEM }}
+          FAOS_RAUC_KEY_PEM: ${{ secrets.FAOS_RAUC_KEY_PEM }}
         run: |
-          echo "::warning::No Factory Assistant RAUC keys configured — building with a PUBLIC self-signed dev certificate. The image is flash-only; its OTA bundle is NOT trusted. See docs/OS_BUILD.md §Signing."
-          buildroot-external/scripts/generate-signing-key.sh cert.pem key.pem
+          set -euo pipefail
+          has_keyring=0
+          has_cert=0
+          has_key=0
+          [ -n "${FAOS_RAUC_KEYRING_PEM:-}" ] && has_keyring=1
+          [ -n "${FAOS_RAUC_CERT_PEM:-}" ] && has_cert=1
+          [ -n "${FAOS_RAUC_KEY_PEM:-}" ] && has_key=1
+
+          if [ "${has_keyring}${has_cert}${has_key}" = "111" ]; then
+            rauc_dir="${RUNNER_TEMP}/faos-rauc"
+            install -d -m 0700 "${rauc_dir}"
+            umask 077
+            printf '%s\n' "${FAOS_RAUC_KEYRING_PEM}" > "${rauc_dir}/keyring.pem"
+            printf '%s\n' "${FAOS_RAUC_CERT_PEM}" > "${rauc_dir}/cert.pem"
+            printf '%s\n' "${FAOS_RAUC_KEY_PEM}" > "${rauc_dir}/key.pem"
+            ./scripts/configure-rauc-signing.sh \
+              --keyring "${rauc_dir}/keyring.pem" \
+              --cert "${rauc_dir}/cert.pem" \
+              --key "${rauc_dir}/key.pem"
+            {
+              echo "trusted=true"
+              echo "release_note<<EOF"
+              echo "RAUC bundles are signed with the configured Factory Assistant OTA signing key. Devices built from this image trust only the configured Factory Assistant OTA CA for RAUC updates."
+              echo "EOF"
+            } >> "${GITHUB_OUTPUT}"
+          elif [ "${has_keyring}${has_cert}${has_key}" != "000" ]; then
+            echo "::error::Configure all three RAUC secrets together: FAOS_RAUC_KEYRING_PEM, FAOS_RAUC_CERT_PEM, and FAOS_RAUC_KEY_PEM."
+            exit 1
+          else
+            echo "::warning::No Factory Assistant RAUC keys configured — building with a PUBLIC self-signed dev certificate. The image is flash-only; its OTA bundle is NOT trusted. See docs/OS_BUILD.md §Signing."
+            ( cd upstream/operating-system && buildroot-external/scripts/generate-signing-key.sh cert.pem key.pem )
+            {
+              echo "trusted=false"
+              echo "release_note<<EOF"
+              echo "WARNING: Built with a public self-signed RAUC certificate: flash-only, OTA updates are not trusted on this build. Configure the Factory Assistant RAUC secrets before publishing OTA-capable releases."
+              echo "EOF"
+            } >> "${GITHUB_OUTPUT}"
+          fi
 
       - name: Build the upstream builder container image
         run: docker build -t faos-builder upstream/operating-system
@@ -133,7 +172,7 @@ jobs:
             exit 1
           fi
           cp "${imgs[@]}" "${GITHUB_WORKSPACE}/release/"
-          # OTA bundle (untrusted self-signed) for completeness, if present
+          # OTA bundle, if present. Trust depends on the RAUC signing step.
           cp /mnt/output/images/faos_${BOARD_ID}-*.raucb "${GITHUB_WORKSPACE}/release/" 2>/dev/null || true
           # License bundle
           if [ -d /mnt/output/legal-info ]; then
@@ -143,6 +182,22 @@ jobs:
           sha256sum * > SHA256SUMS
           echo "Artifacts:"; ls -la
           echo "image_glob=release/faos_${BOARD_ID}-*.img.xz" >> "$GITHUB_OUTPUT"
+
+      - name: Write release notes
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          RAUC_RELEASE_NOTE: ${{ steps.rauc_signing.outputs.release_note }}
+        run: |
+          {
+            printf '**Factory Assistant OS — %s** (board: `%s`)\n\n' "${GITHUB_REF_NAME}" "${BOARD_ID}"
+            printf 'Factory Assistant is based on Home Assistant. Monitoring appliance —\n'
+            printf '**not a safety device** (see `docs/SAFETY_BOUNDARY.md`).\n\n'
+            printf '%s\n\n' "${RAUC_RELEASE_NOTE}"
+            printf 'Flash `faos_%s-*.img.xz` to an x86-64 machine\n' "${BOARD_ID}"
+            printf '(`docs/OS_BUILD.md` §3), boot, then open\n'
+            printf '`http://factory-assistant.local:8123`. Verify downloads against\n'
+            printf '`SHA256SUMS`.\n'
+          } > release/RELEASE_NOTES.md
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
@@ -160,17 +215,4 @@ jobs:
             release/faos_${{ env.BOARD_ID }}-*.raucb
             release/faos_${{ env.BOARD_ID }}-legal-info.tar.gz
             release/SHA256SUMS
-          body: |
-            **Factory Assistant OS — ${{ github.ref_name }}** (board: `${{ env.BOARD_ID }}`)
-
-            Factory Assistant is based on Home Assistant. Monitoring appliance —
-            **not a safety device** (see `docs/SAFETY_BOUNDARY.md`).
-
-            ⚠️ Built with a **public self-signed** RAUC certificate: flash-only,
-            OTA updates are not trusted on this build (Factory Assistant signing
-            keys are Phase 2 — `docs/OS_BUILD.md` §Signing).
-
-            Flash `faos_${{ env.BOARD_ID }}-*.img.xz` to an x86-64 machine
-            (`docs/OS_BUILD.md` §3), boot, then open
-            `http://factory-assistant.local:8123`. Verify downloads against
-            `SHA256SUMS`.
+          body_path: release/RELEASE_NOTES.md

@@ -6,7 +6,7 @@
 # JSON + its schema, and Markdown cross-links. Operates on git-tracked files
 # only, so the gitignored upstream/ build tree is never scanned.
 #
-# Required: bash, python3 (+ PyYAML), jq, git.
+# Required: bash, python3 (+ PyYAML), jq, git, openssl.
 # Optional (used if present; CI installs them): shellcheck, yamllint,
 #   check-jsonschema or python3-jsonschema.
 #
@@ -20,6 +20,7 @@ section() { printf '\n=== %s ===\n' "$1"; }
 
 # Collect tracked files by extension into arrays.
 mapfile -t SH_FILES   < <(git ls-files '*.sh')
+mapfile -t TEST_FILES < <(git ls-files 'tests/*.sh')
 mapfile -t YAML_FILES < <(git ls-files '*.yaml' '*.yml')
 mapfile -t JSON_FILES < <(git ls-files '*.json' '*.json.example')
 mapfile -t MD_FILES   < <(git ls-files '*.md')
@@ -35,6 +36,14 @@ if [ ${#SH_FILES[@]} -gt 0 ]; then
     else
         echo "(shellcheck not installed — skipped)"
     fi
+fi
+
+# --- 1b. Shell regression tests --------------------------------------------
+section "Shell regression tests"
+if [ ${#TEST_FILES[@]} -gt 0 ]; then
+    for f in "${TEST_FILES[@]}"; do
+        bash "$f" || fail=1
+    done
 fi
 
 # --- 2. YAML structural parse (Home Assistant custom tags aware) ------------

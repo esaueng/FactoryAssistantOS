@@ -111,7 +111,7 @@ paths move between upstream releases).
 | Host login banner (MOTD) | rootfs overlay `etc/motd` (replaces upstream's HA MOTD) | A |
 | GRUB menu title / boot splash | generic-x86-64 `board/pc/grub.cfg` is a functional A/B slot menu with **no product branding** — nothing to rebrand for this board (the separate `ova` image's `home-assistant.ovf` would need it if that target is built) | N/A (x86-64) |
 | Landing page text/art | `landingpage/` image context + `.github/workflows/mirror-fa-plugins.yml` | A (workflow-built branded image) |
-| Containerized CLI-plugin banner | `plugin-cli` fork | P2 |
+| Containerized CLI-plugin banner | `plugin-cli/` image context + `.github/workflows/mirror-fa-plugins.yml` | A (workflow-built branded image) |
 | Frontend branding, default factory dashboard, onboarding wording | `frontend` fork | P3 |
 
 **os-release ID verification (P1).** After first boot, confirm the Supervisor

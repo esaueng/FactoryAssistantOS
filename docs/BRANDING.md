@@ -83,7 +83,7 @@ Supervisor forks keep upstream version numbers with the FA registry namespace.
 |---|---|---|
 | Image name, os-release, hostname, console banner | this repo (overlay) | done |
 | Landing page text/art | this repo (`landingpage/` image context) | done |
-| CLI banner/MOTD | `plugin-cli` fork | P2 |
+| CLI banner/MOTD | this repo (`plugin-cli/` image context) | done |
 | UI product name, logo, About dialog, onboarding wording | `frontend` fork | P3 |
 | Default dashboard ("Factory overview") | `frontend` fork | P3 |
 | Supervisor product strings/log prefixes | `supervisor` fork | P2 |

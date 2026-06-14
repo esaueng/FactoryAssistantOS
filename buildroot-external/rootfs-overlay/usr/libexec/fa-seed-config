@@ -7,7 +7,7 @@
 #
 # Copies the shipped read-only template tree
 #   /usr/share/factory-assistant/   (configuration.yaml, themes/, dashboards/,
-#                                    packages/)
+#                                    packages/, examples/, onboarding/)
 # into the Home Assistant config directory ONLY on a true first boot — i.e.
 # only when no configuration.yaml exists in the target. Existing config is
 # never overwritten, so user edits, restores, and re-runs are all safe.

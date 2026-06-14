@@ -5,11 +5,12 @@ of a smart-home hub: the shipped defaults, the conventions, and where each is
 implemented. The Core-side templates live under
 `buildroot-external/rootfs-overlay/usr/share/factory-assistant/` —
 `configuration.yaml`, the `factory-assistant` UI theme (`themes/`), the
-dashboards (`dashboards/`: Plant overview, andon board, wallboard), and the
+dashboards (`dashboards/`: Plant overview, andon board, wallboard), the
 industrial example packages (`packages/`: plant KPIs, OEE, energy,
-maintenance reminders, andon acknowledge), and the read-only protocol examples
+maintenance reminders, andon acknowledge), the read-only protocol examples
 (`examples/`: MQTT and Modbus, with `examples/README.md` as the naming/topic
-quick reference); the UI is specified in `docs/UI_DESIGN.md`.
+quick reference), and the onboarding scaffold (`onboarding/`:
+`site_model.example.yaml`); the UI is specified in `docs/UI_DESIGN.md`.
 
 ## 1. Defaults table
 
@@ -48,6 +49,11 @@ Retained messages for slow-changing states; availability topics
 (`…/status`) for device liveness. MQTT discovery is the preferred way for
 gateways to create entities. (Sparkplug B awareness is on the radar for the
 historian/bridge add-ons, not a v1 commitment.)
+
+The onboarding scaffold at `onboarding/site_model.example.yaml` carries the
+same site → line → cell → station → machine hierarchy as data. Copy it into the
+site repository during commissioning, replace the placeholder machine IDs, and
+keep its MQTT/entity IDs aligned with the dashboards and packages.
 
 ## 3. Protocol guidance
 

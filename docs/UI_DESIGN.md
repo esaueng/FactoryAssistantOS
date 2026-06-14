@@ -204,7 +204,7 @@ wallboard scale ×1.6.
 | KPI template sensors | commented examples in `configuration.yaml` template | **now** |
 | Landing page restyled to tokens | `landingpage/` image context | **now** |
 | `fa-machine-card`, trimmed navigation, native andon view + kiosk toggle, terminology pass ("Home"→"Plant overview", areas as lines/cells), industrial onboarding wording | `frontend` fork | P3 |
-| Auto-generated area dashboards from the line/cell taxonomy | `frontend` fork | P3 |
+| Auto-generated area dashboards from the line/cell taxonomy | frontend fork consuming the shipped `onboarding/site_model.example.yaml` line/cell taxonomy scaffold | P3 |
 
 Templates are deliberately stock-Lovelace (glance/entities/gauge/history
 cards) so they work on an unmodified Core today and degrade gracefully.

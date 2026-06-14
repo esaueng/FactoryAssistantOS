@@ -18,6 +18,10 @@ grep -q "refs/tags/" "$workflow" \
     || fail "build workflow RAUC policy does not inspect tag builds"
 grep -q "workflow_dispatch builds may still produce flash-only development artifacts" "$workflow" \
     || fail "build workflow does not scope self-signed fallback to manual development builds"
+grep -q "scripts/verify-release-readiness.sh" "$workflow" \
+    || fail "build workflow does not run the release-readiness preflight before trusted signing"
+grep -q -- "--channel version-service/stable.json" "$workflow" \
+    || fail "build workflow release preflight does not validate the stable channel"
 
 grep -q "scripts/generate-rauc-signing-material.sh" "$release_doc" \
     || fail "release runbook does not point operators at the RAUC key generator"

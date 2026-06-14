@@ -19,7 +19,7 @@ addons:
     name: OPC UA to MQTT Bridge
     repository: factory-assistant-addons
     type: bridge
-    status: planned
+    status: available
     local_first: true
     packaging:
       repository: factory-assistant-addons
@@ -59,7 +59,7 @@ addons:
     name: PLC Gateway Helper
     repository: factory-assistant-addons
     type: helper
-    status: planned
+    status: available
     local_first: true
     packaging:
       repository: factory-assistant-addons
@@ -104,7 +104,7 @@ addons:
     name: Historian Storage
     repository: factory-assistant-addons
     type: historian
-    status: planned
+    status: available
     local_first: true
     packaging:
       repository: factory-assistant-addons

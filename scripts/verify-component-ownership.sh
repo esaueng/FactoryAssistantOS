@@ -139,10 +139,90 @@ verify_registry_tag() {
     fi
 }
 
+fetch_addon_file() {
+    local path="$1"
+
+    "$gh_bin" api \
+        -H "Accept: application/vnd.github.raw" \
+        "/repos/$owner/factory-assistant-addons/contents/$path" \
+        || die "published add-on repository is missing required file: $path"
+}
+
+require_text() {
+    local label="$1"
+    local haystack="$2"
+    local needle="$3"
+
+    grep -Fq -- "$needle" <<< "$haystack" \
+        || die "$label missing required text: $needle"
+}
+
+reject_text() {
+    local label="$1"
+    local haystack="$2"
+    local needle="$3"
+
+    if grep -Fq -- "$needle" <<< "$haystack"; then
+        die "$label contains forbidden text: $needle"
+    fi
+}
+
+verify_addon_manifest() {
+    local addon_id="$1"
+    local path="$2"
+    local config
+
+    config="$(fetch_addon_file "$path/config.yaml")"
+    require_text "published add-on $addon_id" "$config" "slug: $addon_id"
+    require_text "published add-on $addon_id" "$config" "startup: services"
+    if ! grep -Eq '^boot:[[:space:]]*manual$' <<< "$config"; then
+        die "published add-on $addon_id must be boot: manual"
+    fi
+    require_text "published add-on $addon_id" "$config" "host_network: false"
+    require_text "published add-on $addon_id" "$config" "hassio_api: false"
+    require_text "published add-on $addon_id" "$config" "homeassistant_api: false"
+    require_text "published add-on $addon_id" "$config" "- amd64"
+    reject_text "published add-on $addon_id" "$config" "privileged: true"
+
+    case "$addon_id" in
+        opcua_mqtt_bridge)
+            require_text "published add-on $addon_id" "$config" "write_nodes_allowed: false"
+            ;;
+        plc_gateway_helper)
+            require_text "published add-on $addon_id" "$config" "allowed_function_codes:"
+            require_text "published add-on $addon_id" "$config" "- 3"
+            require_text "published add-on $addon_id" "$config" "- 4"
+            require_text "published add-on $addon_id" "$config" "write_functions_allowed: false"
+            require_text "published add-on $addon_id" "$config" "safety_controller_allowed: false"
+            ;;
+        historian_storage)
+            require_text "published add-on $addon_id" "$config" "cloud_export_enabled: false"
+            ;;
+        *)
+            die "unknown industrial add-on id: $addon_id"
+            ;;
+    esac
+}
+
+verify_industrial_addons() {
+    local repository
+
+    repository="$(fetch_addon_file repository.yaml)"
+    require_text "published add-on repository" "$repository" "name: Factory Assistant Add-ons"
+    require_text "published add-on repository" "$repository" \
+        'url: "https://github.com/esaueng/factory-assistant-addons"'
+
+    verify_addon_manifest opcua_mqtt_bridge opcua-mqtt-bridge
+    verify_addon_manifest plc_gateway_helper plc-gateway-helper
+    verify_addon_manifest historian_storage historian-storage
+}
+
 for row in "${image_rows[@]}"; do
     IFS=$'\t' read -r _component package tag <<< "$row"
     verify_registry_tag "$package" "$tag"
 done
+
+verify_industrial_addons
 
 FAOS_GH_BIN="$gh_bin" "$ROOT/scripts/verify-supervisor-channel-patch.sh" \
     --channel "$channel" \
@@ -155,5 +235,6 @@ component ownership preflight passed
   registry: $registry
   repos: ${#required_repos[@]}
   image tags: ${#image_rows[@]}
+  industrial add-on manifests: verified
   supervisor channel patch: verified
 EOF

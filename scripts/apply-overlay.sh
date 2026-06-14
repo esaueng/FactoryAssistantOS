@@ -102,12 +102,12 @@ cat <<'EOF'
         secrets; only manual development builds may use the flash-only
         self-signed fallback.
 
-    NOT covered yet (Phase 2 — see docs/OS_BUILD.md §Rebrand checklist):
-      - Running Supervisor's update-channel URL (hardcoded in supervisor/const.py;
-        needs the Supervisor fork — see docs/forks/supervisor/). Until that lands,
-        the running Supervisor reads versions from version.home-assistant.io, NOT
-        the esaueng channel, so the images map below is only honored after the
-        Supervisor const patch is in the shipped Supervisor image.
+    Covered by the published Supervisor fork (verified before trusted tags):
+      - Running Supervisor's update-channel URL (hardcoded in supervisor/const.py)
+        points at the Factory Assistant Pages channel in
+        esaueng/factory-assistant-supervisor. Re-run
+        scripts/verify-component-ownership.sh before release so the exact channel
+        Supervisor ref and every channel image tag are still published.
 
     Host console banner IS rebranded here (rootfs-overlay etc/issue + etc/motd).
     The generic-x86-64 GRUB config carries no product branding (functional A/B

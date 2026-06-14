@@ -117,7 +117,8 @@ and complete onboarding. Full flashing/VM notes: `docs/OS_BUILD.md` §3.
       This checks secret names only (`FAOS_RAUC_KEYRING_PEM`,
       `FAOS_RAUC_CERT_PEM`, `FAOS_RAUC_KEY_PEM`); it does not read or print
       secret values.
-- [ ] Verify component fork/package ownership before trusting the channel:
+- [ ] Verify component fork ownership and exact channel image tags before
+      trusting the channel:
 
       ```sh
       scripts/verify-component-ownership.sh \
@@ -126,9 +127,9 @@ and complete onboarding. Full flashing/VM notes: `docs/OS_BUILD.md` §3.
       ```
 
       This uses authenticated `gh` access to confirm required component repos
-      are reachable under `esaueng`, the channel image map points only at
-      `ghcr.io/esaueng`, and all channel GHCR packages are public for
-      anonymous appliance pulls. It also runs
+      are reachable under `esaueng`, confirms the channel image map points only
+      at `ghcr.io/esaueng`, and verifies every exact channel image tag is
+      anonymously pullable from GHCR. It also runs
       `scripts/verify-supervisor-channel-patch.sh` to confirm the Supervisor
       fork's `URL_HASSIO_VERSION` points at the Factory Assistant channel, not
       `version.home-assistant.io`. The tag workflow runs the same check with

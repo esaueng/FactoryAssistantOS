@@ -1,11 +1,13 @@
 #!/usr/bin/env bash
-# Verify P2 component repositories and public GHCR packages are esaueng-owned.
+# Verify P2 component repositories and public channel image tags are esaueng-owned.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 channel="$ROOT/version-service/stable.json"
 owner="esaueng"
 gh_bin="${FAOS_GH_BIN:-gh}"
+curl_bin="${FAOS_CURL_BIN:-curl}"
+registry_check_bin="${FAOS_REGISTRY_CHECK_BIN:-}"
 
 usage() {
     cat <<'EOF'
@@ -13,9 +15,9 @@ Usage: scripts/verify-component-ownership.sh [--channel version-service/stable.j
 
 Checks that required component forks are accessible under the owner, that the
 Factory Assistant channel points only at ghcr.io/<owner> images, and that every
-channel GHCR package resolves as public for anonymous device pulls.
+exact channel image tag resolves for anonymous device pulls.
 
-Requires an authenticated GitHub CLI with repository and package read access.
+Requires an authenticated GitHub CLI with repository read access.
 EOF
 }
 
@@ -45,20 +47,23 @@ done
 
 command -v "$gh_bin" >/dev/null 2>&1 || die "GitHub CLI is required: $gh_bin"
 command -v python3 >/dev/null 2>&1 || die "python3 is required"
+if [ -n "$registry_check_bin" ]; then
+    command -v "$registry_check_bin" >/dev/null 2>&1 \
+        || die "registry check helper is required: $registry_check_bin"
+else
+    command -v "$curl_bin" >/dev/null 2>&1 || die "curl is required: $curl_bin"
+fi
 
 channel="$(canonical_file "$channel")"
 registry="ghcr.io/$owner"
 
 required_repos=(
     FactoryAssistantOS
-    core
-    supervisor
-    frontend
-    addons
-    addons-industrial
-    os-agent
-    builder
-    landingpage
+    factory-assistant-core
+    factory-assistant-supervisor
+    factory-assistant-frontend
+    factory-assistant-addons
+    factory-assistant-cli
 )
 
 for repo in "${required_repos[@]}"; do
@@ -67,7 +72,7 @@ for repo in "${required_repos[@]}"; do
     fi
 done
 
-package_output="$(python3 - "$channel" "$registry" <<'PY'
+image_output="$(python3 - "$channel" "$registry" <<'PY'
 import json
 import sys
 
@@ -77,11 +82,23 @@ with open(channel_path, "r", encoding="utf-8") as fh:
 
 images = data.get("images") or {}
 required = ["core", "supervisor", "cli", "dns", "audio", "observer", "multicast"]
+versions = {
+    "core": (data.get("homeassistant") or {}).get("default"),
+    "supervisor": data.get("supervisor"),
+    "cli": data.get("cli"),
+    "dns": data.get("dns"),
+    "audio": data.get("audio"),
+    "observer": data.get("observer"),
+    "multicast": data.get("multicast"),
+}
 
 for name in required:
     image = images.get(name)
     if not image:
         raise SystemExit(f"channel image is missing: {name}")
+    tag = versions.get(name)
+    if not tag:
+        raise SystemExit(f"channel version is missing for image: {name}")
     if not image.startswith(registry + "/"):
         raise SystemExit(f"channel image is not under {registry}: {name}={image}")
     if "ghcr.io/home-assistant/" in image:
@@ -90,23 +107,46 @@ for name in required:
     package = package.replace("{arch}", "amd64").replace("{machine}", "generic-x86-64")
     if "{" in package or "}" in package:
         raise SystemExit(f"channel image contains an unresolved package placeholder: {name}={image}")
-    print(package)
+    print(f"{name}\t{package}\t{tag}")
 PY
 )"
-mapfile -t packages <<< "$package_output"
+mapfile -t image_rows <<< "$image_output"
 
-for package in "${packages[@]}"; do
-    if ! visibility="$("$gh_bin" api "/orgs/$owner/packages/container/$package" --jq .visibility)"; then
-        die "required GHCR package is not accessible: $registry/$package"
+verify_registry_tag() {
+    local package="$1"
+    local tag="$2"
+    local token
+    local status
+
+    if [ -n "$registry_check_bin" ]; then
+        if ! "$registry_check_bin" "$owner" "$package" "$tag"; then
+            die "channel image tag is not anonymously pullable: $registry/$package:$tag"
+        fi
+        return
     fi
-    if [ "$visibility" != "public" ]; then
-        die "required GHCR package must be public for anonymous device pulls: $registry/$package"
+
+    token="$("$curl_bin" -fsSL "https://ghcr.io/token?scope=repository:$owner/$package:pull" \
+        | python3 -c 'import json, sys; print(json.load(sys.stdin).get("token", ""))')" \
+        || die "failed to get anonymous GHCR pull token for: $registry/$package"
+    [ -n "$token" ] || die "anonymous GHCR pull token was empty for: $registry/$package"
+
+    status="$("$curl_bin" -sS -o /dev/null -w '%{http_code}' \
+        -H "Authorization: Bearer $token" \
+        -H "Accept: application/vnd.oci.image.index.v1+json, application/vnd.oci.image.manifest.v1+json, application/vnd.docker.distribution.manifest.list.v2+json, application/vnd.docker.distribution.manifest.v2+json" \
+        "https://ghcr.io/v2/$owner/$package/manifests/$tag" || true)"
+    if [ "$status" != "200" ]; then
+        die "channel image tag is not anonymously pullable: $registry/$package:$tag (HTTP $status)"
     fi
+}
+
+for row in "${image_rows[@]}"; do
+    IFS=$'\t' read -r _component package tag <<< "$row"
+    verify_registry_tag "$package" "$tag"
 done
 
 FAOS_GH_BIN="$gh_bin" "$ROOT/scripts/verify-supervisor-channel-patch.sh" \
     --channel "$channel" \
-    --repo "$owner/supervisor" >/dev/null
+    --repo "$owner/factory-assistant-supervisor" >/dev/null
 
 cat <<EOF
 component ownership preflight passed
@@ -114,6 +154,6 @@ component ownership preflight passed
   channel: $channel
   registry: $registry
   repos: ${#required_repos[@]}
-  packages: ${#packages[@]}
+  image tags: ${#image_rows[@]}
   supervisor channel patch: verified
 EOF

@@ -1,4 +1,4 @@
-# Fork: `esaueng/supervisor` — point the update channel at Factory Assistant
+# Fork: `esaueng/factory-assistant-supervisor` — point updates at Factory Assistant
 
 This is the **keystone** of the app-layer rebrand (Phase 1). Without it, a
 running Factory Assistant appliance does **not** use the Factory Assistant
@@ -7,7 +7,8 @@ update channel at all.
 ## Why a source fork is required (it can't be done from this repo)
 
 The Supervisor's version-channel URL is a **hardcoded constant** with no env or
-config override (`supervisor/const.py`, verified at tag `2026.06.0`):
+config override (`supervisor/const.py`, verified on the Factory Assistant
+`2026.6.0` ref):
 
 ```python
 URL_HASSIO_APPARMOR = "https://version.home-assistant.io/apparmor_{channel}.txt"
@@ -26,12 +27,15 @@ bootstrap* pull of the Supervisor image — not steady state. Therefore the
 esaueng channel JSON (and all its `images` overrides) is only honored once the
 **shipped Supervisor image itself** carries the patched constant.
 
-## The patch (one line)
+## The patch
 
-In the fork, change only `URL_HASSIO_VERSION`:
+In the fork, point the Supervisor version and AppArmor endpoints at the Factory
+Assistant Pages site:
 
 ```diff
+- URL_HASSIO_APPARMOR = "https://version.home-assistant.io/apparmor_{channel}.txt"
 - URL_HASSIO_VERSION  = "https://version.home-assistant.io/{channel}.json"
++ URL_HASSIO_APPARMOR = "https://esaueng.github.io/FactoryAssistantOS/apparmor_{channel}.txt"
 + URL_HASSIO_VERSION  = "https://esaueng.github.io/FactoryAssistantOS/{channel}.json"
 ```
 
@@ -39,9 +43,10 @@ Robust, line-number-independent application:
 
 ```sh
 sed -i \
-  's#^URL_HASSIO_VERSION\( *\)= "https://version.home-assistant.io/{channel}.json"#URL_HASSIO_VERSION\1= "https://esaueng.github.io/FactoryAssistantOS/{channel}.json"#' \
+  -e 's#^URL_HASSIO_APPARMOR\( *\)= "https://version.home-assistant.io/apparmor_{channel}.txt"#URL_HASSIO_APPARMOR\1= "https://esaueng.github.io/FactoryAssistantOS/apparmor_{channel}.txt"#' \
+  -e 's#^URL_HASSIO_VERSION\( *\)= "https://version.home-assistant.io/{channel}.json"#URL_HASSIO_VERSION\1= "https://esaueng.github.io/FactoryAssistantOS/{channel}.json"#' \
   supervisor/const.py
-grep -n 'URL_HASSIO_VERSION' supervisor/const.py   # verify it now reads esaueng.github.io
+grep -n 'URL_HASSIO_\(APPARMOR\|VERSION\)' supervisor/const.py
 ```
 
 From this OS repo, verify the local fork checkout or the published fork ref:
@@ -53,19 +58,18 @@ scripts/verify-supervisor-channel-patch.sh \
 
 scripts/verify-supervisor-channel-patch.sh \
   --channel version-service/stable.json \
-  --repo esaueng/supervisor
+  --repo esaueng/factory-assistant-supervisor
 ```
 
 The second form uses the `supervisor` version from the channel document as the
 GitHub ref. It fails if `URL_HASSIO_VERSION` still points at
 `version.home-assistant.io`.
 
+The OS repo must publish `version-service/apparmor_stable.txt` to the Pages
+site as `/apparmor_stable.txt` whenever this AppArmor URL is patched.
+
 ### Deliberately NOT changed in Phase 1
 
-- **`URL_HASSIO_APPARMOR`** stays on `version.home-assistant.io`. The AppArmor
-  profile is unbranded, public, and functional; leaving it upstream avoids
-  having to serve `apparmor_{channel}.txt` from Pages. Follow-up (optional):
-  serve `apparmor_stable.txt` on the Pages site and patch this constant too.
 - **`os/manager.py` OS-supported allowlist** is **not** patched. We keep the
   OS's CPE *product* field = `haos` via `scripts/apply-overlay.sh` (see
   `docs/OS_BUILD.md §4`), so the unmodified allowlist `{hassos, haos}` already
@@ -103,10 +107,11 @@ If you ever switch a device to `beta`/`dev`, you must also publish
    upstream Supervisor uses a **zero-padded** month (e.g. `2026.06.1`); the
    channel currently says `2026.6.0`. Pick the real published tag and make the
    channel field equal it exactly, or the cold-boot/self-update pull 404s.
-4. **Make the package PUBLIC** (the appliance pulls anonymously). `GITHUB_TOKEN`
-   cannot change package visibility — flip it once in org Package settings, or
-   script it with an org PAT. Verify anonymously:
+4. **Verify anonymous image pulls.** The appliance pulls with no registry
+   credentials, so the exact tag must resolve anonymously:
    `docker pull ghcr.io/esaueng/amd64-hassio-supervisor:<tag>` with no creds.
+   The OS repo's `scripts/verify-component-ownership.sh` checks the same
+   manifest endpoint before trusted tags.
 
 ## Verify on a running appliance
 

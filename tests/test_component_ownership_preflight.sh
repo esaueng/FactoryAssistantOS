@@ -25,7 +25,20 @@ mode="${FAKE_GH_MODE:-ok}"
 
 if [ "$1" = "repo" ] && [ "$2" = "view" ]; then
     repo="$3"
-    if [ "$mode" = "missing_repo" ] && [ "$repo" = "esaueng/frontend" ]; then
+    case "$repo" in
+      esaueng/FactoryAssistantOS|\
+      esaueng/factory-assistant-core|\
+      esaueng/factory-assistant-supervisor|\
+      esaueng/factory-assistant-frontend|\
+      esaueng/factory-assistant-addons|\
+      esaueng/factory-assistant-cli)
+        ;;
+      *)
+        printf 'unexpected repo: %s\n' "$repo" >&2
+        exit 9
+        ;;
+    esac
+    if [ "$mode" = "missing_repo" ] && [ "$repo" = "esaueng/factory-assistant-frontend" ]; then
         echo "not found" >&2
         exit 1
     fi
@@ -36,7 +49,7 @@ fi
 if [ "$1" = "api" ]; then
     for arg in "$@"; do
         case "$arg" in
-          /repos/esaueng/supervisor/contents/supervisor/const.py*)
+          /repos/esaueng/factory-assistant-supervisor/contents/supervisor/const.py*)
             if [ "$mode" = "bad_supervisor_patch" ]; then
                 printf '%s\n' 'URL_HASSIO_VERSION = "https://version.home-assistant.io/{channel}.json"'
             else
@@ -76,41 +89,65 @@ exit 9
 EOF
 chmod +x "$tmp/gh"
 
-FAOS_GH_BIN="$tmp/gh" "$script" \
+cat > "$tmp/registry-check" <<'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+
+owner="$1"
+package="$2"
+tag="$3"
+
+printf '%s/%s:%s\n' "$owner" "$package" "$tag" >> "${FAKE_REGISTRY_LOG:?}"
+
+if [ "${FAKE_REGISTRY_MODE:-ok}" = "missing_image" ] \
+    && [ "$package" = "amd64-hassio-cli" ]; then
+    exit 1
+fi
+EOF
+chmod +x "$tmp/registry-check"
+
+FAKE_REGISTRY_LOG="$tmp/registry.log" \
+FAOS_GH_BIN="$tmp/gh" \
+FAOS_REGISTRY_CHECK_BIN="$tmp/registry-check" \
+"$script" \
     --channel "$ROOT/version-service/stable.json" \
     --owner esaueng > "$tmp/ok.out"
 grep -q 'component ownership preflight passed' "$tmp/ok.out" \
     || fail "component ownership preflight success output is missing"
-grep -q 'repos: 9' "$tmp/ok.out" \
+grep -q 'repos: 6' "$tmp/ok.out" \
     || fail "component ownership preflight did not check every required repo"
-grep -q 'packages: 7' "$tmp/ok.out" \
-    || fail "component ownership preflight did not check every channel package"
+grep -q 'image tags: 7' "$tmp/ok.out" \
+    || fail "component ownership preflight did not check every channel image tag"
 grep -q 'supervisor channel patch: verified' "$tmp/ok.out" \
     || fail "component ownership preflight does not report Supervisor channel patch verification"
+grep -q 'esaueng/generic-x86-64-homeassistant:2026.6.0' "$tmp/registry.log" \
+    || fail "component ownership preflight did not verify the Core image tag"
+grep -q 'esaueng/amd64-hassio-cli:2026.6.0' "$tmp/registry.log" \
+    || fail "component ownership preflight did not verify the CLI image tag"
 
-if FAKE_GH_MODE=missing_repo FAOS_GH_BIN="$tmp/gh" "$script" \
+if FAKE_REGISTRY_LOG="$tmp/missing-repo-registry.log" \
+    FAKE_GH_MODE=missing_repo \
+    FAOS_GH_BIN="$tmp/gh" \
+    FAOS_REGISTRY_CHECK_BIN="$tmp/registry-check" \
+    "$script" \
     --channel "$ROOT/version-service/stable.json" --owner esaueng \
     2> "$tmp/missing-repo.err"; then
     fail "component ownership preflight allowed a missing component fork"
 fi
-grep -q 'required component repository is not accessible: esaueng/frontend' "$tmp/missing-repo.err" \
+grep -q 'required component repository is not accessible: esaueng/factory-assistant-frontend' "$tmp/missing-repo.err" \
     || fail "missing repo rejection did not identify the inaccessible fork"
 
-if FAKE_GH_MODE=missing_package FAOS_GH_BIN="$tmp/gh" "$script" \
+if FAKE_REGISTRY_LOG="$tmp/missing-image-registry.log" \
+    FAKE_REGISTRY_MODE=missing_image \
+    FAOS_GH_BIN="$tmp/gh" \
+    FAOS_REGISTRY_CHECK_BIN="$tmp/registry-check" \
+    "$script" \
     --channel "$ROOT/version-service/stable.json" --owner esaueng \
-    2> "$tmp/missing-package.err"; then
-    fail "component ownership preflight allowed a missing GHCR package"
+    2> "$tmp/missing-image.err"; then
+    fail "component ownership preflight allowed a missing GHCR image tag"
 fi
-grep -q 'required GHCR package is not accessible: ghcr.io/esaueng/amd64-hassio-observer' "$tmp/missing-package.err" \
-    || fail "missing package rejection did not identify the absent package"
-
-if FAKE_GH_MODE=private_package FAOS_GH_BIN="$tmp/gh" "$script" \
-    --channel "$ROOT/version-service/stable.json" --owner esaueng \
-    2> "$tmp/private-package.err"; then
-    fail "component ownership preflight allowed a private package"
-fi
-grep -q 'required GHCR package must be public for anonymous device pulls: ghcr.io/esaueng/amd64-hassio-cli' "$tmp/private-package.err" \
-    || fail "private package rejection did not explain anonymous pull requirement"
+grep -q 'channel image tag is not anonymously pullable: ghcr.io/esaueng/amd64-hassio-cli:2026.6.0' "$tmp/missing-image.err" \
+    || fail "missing image-tag rejection did not identify the absent tag"
 
 python3 - "$ROOT/version-service/stable.json" "$tmp/bad-channel.json" <<'PY'
 import json
@@ -123,7 +160,10 @@ with open(sys.argv[2], "w", encoding="utf-8") as fh:
     json.dump(data, fh)
 PY
 
-if FAOS_GH_BIN="$tmp/gh" "$script" \
+if FAKE_REGISTRY_LOG="$tmp/bad-channel-registry.log" \
+    FAOS_GH_BIN="$tmp/gh" \
+    FAOS_REGISTRY_CHECK_BIN="$tmp/registry-check" \
+    "$script" \
     --channel "$tmp/bad-channel.json" --owner esaueng \
     2> "$tmp/bad-channel.err"; then
     fail "component ownership preflight allowed an upstream channel image"
@@ -131,7 +171,11 @@ fi
 grep -q 'channel image is not under ghcr.io/esaueng' "$tmp/bad-channel.err" \
     || fail "bad channel rejection did not identify registry ownership drift"
 
-if FAKE_GH_MODE=bad_supervisor_patch FAOS_GH_BIN="$tmp/gh" "$script" \
+if FAKE_REGISTRY_LOG="$tmp/bad-supervisor-registry.log" \
+    FAKE_GH_MODE=bad_supervisor_patch \
+    FAOS_GH_BIN="$tmp/gh" \
+    FAOS_REGISTRY_CHECK_BIN="$tmp/registry-check" \
+    "$script" \
     --channel "$ROOT/version-service/stable.json" --owner esaueng \
     2> "$tmp/bad-supervisor.err"; then
     fail "component ownership preflight allowed an unpatched Supervisor fork"
@@ -157,6 +201,6 @@ grep -q 'scripts/verify-supervisor-channel-patch.sh' "$script" \
 grep -q 'GH_COMPONENT_READ_TOKEN' "$workflow" \
     || fail "build workflow does not provide a GitHub token for component ownership verification"
 grep -q 'packages: read' "$workflow" \
-    || fail "build workflow permissions do not allow GHCR package visibility checks"
+    || fail "build workflow permissions do not allow GHCR package reads if future metadata checks need them"
 
-echo "ok  component ownership preflight validates esaueng repos, channel images, and public GHCR packages"
+echo "ok  component ownership preflight validates esaueng repos and channel image tags"

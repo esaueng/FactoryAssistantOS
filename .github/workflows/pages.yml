@@ -6,7 +6,8 @@
 # branding/identity.env: FAOS_VERSION_CHANNEL_URL). This workflow serves
 # version-service/stable.json at that exact URL, and the channel schema at its
 # $id (schema/channel.schema.json), so the single source of truth under
-# version-service/ is what reaches the field — no hand-copied duplicate.
+# version-service/ is what reaches the field — no hand-copied duplicate. The
+# patched Supervisor also requests /apparmor_stable.txt from the same site.
 #
 # PREREQUISITES (one-time, in repo Settings — see version-service/README.md):
 #   1. A PUBLIC Pages site. The appliance fetches the channel anonymously, so
@@ -23,6 +24,7 @@ on:
     branches: ["main"]
     paths:
       - "version-service/stable.json"
+      - "version-service/apparmor_*.txt"
       - "version-service/schema/**"
       - ".github/workflows/pages.yml"
   workflow_dispatch:
@@ -66,11 +68,13 @@ jobs:
       - name: Assemble Pages site
         # Copy only the public channel artifacts so the URLs are clean:
         #   /stable.json                  <- the channel the appliance polls
+        #   /apparmor_stable.txt          <- Supervisor AppArmor profile URL
         #   /schema/channel.schema.json   <- matches the schema's own $id
         run: |
           set -euo pipefail
           mkdir -p _site/schema
           cp version-service/stable.json                 _site/stable.json
+          cp version-service/apparmor_*.txt              _site/
           cp version-service/schema/channel.schema.json  _site/schema/channel.schema.json
           cat > _site/index.html <<'HTML'
           <!doctype html>
@@ -80,6 +84,7 @@ jobs:
           <p>Endpoints served from this site:</p>
           <ul>
             <li><a href="stable.json">stable.json</a> &mdash; the stable update channel the appliance polls</li>
+            <li><a href="apparmor_stable.txt">apparmor_stable.txt</a> &mdash; Supervisor AppArmor profile</li>
             <li><a href="schema/channel.schema.json">schema/channel.schema.json</a> &mdash; channel document schema</li>
           </ul>
           HTML

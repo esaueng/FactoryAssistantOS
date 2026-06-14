@@ -15,6 +15,9 @@ How it fits together (details in `docs/ARCHITECTURE.md` §Updates):
 2. **Supervisor / plugins / Core** — the channel JSON names container image
    versions; they are pulled from the Factory Assistant container registry
    (`ghcr.io/esaueng`).
+3. **Supervisor AppArmor profile** — the patched Supervisor also fetches
+   `https://esaueng.github.io/FactoryAssistantOS/apparmor_stable.txt`; this
+   repo publishes that profile from `version-service/apparmor_stable.txt`.
 
 The three URLs (registry, channel, OTA) are settled in
 `branding/identity.env` (org = `esaueng`); see "Hosting (go-live)" below.
@@ -32,6 +35,7 @@ before publishing.
 | File | Purpose |
 |---|---|
 | `stable.json` | The `stable` channel document published to the GitHub Pages site |
+| `apparmor_stable.txt` | Supervisor AppArmor profile served from the same GitHub Pages site |
 | `stable.json.example` | Reference `stable` channel document (same shape as `stable.json`) |
 | `schema/channel.schema.json` | JSON Schema (draft 2020-12) for a channel document; validated in CI (`make lint`) |
 | `generate-channel.sh` | Produce a channel document from `branding/identity.env` + version flags, validated against the schema |
@@ -81,10 +85,11 @@ To go live:
 
 1. **Publish the channel via GitHub Pages.** The
    `.github/workflows/pages.yml` workflow validates `version-service/stable.json`
-   against the schema and serves it (plus `schema/channel.schema.json`) at the
-   channel URL above — `version-service/` stays the single source of truth, with
-   no hand-copied duplicate. It runs on every push to `main` that touches the
-   channel, and on demand (`workflow_dispatch`). Two one-time prerequisites:
+   against the schema and serves it, `apparmor_stable.txt`, and
+   `schema/channel.schema.json` at the URLs above — `version-service/` stays the
+   single source of truth, with no hand-copied duplicate. It runs on every push
+   to `main` that touches the channel or AppArmor profile, and on demand
+   (`workflow_dispatch`). Two one-time prerequisites:
    - **A public Pages site.** The appliance fetches the channel anonymously
      (the Supervisor `curl`s it with no credentials), so the site must be
      reachable without auth. On the Free org plan that means the repo must be
@@ -96,8 +101,8 @@ To go live:
      cannot enable Pages itself, so this toggle is manual). After that, every
      push to `main` that touches the channel re-publishes automatically.
 
-   If the Supervisor's AppArmor profile updates are later branded to this site,
-   add `apparmor_stable.txt` to the `_site` assembled by the workflow.
+   The same workflow publishes `apparmor_stable.txt`; keep that file in sync
+   with the Supervisor AppArmor profile expected by the pinned Supervisor fork.
 2. **Validate before publishing.** Re-validate the channel against the *pinned
    Supervisor's* updater (not just the advisory schema here) — the authoritative
    parser is whatever Supervisor version the image ships. Only publish a

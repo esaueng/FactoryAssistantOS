@@ -7,6 +7,8 @@ component_script="$ROOT/scripts/verify-component-ownership.sh"
 release_doc="$ROOT/RELEASE.md"
 build_doc="$ROOT/docs/OS_BUILD.md"
 supervisor_doc="$ROOT/docs/forks/supervisor/README.md"
+pages_workflow="$ROOT/.github/workflows/pages.yml"
+apparmor_profile="$ROOT/version-service/apparmor_stable.txt"
 tmp="$(mktemp -d)"
 trap 'rm -rf "$tmp"' EXIT
 
@@ -55,6 +57,18 @@ grep -q 'scripts/verify-supervisor-channel-patch.sh' "$build_doc" \
     || fail "OS build docs do not document Supervisor channel patch verification"
 grep -q 'scripts/verify-supervisor-channel-patch.sh' "$supervisor_doc" \
     || fail "Supervisor fork docs do not document the verifier"
+grep -q 'repo="esaueng/factory-assistant-supervisor"' "$script" \
+    || fail "Supervisor channel patch verifier default repo does not match the live fork"
+grep -q -- '--repo esaueng/factory-assistant-supervisor' "$supervisor_doc" \
+    || fail "Supervisor fork docs do not point the verifier at the live fork"
+if grep -q 'esaueng/supervisor' "$script" "$supervisor_doc"; then
+    fail "Supervisor channel patch verifier or docs still point at stale esaueng/supervisor repo"
+fi
+[ -f "$apparmor_profile" ] || fail "Factory Assistant AppArmor profile endpoint source is missing"
+grep -q 'apparmor_stable.txt' "$pages_workflow" \
+    || fail "Pages workflow does not publish the Supervisor AppArmor profile"
+grep -q 'apparmor_stable.txt' "$supervisor_doc" \
+    || fail "Supervisor fork docs do not document the AppArmor profile endpoint"
 grep -q 'running Supervisor update-channel URL preflight' "$release_doc" \
     || fail "release runbook does not list the running Supervisor channel preflight as applied"
 grep -q 'running fork: P2 verified by Supervisor channel patch preflight' "$build_doc" \

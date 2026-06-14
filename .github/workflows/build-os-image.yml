@@ -32,7 +32,7 @@ on:
 
 permissions:
   contents: write # create releases / upload assets on tag builds
-  packages: read # verify public GHCR package visibility before trusted tags
+  packages: read # retained for GHCR metadata checks; image tags are verified anonymously
 
 jobs:
   build:

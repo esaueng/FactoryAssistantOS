@@ -5,13 +5,13 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 channel="$ROOT/version-service/stable.json"
 source_dir=""
-repo="esaueng/supervisor"
+repo="esaueng/factory-assistant-supervisor"
 ref=""
 gh_bin="${FAOS_GH_BIN:-gh}"
 
 usage() {
     cat <<'EOF'
-Usage: scripts/verify-supervisor-channel-patch.sh [--channel version-service/stable.json] [--source supervisor-checkout | --repo esaueng/supervisor] [--ref version]
+Usage: scripts/verify-supervisor-channel-patch.sh [--channel version-service/stable.json] [--source supervisor-checkout | --repo esaueng/factory-assistant-supervisor] [--ref version]
 
 Checks supervisor/const.py for the required Factory Assistant patch:
   URL_HASSIO_VERSION = "https://esaueng.github.io/FactoryAssistantOS/{channel}.json"

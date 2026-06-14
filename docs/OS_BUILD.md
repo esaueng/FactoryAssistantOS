@@ -105,8 +105,8 @@ paths move between upstream releases).
 | Console banner with attribution | rootfs overlay `etc/issue` + defconfig fragment | A |
 | Industrial default Core config template | rootfs overlay `usr/share/factory-assistant/` | A (seeding: P3) |
 | os-release **CPE product** vs **unmodified** Supervisor OS-detection (allowlist `{hassos, haos}`) | `scripts/apply-overlay.sh` rewrites the `post-build.sh` CPE product to `haos` (keeps `ID=faos` + branded `NAME`); the product is an internal OS-family id (invariant 4) | A |
-| Supervisor/Core/plugin container registry + image names | Supervisor image: rootfs overlay `hassos-supervisor` (`SUPERVISOR_IMAGE`, cold boot). Core + 5 plugins: channel `images` map (`version-service/stable.json`), which the **running** Supervisor reads only after the `const.py` patch | supervisor img: A · core+plugins: needs Supervisor fork |
-| Update channel URL → FA version service | cold boot: rootfs overlay `hassos-supervisor` fallback. **Running Supervisor: hardcoded `const.py` `URL_HASSIO_VERSION`** → see `docs/forks/supervisor/` | overlay: A · running: **P2 (Supervisor fork)** |
+| Supervisor/Core/plugin container registry + image names | Supervisor image: rootfs overlay `hassos-supervisor` (`SUPERVISOR_IMAGE`, cold boot). Core + 5 plugins: channel `images` map (`version-service/stable.json`), which the **running** Supervisor reads only after the `const.py` patch | supervisor img: A · core+plugins: P2 verified by component preflight |
+| Update channel URL → FA version service | cold boot: rootfs overlay `hassos-supervisor` fallback. **Running Supervisor: hardcoded `const.py` `URL_HASSIO_VERSION`** → see `docs/forks/supervisor/` | overlay: A · running fork: P2 verified by Supervisor channel patch preflight |
 | **RAUC signing keys + device keyring + OTA URL** | `scripts/configure-rauc-signing.sh`, build workflow secrets, `version-service/` | P2 implementation path exists; production OTA requires real external keys/secrets |
 | Host login banner (MOTD) | rootfs overlay `etc/motd` (replaces upstream's HA MOTD) | A |
 | GRUB menu title / boot splash | generic-x86-64 `board/pc/grub.cfg` is a functional A/B slot menu with **no product branding** — nothing to rebrand for this board (the separate `ova` image's `home-assistant.ovf` would need it if that target is built) | N/A (x86-64) |
@@ -130,9 +130,10 @@ accepts the `faos` OS identity: Settings → About reports "Factory Assistant
 OS"; `ha os info` and `ha supervisor info` succeed with no "unsupported OS"
 health warning; OS updates and backups are offered; the observer page
 (`:4357`) is healthy. If any of these degrade, keep the functional os-release
-ID fields upstream-compatible until the Supervisor fork lands — do **not**
-change `HASSOS_ID` away from `faos` without a documented decision (AGENTS.md
-invariant 4). Record the result in `RELEASE.md`.
+ID fields upstream-compatible unless a documented Supervisor fork decision
+supports a different value — do **not** change `HASSOS_ID` away from `faos`
+without that decision (AGENTS.md invariant 4). Record the result in
+`RELEASE.md`.
 
 ## 5. Signing (RAUC) — Phase 2, blocking for OTA
 

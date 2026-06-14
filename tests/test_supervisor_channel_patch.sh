@@ -55,5 +55,12 @@ grep -q 'scripts/verify-supervisor-channel-patch.sh' "$build_doc" \
     || fail "OS build docs do not document Supervisor channel patch verification"
 grep -q 'scripts/verify-supervisor-channel-patch.sh' "$supervisor_doc" \
     || fail "Supervisor fork docs do not document the verifier"
+grep -q 'running Supervisor update-channel URL preflight' "$release_doc" \
+    || fail "release runbook does not list the running Supervisor channel preflight as applied"
+grep -q 'running fork: P2 verified by Supervisor channel patch preflight' "$build_doc" \
+    || fail "OS build checklist does not mark the running Supervisor channel as preflight-verified"
+if grep -Eq 'Still Phase 2/P3: running[[:space:]]+Supervisor update-channel URL|running: \*\*P2 \(Supervisor fork\)\*\*|core\+plugins: needs Supervisor fork' "$release_doc" "$build_doc"; then
+    fail "status docs still list the verified Supervisor channel patch as unresolved"
+fi
 
 echo "ok  Supervisor fork channel patch verifier enforces the Factory Assistant version URL"

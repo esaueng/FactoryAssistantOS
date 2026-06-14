@@ -1,7 +1,7 @@
 # Publish the Factory Assistant update channel to GitHub Pages.
 #
 # The appliance's Supervisor polls the channel document anonymously at
-#   https://esaueng.github.io/FactoryAssistant/stable.json
+#   https://esaueng.github.io/FactoryAssistantOS/stable.json
 # (see buildroot-external/rootfs-overlay/usr/sbin/hassos-supervisor and
 # branding/identity.env: FAOS_VERSION_CHANNEL_URL). This workflow serves
 # version-service/stable.json at that exact URL, and the channel schema at its

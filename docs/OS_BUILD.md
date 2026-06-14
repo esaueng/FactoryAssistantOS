@@ -115,6 +115,13 @@ paths move between upstream releases).
 | Plant overview default dashboard | rootfs overlay `usr/share/factory-assistant/configuration.yaml` + `dashboards/factory-overview.yaml` | A |
 | Frontend branding, native machine cards, kiosk toggle, onboarding wording | `frontend` fork | P3 |
 
+**Component ownership preflight.** Before cutting a trusted tag, run
+`scripts/verify-component-ownership.sh --channel version-service/stable.json
+--owner esaueng` with authenticated `gh` access. It checks the required
+component forks, rejects channel images outside `ghcr.io/esaueng`, and verifies
+the GHCR packages named by the channel are public for anonymous appliance
+pulls.
+
 **os-release ID verification (P1).** After first boot, confirm the Supervisor
 accepts the `faos` OS identity: Settings → About reports "Factory Assistant
 OS"; `ha os info` and `ha supervisor info` succeed with no "unsupported OS"

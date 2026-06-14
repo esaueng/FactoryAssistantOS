@@ -116,6 +116,18 @@ and complete onboarding. Full flashing/VM notes: `docs/OS_BUILD.md` §3.
       This checks secret names only (`FAOS_RAUC_KEYRING_PEM`,
       `FAOS_RAUC_CERT_PEM`, `FAOS_RAUC_KEY_PEM`); it does not read or print
       secret values.
+- [ ] Verify component fork/package ownership before trusting the channel:
+
+      ```sh
+      scripts/verify-component-ownership.sh \
+        --channel version-service/stable.json \
+        --owner esaueng
+      ```
+
+      This uses authenticated `gh` access to confirm required component repos
+      are reachable under `esaueng`, the channel image map points only at
+      `ghcr.io/esaueng`, and all channel GHCR packages are public for
+      anonymous appliance pulls.
 - [ ] Verify the published channel is live and matches the local stable
       document before cutting a release tag:
 

@@ -13,14 +13,15 @@ quick reference), and the onboarding scaffold (`onboarding/`:
 `site_model.example.yaml` and `wizard_steps.yaml`), plus the industrial add-on
 contract (`addons/industrial_addons.catalog.yaml`) and frontend handoff
 contract (`ui/frontend_contract.yaml`), plus the Supervisor seed handoff
-(`supervisor/defaults_seed_contract.yaml`); the UI is specified in
+(`supervisor/defaults_seed_contract.yaml`) and network identity contract
+(`network/network_identity_contract.yaml`); the UI is specified in
 `docs/UI_DESIGN.md`.
 
 ## 1. Defaults table
 
 | Area | Default | Rationale | Where / phase |
 |---|---|---|---|
-| Hostname / discovery | `factory-assistant` (mDNS `.local`) | predictable commissioning on plant LANs | overlay — done |
+| Hostname / discovery | `factory-assistant` (mDNS `.local`) | predictable commissioning on plant LANs | overlay + `network/network_identity_contract.yaml` — done |
 | Config seeding | first-boot copy of the template tree into `/config` when none exists | reproducible appliance defaults without clobbering user config | overlay scaffold — done (§4); robust path needs Supervisor hook |
 | Network | DHCP out of the box; static IP first-class via NetworkManager | plants standardize on static addressing | OS (upstream capability); manual guidance now (§5), onboarding step P3 |
 | Time | NTP discipline for trustworthy timestamps; UTC recorder timestamps, local-time display | trustworthy telemetry timelines | host timesyncd now; manual guidance (§5); required onboarding step P3 |
@@ -164,6 +165,11 @@ or machine state. Surfacing the same checks as guided **first-boot onboarding
 steps** still requires backend changes in Core/Supervisor (and the frontend
 onboarding flow), which live in other repos. See the §1 defaults table for the
 phase markers.
+
+The companion `network/network_identity_contract.yaml` keeps the OS hostname,
+`factory-assistant.local` mDNS target, local web UI URL, Core display name,
+`zeroconf` requirement, static-IP guidance, NTP review, and Mosquitto offer
+aligned for those external fork consumers.
 
 - **Time / NTP (required).** Trustworthy recorder and history timestamps
   depend on a disciplined clock. The host syncs time with

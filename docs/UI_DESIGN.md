@@ -103,8 +103,10 @@ visually, because unknown must never look like OK.
 
 ## 5. The machine tile (core UI unit)
 
-Everything aggregates from one tile grammar (frontend fork ships it as the
-`fa-machine-card`; until then the templates approximate it with stock cards):
+Everything aggregates from one tile grammar. The frontend fork now ships the
+read-only `fa-machine-card`; the stock Lovelace templates still approximate
+it until the image consumes that forked frontend and the dashboard templates
+switch to `type: custom:fa-machine-card`:
 
 ```
 ┌──────────────────────────────┐
@@ -212,7 +214,8 @@ wallboard scale ×1.6.
 | KPI template sensors | commented examples in `configuration.yaml` template | **now** |
 | Landing page restyled to tokens | `landingpage/` image context | **now** |
 | Visible product rebrand, About panel safety/license links, and local-first onboarding bridge | `frontend` fork consuming the shipped `ui/frontend_contract.yaml` and `onboarding/wizard_steps.yaml` contracts | implemented in fork |
-| `fa-machine-card`, trimmed navigation, native andon view + kiosk toggle, terminology pass ("Home"→"Plant overview", areas as lines/cells), full industrial onboarding wizard | `frontend` fork consuming the shipped `ui/frontend_contract.yaml` and `onboarding/wizard_steps.yaml` contracts | P3 |
+| Native read-only `fa-machine-card` with status/OEE/job/maintenance freshness and detail-only tap behavior | `frontend` fork consuming the shipped `ui/frontend_contract.yaml` machine-card contract | implemented in fork |
+| Trimmed navigation, native andon view + kiosk toggle, terminology pass ("Home"→"Plant overview", areas as lines/cells), full industrial onboarding wizard | `frontend` fork consuming the shipped `ui/frontend_contract.yaml` and `onboarding/wizard_steps.yaml` contracts | P3 |
 | Auto-generated area dashboards from the line/cell taxonomy | frontend fork consuming the shipped `onboarding/site_model.example.yaml` line/cell taxonomy scaffold | P3 |
 
 Templates are deliberately stock-Lovelace (glance/entities/gauge/history

@@ -103,8 +103,9 @@ and complete onboarding. Full flashing/VM notes: `docs/OS_BUILD.md` §3.
       ```
 
       This validates the Factory Assistant RAUC chain/key match, runs
-      `scripts/verify-shipped-branding.sh` and
-      `scripts/verify-safety-boundary.sh`, and confirms the channel points at
+      `scripts/verify-shipped-branding.sh`,
+      `scripts/verify-safety-boundary.sh`, and
+      `scripts/verify-identity-go-live.sh`, and confirms the channel points at
       esaueng-owned images and OTA URLs before a tag is cut.
 - [ ] If releasing through GitHub Actions, confirm the repository has all
       trusted RAUC secrets configured:
@@ -200,8 +201,16 @@ and complete onboarding. Full flashing/VM notes: `docs/OS_BUILD.md` §3.
       Supervisor update-channel URL and frontend branding/onboarding.
 - [ ] Verify the Supervisor accepts the `faos` os-release identity on first
       boot (`docs/OS_BUILD.md` §4 — os-release ID verification).
-- [ ] Resolve the `branding/identity.env` go-live placeholders (org, registry,
-      version host, OTA host) before any published or OTA release.
+- [ ] Verify the settled `branding/identity.env` go-live values before any
+      published or OTA release:
+
+      ```sh
+      scripts/verify-identity-go-live.sh --identity branding/identity.env
+      ```
+
+      This rejects stale `REPLACE-*` / `.example` values and verifies the
+      `esaueng` GHCR registry, GitHub Pages channel URL, and GitHub Releases
+      OTA template.
 - [ ] Publish the license bundle with the artifact
       (`docs/LICENSE_COMPLIANCE.md` §6).
 - [ ] Boot-test on real hardware/VM (milestone P1, `docs/ARCHITECTURE.md` §11).

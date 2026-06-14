@@ -71,6 +71,12 @@ Releases**. The settled URLs live in `branding/identity.env`:
   expanded by the Supervisor.
 - **Registry** — `ghcr.io/esaueng` (`FAOS_CONTAINER_REGISTRY`).
 
+Verify these settled go-live values before publishing:
+
+```sh
+scripts/verify-identity-go-live.sh --identity branding/identity.env
+```
+
 To go live:
 
 1. **Publish the channel via GitHub Pages.** The

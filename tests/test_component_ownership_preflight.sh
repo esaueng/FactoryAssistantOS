@@ -5,6 +5,7 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 script="$ROOT/scripts/verify-component-ownership.sh"
 release_doc="$ROOT/RELEASE.md"
 build_doc="$ROOT/docs/OS_BUILD.md"
+arch_doc="$ROOT/docs/ARCHITECTURE.md"
 workflow="$ROOT/.github/workflows/build-os-image.yml"
 tmp="$(mktemp -d)"
 trap 'rm -rf "$tmp"' EXIT
@@ -142,6 +143,13 @@ grep -q 'scripts/verify-component-ownership.sh' "$release_doc" \
     || fail "release runbook does not document component ownership preflight"
 grep -q 'scripts/verify-component-ownership.sh' "$build_doc" \
     || fail "OS build docs do not document component ownership preflight"
+grep -q 'component ownership/channel work is verified' "$arch_doc" \
+    || fail "architecture phase status does not mark P2 component ownership/channel work as verified"
+grep -q 'trusted OTA remains the P2 blocker' "$arch_doc" \
+    || fail "architecture phase status does not identify trusted OTA as the P2 blocker"
+if grep -q 'partial: registry/channel/release wiring' "$arch_doc"; then
+    fail "architecture phase status still undersells verified P2 ownership/channel work"
+fi
 grep -q 'scripts/verify-component-ownership.sh' "$workflow" \
     || fail "build workflow does not verify component ownership before trusted tag releases"
 grep -q 'scripts/verify-supervisor-channel-patch.sh' "$script" \

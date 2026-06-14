@@ -213,6 +213,10 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         run: ./scripts/verify-release-artifacts.sh --release-dir release --board "${BOARD_ID}" --trusted
 
+      - name: Verify OTA channel artifact
+        if: startsWith(github.ref, 'refs/tags/')
+        run: ./scripts/verify-ota-channel-artifact.sh --channel version-service/stable.json --board "${BOARD_ID}" --release-dir release
+
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:

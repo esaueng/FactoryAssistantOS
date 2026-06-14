@@ -3,6 +3,7 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 script="$ROOT/scripts/verify-ota-channel-artifact.sh"
+workflow="$ROOT/.github/workflows/build-os-image.yml"
 release_doc="$ROOT/RELEASE.md"
 version_doc="$ROOT/version-service/README.md"
 tmp="$(mktemp -d)"
@@ -88,5 +89,7 @@ grep -q 'scripts/verify-ota-channel-artifact.sh' "$release_doc" \
     || fail "release runbook does not document OTA channel artifact verification"
 grep -q 'scripts/verify-ota-channel-artifact.sh' "$version_doc" \
     || fail "version-service docs do not document OTA channel artifact verification"
+grep -q 'scripts/verify-ota-channel-artifact.sh' "$workflow" \
+    || fail "build workflow does not verify the channel OTA artifact before publishing"
 
 echo "ok  OTA channel artifact verifier ties channel URLs to release bundles"

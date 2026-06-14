@@ -6,6 +6,7 @@ script="$ROOT/scripts/verify-identity-go-live.sh"
 identity="$ROOT/branding/identity.env"
 readiness="$ROOT/scripts/verify-release-readiness.sh"
 release_doc="$ROOT/RELEASE.md"
+branding_doc="$ROOT/docs/BRANDING.md"
 version_doc="$ROOT/version-service/README.md"
 tmp="$(mktemp -d)"
 trap 'rm -rf "$tmp"' EXIT
@@ -69,6 +70,17 @@ grep -q 'identity go-live: verified' "$readiness" \
     || fail "release readiness success output does not report identity verification"
 grep -q 'scripts/verify-identity-go-live.sh' "$release_doc" \
     || fail "release runbook does not document identity go-live verification"
+grep -q 'scripts/verify-identity-go-live.sh' "$branding_doc" \
+    || fail "branding docs do not document identity go-live verification"
+grep -q 'ghcr.io/esaueng' "$branding_doc" \
+    || fail "branding docs do not document the settled esaueng registry"
+grep -q 'esaueng.github.io/FactoryAssistantOS' "$branding_doc" \
+    || fail "branding docs do not document the settled version channel host"
+if grep -q 'ghcr.io/REPLACE-ORG' "$branding_doc" \
+    || grep -q 'version.factory-assistant.example' "$branding_doc" \
+    || grep -q 'REPLACE-ORG placeholder until' "$branding_doc"; then
+    fail "branding docs still describe settled go-live values as placeholders"
+fi
 grep -q 'scripts/verify-identity-go-live.sh' "$version_doc" \
     || fail "version-service docs do not document identity go-live verification"
 if grep -Fq 'Resolve the ' "$release_doc" \

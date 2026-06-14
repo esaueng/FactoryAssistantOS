@@ -1,6 +1,6 @@
-# Branding Plan (initial)
+# Branding Plan
 
-The rules and the initial decisions for Factory Assistant's identity.
+The rules and current decisions for Factory Assistant's identity.
 Trademark/legal rationale lives in `docs/LICENSE_COMPLIANCE.md` §5; this
 document is the practical plan. Two absolutes up front:
 
@@ -30,13 +30,16 @@ in prose (repo slugs excepted); never abbreviate to "FA" in user-facing UI.
 | OS ID / artifact prefix | `faos` | image: `faos_generic-x86-64-<ver>.img.xz`, bundles: `faos_<board>-<ver>.raucb` |
 | Default hostname / mDNS | `factory-assistant` → `factory-assistant.local` | set via overlay |
 | Web UI port | `8123` (unchanged) | deliberate ecosystem compatibility |
-| Org/repo slugs | `factory-assistant/<component>` pattern; `REPLACE-ORG` placeholder until the org exists | mirrors upstream repo names |
-| Container registry | `ghcr.io/REPLACE-ORG` | placeholder in `branding/identity.env` |
-| Update/version host | `version.factory-assistant.example` | `.example` until a real domain is secured |
+| Org/repo slugs | `esaueng/<component>` | mirrors upstream repo names where there is an upstream component |
+| Container registry | `ghcr.io/esaueng` | settled in `branding/identity.env` |
+| Update/version host | `https://esaueng.github.io/FactoryAssistantOS/stable.json` | settled GitHub Pages channel URL |
+| OTA bundle template | `https://github.com/esaueng/FactoryAssistantOS/releases/download/{version}/faos_{board}-{version}.raucb` | signed RAUC bundles ride this repo's GitHub Releases |
 | Internal symbols | **unchanged from upstream** (`HASSOS_*`, `hassio`, D-Bus names, API paths) | AGENTS.md invariant 4 — branding is user-visible only |
 
-Before any real release/OTA, replace every `REPLACE-ORG` / `.example`
-placeholder; the four-item go-live checklist lives in `branding/identity.env`.
+Before any real release/OTA, run
+`scripts/verify-identity-go-live.sh --identity branding/identity.env`. The
+verifier rejects stale placeholder values and proves the registry, channel URL,
+and OTA template match the settled `esaueng` publication path.
 
 Versioning: FA OS tracks upstream MAJOR.MINOR (`docs/OS_BUILD.md` §6); Core/
 Supervisor forks keep upstream version numbers with the FA registry namespace.

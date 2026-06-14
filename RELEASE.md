@@ -138,8 +138,8 @@ and complete onboarding. Full flashing/VM notes: `docs/OS_BUILD.md` §3.
       ```
 
       This checks the flash image, RAUC bundle, license archive, checksums,
-      trusted release notes, and rejects accidental publication of signing
-      material.
+      `RAUC_TRUST.json` public certificate manifest, trusted release notes,
+      and rejects accidental publication of signing material.
 - [ ] Confirm the channel OTA template resolves to the exact RAUC bundle in
       the release directory:
 

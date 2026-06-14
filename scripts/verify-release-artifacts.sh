@@ -12,8 +12,8 @@ usage() {
 Usage: scripts/verify-release-artifacts.sh [--release-dir release] [--board generic-x86-64] [--trusted]
 
 Checks the release directory for the flash image, SHA256SUMS, license bundle,
-and, for trusted releases, a RAUC bundle plus trusted release notes. It also
-rejects accidental publication of signing material.
+and, for trusted releases, a RAUC bundle, RAUC trust manifest, and trusted
+release notes. It also rejects accidental publication of signing material.
 EOF
 }
 
@@ -54,6 +54,7 @@ fi
 if [ "$trusted" -eq 1 ]; then
     [ "${#raucbs[@]}" -gt 0 ] || die "trusted release requires a RAUC bundle"
     [ -f "$release_dir/RELEASE_NOTES.md" ] || die "trusted release requires RELEASE_NOTES.md"
+    [ -f "$release_dir/RAUC_TRUST.json" ] || die "trusted release requires RAUC_TRUST.json"
     grep -q 'RAUC bundles are signed with the configured Factory Assistant OTA signing key' "$release_dir/RELEASE_NOTES.md" \
         || die "trusted release notes must state Factory Assistant RAUC signing"
     grep -q 'not a safety device' "$release_dir/RELEASE_NOTES.md" \
@@ -65,6 +66,7 @@ fi
 
 python3 - "$release_dir" "$trusted" <<'PY'
 import hashlib
+import json
 import sys
 from pathlib import Path
 
@@ -103,6 +105,25 @@ for predicate, label in required_patterns:
 
 if trusted and not any(name.endswith(".raucb") for name in seen):
     raise SystemExit("SHA256SUMS does not list the RAUC bundle")
+if trusted:
+    if "RAUC_TRUST.json" not in seen:
+        raise SystemExit("SHA256SUMS does not list RAUC_TRUST.json")
+    manifest = json.loads((root / "RAUC_TRUST.json").read_text(encoding="utf-8"))
+    if manifest.get("schema_version") != 1:
+        raise SystemExit("RAUC_TRUST.json schema_version must be 1")
+    if manifest.get("private_key_material") is not False:
+        raise SystemExit("RAUC_TRUST.json must state that it contains no private key material")
+    if manifest.get("verified_by_keyring") is not True:
+        raise SystemExit("RAUC_TRUST.json must state the signing certificate verified against the keyring")
+    keyring = manifest.get("keyring") or {}
+    signing = manifest.get("signing_certificate") or {}
+    for label, cert in (("keyring", keyring), ("signing_certificate", signing)):
+        for field in ("subject", "sha256_fingerprint", "not_before", "not_after"):
+            if not cert.get(field):
+                raise SystemExit(f"RAUC_TRUST.json {label} missing {field}")
+    for field in ("issuer", "serial"):
+        if not signing.get(field):
+            raise SystemExit(f"RAUC_TRUST.json signing_certificate missing {field}")
 PY
 
 cat <<EOF

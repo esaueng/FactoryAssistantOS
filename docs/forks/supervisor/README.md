@@ -44,6 +44,22 @@ sed -i \
 grep -n 'URL_HASSIO_VERSION' supervisor/const.py   # verify it now reads esaueng.github.io
 ```
 
+From this OS repo, verify the local fork checkout or the published fork ref:
+
+```sh
+scripts/verify-supervisor-channel-patch.sh \
+  --channel version-service/stable.json \
+  --source /path/to/esaueng-supervisor
+
+scripts/verify-supervisor-channel-patch.sh \
+  --channel version-service/stable.json \
+  --repo esaueng/supervisor
+```
+
+The second form uses the `supervisor` version from the channel document as the
+GitHub ref. It fails if `URL_HASSIO_VERSION` still points at
+`version.home-assistant.io`.
+
 ### Deliberately NOT changed in Phase 1
 
 - **`URL_HASSIO_APPARMOR`** stays on `version.home-assistant.io`. The AppArmor

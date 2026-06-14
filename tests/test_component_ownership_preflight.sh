@@ -33,7 +33,31 @@ if [ "$1" = "repo" ] && [ "$2" = "view" ]; then
 fi
 
 if [ "$1" = "api" ]; then
-    package="${2##*/}"
+    for arg in "$@"; do
+        case "$arg" in
+          /repos/esaueng/supervisor/contents/supervisor/const.py*)
+            if [ "$mode" = "bad_supervisor_patch" ]; then
+                printf '%s\n' 'URL_HASSIO_VERSION = "https://version.home-assistant.io/{channel}.json"'
+            else
+                printf '%s\n' 'URL_HASSIO_VERSION = "https://esaueng.github.io/FactoryAssistantOS/{channel}.json"'
+            fi
+            exit 0
+            ;;
+        esac
+    done
+
+    package=""
+    for arg in "$@"; do
+        case "$arg" in
+          /orgs/esaueng/packages/container/*)
+            package="${arg##*/}"
+            ;;
+        esac
+    done
+    [ -n "$package" ] || {
+        printf 'unexpected gh api args: %s\n' "$*" >&2
+        exit 9
+    }
     if [ "$mode" = "missing_package" ] && [ "$package" = "amd64-hassio-observer" ]; then
         echo "not found" >&2
         exit 1
@@ -60,6 +84,8 @@ grep -q 'repos: 9' "$tmp/ok.out" \
     || fail "component ownership preflight did not check every required repo"
 grep -q 'packages: 7' "$tmp/ok.out" \
     || fail "component ownership preflight did not check every channel package"
+grep -q 'supervisor channel patch: verified' "$tmp/ok.out" \
+    || fail "component ownership preflight does not report Supervisor channel patch verification"
 
 if FAKE_GH_MODE=missing_repo FAOS_GH_BIN="$tmp/gh" "$script" \
     --channel "$ROOT/version-service/stable.json" --owner esaueng \
@@ -104,12 +130,22 @@ fi
 grep -q 'channel image is not under ghcr.io/esaueng' "$tmp/bad-channel.err" \
     || fail "bad channel rejection did not identify registry ownership drift"
 
+if FAKE_GH_MODE=bad_supervisor_patch FAOS_GH_BIN="$tmp/gh" "$script" \
+    --channel "$ROOT/version-service/stable.json" --owner esaueng \
+    2> "$tmp/bad-supervisor.err"; then
+    fail "component ownership preflight allowed an unpatched Supervisor fork"
+fi
+grep -q 'Supervisor fork must patch URL_HASSIO_VERSION' "$tmp/bad-supervisor.err" \
+    || fail "bad Supervisor fork rejection did not identify the required channel patch"
+
 grep -q 'scripts/verify-component-ownership.sh' "$release_doc" \
     || fail "release runbook does not document component ownership preflight"
 grep -q 'scripts/verify-component-ownership.sh' "$build_doc" \
     || fail "OS build docs do not document component ownership preflight"
 grep -q 'scripts/verify-component-ownership.sh' "$workflow" \
     || fail "build workflow does not verify component ownership before trusted tag releases"
+grep -q 'scripts/verify-supervisor-channel-patch.sh' "$script" \
+    || fail "component ownership preflight does not call the Supervisor channel patch verifier"
 grep -q 'GH_COMPONENT_READ_TOKEN' "$workflow" \
     || fail "build workflow does not provide a GitHub token for component ownership verification"
 grep -q 'packages: read' "$workflow" \

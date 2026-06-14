@@ -104,6 +104,10 @@ for package in "${packages[@]}"; do
     fi
 done
 
+FAOS_GH_BIN="$gh_bin" "$ROOT/scripts/verify-supervisor-channel-patch.sh" \
+    --channel "$channel" \
+    --repo "$owner/supervisor" >/dev/null
+
 cat <<EOF
 component ownership preflight passed
   owner: $owner
@@ -111,4 +115,5 @@ component ownership preflight passed
   registry: $registry
   repos: ${#required_repos[@]}
   packages: ${#packages[@]}
+  supervisor channel patch: verified
 EOF

@@ -114,7 +114,7 @@ paths move between upstream releases).
 | Containerized CLI-plugin banner | `plugin-cli/` image context + `.github/workflows/mirror-fa-plugins.yml` | A (workflow-built branded image) |
 | Plant overview default dashboard | rootfs overlay `usr/share/factory-assistant/configuration.yaml` + `dashboards/factory-overview.yaml` | A |
 | Frontend product branding, About dialog, and local-first onboarding bridge | `frontend` fork | P3 bridge implemented in fork |
-| Native industrial setup checkpoint | `frontend` fork (`onboarding-industrial-setup`) | P3 checkpoint implemented in fork; backend-driven wizard still open |
+| Native industrial setup handoff | `frontend` fork (`onboarding-industrial-setup`, `factory_assistant_onboarding` frontend system data) | P3 handoff implemented in fork; backend-driven wizard still open |
 | Native read-only machine card | `frontend` fork (`custom:fa-machine-card`) | P3 implemented in fork |
 | Native read-only andon view | `frontend` fork (`custom:fa-andon-view`) | P3 implemented in fork |
 | Native read-only wallboard kiosk | `frontend` fork (`custom:factory-wallboard-kiosk`) | P3 implemented in fork |

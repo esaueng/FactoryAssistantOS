@@ -38,9 +38,11 @@ contracts. The frontend fork has the visible product rebrand, About panel
 contract, branded landing/onboarding links, local-first onboarding bridge,
 native plant navigation, native read-only `fa-machine-card`, native read-only
 `fa-andon-view`, native read-only `factory-wallboard-kiosk`, and a native
-industrial setup checkpoint between Core config and integrations; the
-frontend/Core/Supervisor fork work still needs to complete the backend-driven
-industrial onboarding wizard integration. Native dashboard wiring is
+industrial setup handoff between Core config and integrations that records
+site/line/cell, NTP/static-IP, Mosquitto, local-first, dashboard, and safety
+acknowledgement data in frontend system data; the frontend/Core/Supervisor
+fork work still needs to complete the backend-driven industrial onboarding
+wizard integration. Native dashboard wiring is
 implemented in the shipped YAML templates, the area dashboard generator now
 emits `area-dashboards.example.yaml` from the shipped line/cell model using
 `custom:fa-machine-card` and `custom:fa-andon-view`, and the terminology

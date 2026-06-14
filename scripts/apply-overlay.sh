@@ -46,6 +46,29 @@ if ! grep -q "^HASSOS_ID=${FAOS_ID}$" "$meta"; then
     exit 1
 fi
 
+# Keep the os-release CPE *product* field upstream-compatible (haos) so the
+# UNMODIFIED Supervisor still treats the OS as supported. The Supervisor's
+# os/manager.py allowlists CPE products {hassos, haos}; a product of "faos"
+# makes it mark the OS unsupported and disable OS update/management
+# (docs/OS_BUILD.md §4 "os-release ID verification"). We still brand
+# NAME/PRETTY_NAME ("Factory Assistant OS") and keep ID=${FAOS_ID} (which drives
+# the faos_* image filename); only the CPE product — an internal OS-family
+# identifier (AGENTS.md invariant 4) — stays haos. post-build.sh builds CPE_NAME
+# from ${HASSOS_ID}; rewrite just that one field to the literal haos.
+pb="$EXT/scripts/post-build.sh"
+if [ ! -f "$pb" ]; then
+    echo "ERROR: $pb not found at this upstream tag —" >&2
+    echo "       the os-release writer moved; update this script and docs/OS_BUILD.md §4." >&2
+    exit 1
+fi
+# shellcheck disable=SC2016  # ${HASSOS_ID} is matched LITERALLY in post-build.sh (a shell var there), not expanded here.
+sed -i 's|cpe:2\.3:o:home-assistant:${HASSOS_ID}:|cpe:2.3:o:home-assistant:haos:|' "$pb"
+if ! grep -q 'cpe:2.3:o:home-assistant:haos:' "$pb"; then
+    echo "ERROR: CPE product override did not take in $pb — the CPE_NAME line moved;" >&2
+    echo "       inspect post-build.sh and adjust the sed for this upstream tag." >&2
+    exit 1
+fi
+
 echo ">>> 3/3 Appending defconfig fragment to generic_x86_64_defconfig"
 frag="$ROOT/buildroot-external/configs/factory-assistant.config"
 cfg="$EXT/configs/generic_x86_64_defconfig"
@@ -65,11 +88,18 @@ cat <<'EOF'
     Covered by the rootfs overlay (usr/sbin/hassos-supervisor):
       - Supervisor/Core container registry (SUPERVISOR_IMAGE)
       - Update channel URL (fallback stable.json)
+    Covered by the meta/post-build edits above:
+      - OS "supported" acceptance — CPE product kept = haos (post-build.sh), so
+        the unmodified Supervisor does not flag the OS unsupported.
 
     NOT covered yet (Phase 2 — see docs/OS_BUILD.md §Rebrand checklist):
       - RAUC signing keys/keyring (REQUIRED before shipping OTA updates)
       - Landing page + containerized CLI-plugin banner (landingpage/plugin-cli forks)
-      - os-release ID compatibility check against the unmodified Supervisor
+      - Running Supervisor's update-channel URL (hardcoded in supervisor/const.py;
+        needs the Supervisor fork — see docs/forks/supervisor/). Until that lands,
+        the running Supervisor reads versions from version.home-assistant.io, NOT
+        the esaueng channel, so the images map below is only honored after the
+        Supervisor const patch is in the shipped Supervisor image.
 
     Host console banner IS rebranded here (rootfs-overlay etc/issue + etc/motd).
     The generic-x86-64 GRUB config carries no product branding (functional A/B

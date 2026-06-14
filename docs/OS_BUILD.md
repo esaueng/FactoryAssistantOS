@@ -104,9 +104,9 @@ paths move between upstream releases).
 | Hostname `factory-assistant` (mDNS name) | rootfs overlay `etc/hostname` + defconfig fragment | A |
 | Console banner with attribution | rootfs overlay `etc/issue` + defconfig fragment | A |
 | Industrial default Core config template | rootfs overlay `usr/share/factory-assistant/` | A (seeding: P3) |
-| os-release `ID` change vs **unmodified** Supervisor OS-detection checks | verify on first boot; if OS update/management features degrade, keep functional ID fields compatible until the Supervisor fork lands | P1 verify |
-| Supervisor/Core container registry + machine image names | rootfs overlay `usr/sbin/hassos-supervisor` (`SUPERVISOR_IMAGE`) | A (overlay — hassos-supervisor) |
-| Update channel URL → FA version service | rootfs overlay `usr/sbin/hassos-supervisor` (fallback `stable.json`) | A (overlay — hassos-supervisor) |
+| os-release **CPE product** vs **unmodified** Supervisor OS-detection (allowlist `{hassos, haos}`) | `scripts/apply-overlay.sh` rewrites the `post-build.sh` CPE product to `haos` (keeps `ID=faos` + branded `NAME`); the product is an internal OS-family id (invariant 4) | A |
+| Supervisor/Core/plugin container registry + image names | Supervisor image: rootfs overlay `hassos-supervisor` (`SUPERVISOR_IMAGE`, cold boot). Core + 5 plugins: channel `images` map (`version-service/stable.json`), which the **running** Supervisor reads only after the `const.py` patch | supervisor img: A · core+plugins: needs Supervisor fork |
+| Update channel URL → FA version service | cold boot: rootfs overlay `hassos-supervisor` fallback. **Running Supervisor: hardcoded `const.py` `URL_HASSIO_VERSION`** → see `docs/forks/supervisor/` | overlay: A · running: **P2 (Supervisor fork)** |
 | **RAUC signing keys + device keyring + OTA URL** | build config + `version-service/` | **P2 — required before any OTA** |
 | Host login banner (MOTD) | rootfs overlay `etc/motd` (replaces upstream's HA MOTD) | A |
 | GRUB menu title / boot splash | generic-x86-64 `board/pc/grub.cfg` is a functional A/B slot menu with **no product branding** — nothing to rebrand for this board (the separate `ova` image's `home-assistant.ovf` would need it if that target is built) | N/A (x86-64) |

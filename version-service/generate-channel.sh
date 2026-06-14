@@ -80,6 +80,11 @@ doc="$(jq -n \
     --arg multicast "$multicast" --arg observer "$observer" \
     --arg core_img "$FAOS_CONTAINER_REGISTRY/{machine}-homeassistant" \
     --arg sup_img "$FAOS_CONTAINER_REGISTRY/{arch}-hassio-supervisor" \
+    --arg cli_img "$FAOS_CONTAINER_REGISTRY/{arch}-hassio-cli" \
+    --arg dns_img "$FAOS_CONTAINER_REGISTRY/{arch}-hassio-dns" \
+    --arg audio_img "$FAOS_CONTAINER_REGISTRY/{arch}-hassio-audio" \
+    --arg observer_img "$FAOS_CONTAINER_REGISTRY/{arch}-hassio-observer" \
+    --arg multicast_img "$FAOS_CONTAINER_REGISTRY/{arch}-hassio-multicast" \
     '{
         _comment: $comment,
         channel: $channel,
@@ -88,7 +93,11 @@ doc="$(jq -n \
         hassos: ({ ota: $ota } + { ($board): $os }),
         dns: $dns, audio: $audio, cli: $cli,
         multicast: $multicast, observer: $observer,
-        image: { core: $core_img, supervisor: $sup_img }
+        images: {
+            core: $core_img, supervisor: $sup_img,
+            cli: $cli_img, dns: $dns_img, audio: $audio_img,
+            observer: $observer_img, multicast: $multicast_img
+        }
     }')"
 
 # Validate against the schema when a validator is on PATH (CI installs one).

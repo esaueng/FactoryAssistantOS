@@ -69,8 +69,9 @@ built:
   base-image provenance unchanged and regenerate dependency license reports
   (e.g., `pip-licenses` for Core's venv, the frontend's bundled license
   output) per release.
-- Add a "Open source licenses" page/link in the frontend fork's About dialog
-  pointing at the per-release bundle (Phase 3).
+- The OS-shipped `ui/frontend_contract.yaml` defines
+  `about_panel.links.open_source_licenses` as a required frontend-fork About
+  panel link to the per-release `legal-info` bundle (Phase 3 implementation).
 
 ## 5. Trademarks and branding compliance
 

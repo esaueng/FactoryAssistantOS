@@ -7,6 +7,7 @@ readme="$ROOT/buildroot-external/rootfs-overlay/usr/share/factory-assistant/ui/R
 ui_doc="$ROOT/docs/UI_DESIGN.md"
 defaults_doc="$ROOT/docs/INDUSTRIAL_DEFAULTS.md"
 arch_doc="$ROOT/docs/ARCHITECTURE.md"
+license_doc="$ROOT/docs/LICENSE_COMPLIANCE.md"
 
 fail() {
     echo "ERROR: $*" >&2
@@ -103,6 +104,23 @@ if andon.get("acknowledge_is_bookkeeping") is not True:
 if andon.get("safety_alarm_claim_allowed") is not False:
     raise SystemExit("andon view must not claim safety alarm behavior")
 
+about = data.get("about_panel") or {}
+if about.get("component") != "factory-about-panel":
+    raise SystemExit("frontend contract must define the Factory Assistant About panel")
+if about.get("product_name") != "Factory Assistant":
+    raise SystemExit("About panel must use the Factory Assistant product name")
+if about.get("upstream_attribution") != "Factory Assistant is based on Home Assistant.":
+    raise SystemExit("About panel must carry canonical upstream attribution")
+if about.get("non_affiliation_notice_required") is not True:
+    raise SystemExit("About panel must require the non-affiliation notice")
+links = about.get("links") or {}
+safety_link = links.get("safety_boundary") or {}
+if safety_link.get("document") != "docs/SAFETY_BOUNDARY.md" or safety_link.get("required") is not True:
+    raise SystemExit("About panel must link the normative safety boundary")
+license_link = links.get("open_source_licenses") or {}
+if license_link.get("release_artifact") != "legal-info" or license_link.get("required") is not True:
+    raise SystemExit("About panel must link the per-release open source license bundle")
+
 safety = data.get("safety") or {}
 if safety.get("monitoring_only") is not True:
     raise SystemExit("frontend contract must be monitoring-only")
@@ -117,6 +135,9 @@ PY
 for expected in \
     'frontend_contract.yaml' \
     'fa-machine-card' \
+    'About panel' \
+    'Open source licenses' \
+    'Safety boundary' \
     'kiosk' \
     'view-only' \
     'monitoring tool, not a safety device'; do
@@ -130,5 +151,9 @@ grep -q 'frontend_contract.yaml' "$defaults_doc" \
     || fail "industrial defaults doc does not mention the frontend contract"
 grep -q 'frontend experience contract' "$arch_doc" \
     || fail "architecture phase status does not mention the frontend experience contract"
+grep -q 'about_panel' "$ui_doc" \
+    || fail "UI design doc does not mention the About panel contract key"
+grep -q 'about_panel' "$license_doc" \
+    || fail "license compliance doc does not mention the About panel contract key"
 
 echo "ok  frontend experience contract is shipped and constrained to monitoring"

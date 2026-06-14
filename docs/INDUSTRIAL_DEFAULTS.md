@@ -67,7 +67,9 @@ and the Plant overview/andon/wallboard default experience.
 The companion `ui/frontend_contract.yaml` is the native frontend handoff for
 the same default experience: trimmed plant navigation, `fa-machine-card`,
 native andon view, kiosk wallboard mode, and the monitoring-only UI safety
-rules that forbid control affordances.
+rules that forbid control affordances. Its `about_panel` section requires the
+Safety boundary and Open source licenses links in the frontend fork's About
+surface.
 
 ## 3. Protocol guidance
 

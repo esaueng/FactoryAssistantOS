@@ -92,6 +92,10 @@ Supervisor forks keep upstream version numbers with the FA registry namespace.
 Rule of thumb when renaming strings: if a user sees it → rebrand; if code,
 another repo, or the ecosystem depends on it → keep upstream.
 
+Run `scripts/verify-shipped-branding.sh` before release work. It audits the
+shipped console, landing page, CLI, onboarding, and example text for canonical
+upstream attribution and known upstream-branded UI hooks.
+
 ## 5. Attribution placement
 
 The canonical sentence (plus non-affiliation where space allows) appears in:

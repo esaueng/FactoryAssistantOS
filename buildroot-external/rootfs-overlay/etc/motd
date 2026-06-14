@@ -3,5 +3,5 @@ Welcome to [01;34mFactory Assistant OS[00m.
 Factory Assistant is based on Home Assistant.
 Monitoring appliance - not a safety device.
 
-Use `ha` to access the CLI.   Web UI: http://factory-assistant.local:8123
+Use `ha` to access the Factory Assistant CLI.   Web UI: http://factory-assistant.local:8123
 Run `fa-network-posture` for NTP, static IP, and Mosquitto commissioning checks.

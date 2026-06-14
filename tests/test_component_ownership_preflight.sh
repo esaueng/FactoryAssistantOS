@@ -57,6 +57,103 @@ if [ "$1" = "api" ]; then
             fi
             exit 0
             ;;
+          /repos/esaueng/factory-assistant-addons/contents/repository.yaml*)
+            printf '%s\n' 'name: Factory Assistant Add-ons'
+            printf '%s\n' 'url: "https://github.com/esaueng/factory-assistant-addons"'
+            exit 0
+            ;;
+          /repos/esaueng/factory-assistant-addons/contents/opcua-mqtt-bridge/config.yaml*)
+            cat <<'YAML'
+name: OPC UA → MQTT Bridge (read-only)
+slug: opcua_mqtt_bridge
+startup: services
+boot: manual
+arch:
+  - amd64
+host_network: false
+hassio_api: false
+homeassistant_api: false
+options:
+  opcua:
+    write_nodes_allowed: false
+schema:
+  opcua:
+    write_nodes_allowed: bool
+YAML
+            exit 0
+            ;;
+          /repos/esaueng/factory-assistant-addons/contents/plc-gateway-helper/config.yaml*)
+            if [ "$mode" = "bad_addon_manifest" ]; then
+                cat <<'YAML'
+name: PLC Gateway Helper (read-only)
+slug: plc_gateway_helper
+startup: services
+boot: auto
+arch:
+  - amd64
+host_network: false
+hassio_api: false
+homeassistant_api: false
+options:
+  modbus:
+    allowed_function_codes:
+      - 3
+      - 4
+    write_functions_allowed: false
+    safety_controller_allowed: false
+schema:
+  modbus:
+    allowed_function_codes:
+      - int(3,4)
+    write_functions_allowed: bool
+    safety_controller_allowed: bool
+YAML
+            else
+                cat <<'YAML'
+name: PLC Gateway Helper (read-only)
+slug: plc_gateway_helper
+startup: services
+boot: manual
+arch:
+  - amd64
+host_network: false
+hassio_api: false
+homeassistant_api: false
+options:
+  modbus:
+    allowed_function_codes:
+      - 3
+      - 4
+    write_functions_allowed: false
+    safety_controller_allowed: false
+schema:
+  modbus:
+    allowed_function_codes:
+      - int(3,4)
+    write_functions_allowed: bool
+    safety_controller_allowed: bool
+YAML
+            fi
+            exit 0
+            ;;
+          /repos/esaueng/factory-assistant-addons/contents/historian-storage/config.yaml*)
+            cat <<'YAML'
+name: Historian Storage (telemetry → TSDB)
+slug: historian_storage
+startup: services
+boot: manual
+arch:
+  - amd64
+host_network: false
+hassio_api: false
+homeassistant_api: false
+options:
+  cloud_export_enabled: false
+schema:
+  cloud_export_enabled: bool
+YAML
+            exit 0
+            ;;
         esac
     done
 
@@ -120,6 +217,8 @@ grep -q 'image tags: 7' "$tmp/ok.out" \
     || fail "component ownership preflight did not check every channel image tag"
 grep -q 'supervisor channel patch: verified' "$tmp/ok.out" \
     || fail "component ownership preflight does not report Supervisor channel patch verification"
+grep -q 'industrial add-on manifests: verified' "$tmp/ok.out" \
+    || fail "component ownership preflight does not report add-on manifest verification"
 grep -q 'esaueng/generic-x86-64-homeassistant:2026.6.0' "$tmp/registry.log" \
     || fail "component ownership preflight did not verify the Core image tag"
 grep -q 'esaueng/amd64-hassio-cli:2026.6.0' "$tmp/registry.log" \
@@ -183,10 +282,26 @@ fi
 grep -q 'Supervisor fork must patch URL_HASSIO_VERSION' "$tmp/bad-supervisor.err" \
     || fail "bad Supervisor fork rejection did not identify the required channel patch"
 
+if FAKE_REGISTRY_LOG="$tmp/bad-addon-registry.log" \
+    FAKE_GH_MODE=bad_addon_manifest \
+    FAOS_GH_BIN="$tmp/gh" \
+    FAOS_REGISTRY_CHECK_BIN="$tmp/registry-check" \
+    "$script" \
+    --channel "$ROOT/version-service/stable.json" --owner esaueng \
+    2> "$tmp/bad-addon.err"; then
+    fail "component ownership preflight allowed a published add-on manifest drift"
+fi
+grep -q 'published add-on plc_gateway_helper must be boot: manual' "$tmp/bad-addon.err" \
+    || fail "bad add-on manifest rejection did not identify manual-boot drift"
+
 grep -q 'scripts/verify-component-ownership.sh' "$release_doc" \
     || fail "release runbook does not document component ownership preflight"
+grep -q 'industrial add-on manifests' "$release_doc" \
+    || fail "release runbook does not document published industrial add-on manifest verification"
 grep -q 'scripts/verify-component-ownership.sh' "$build_doc" \
     || fail "OS build docs do not document component ownership preflight"
+grep -q 'industrial add-on manifests' "$build_doc" \
+    || fail "OS build docs do not document published industrial add-on manifest verification"
 grep -q 'component ownership/channel work is verified' "$arch_doc" \
     || fail "architecture phase status does not mark P2 component ownership/channel work as verified"
 grep -q 'trusted OTA remains the P2 blocker' "$arch_doc" \
@@ -198,6 +313,8 @@ grep -q 'scripts/verify-component-ownership.sh' "$workflow" \
     || fail "build workflow does not verify component ownership before trusted tag releases"
 grep -q 'scripts/verify-supervisor-channel-patch.sh' "$script" \
     || fail "component ownership preflight does not call the Supervisor channel patch verifier"
+grep -q 'verify_industrial_addons' "$script" \
+    || fail "component ownership preflight does not validate the published industrial add-ons"
 grep -q 'GH_COMPONENT_READ_TOKEN' "$workflow" \
     || fail "build workflow does not provide a GitHub token for component ownership verification"
 grep -q 'packages: read' "$workflow" \

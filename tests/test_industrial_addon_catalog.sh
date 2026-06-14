@@ -47,6 +47,8 @@ if seen_ids != expected_ids:
 
 for addon in addons:
     addon_id = addon["id"]
+    if addon.get("status") != "available":
+        raise SystemExit(f"{addon_id} must be marked available now that the add-on repo ships it")
     if addon.get("repository") != "factory-assistant-addons":
         raise SystemExit(f"{addon_id} must live in factory-assistant-addons")
     if addon.get("local_first") is not True:
@@ -144,6 +146,7 @@ for expected in \
     'OPC UA' \
     'PLC gateway' \
     'historian' \
+    'available' \
     'manifest contract' \
     'option schemas' \
     'read-only' \

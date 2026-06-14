@@ -5,7 +5,7 @@ industrial add-ons that live outside the OS repository. It is copied with the
 rest of `/usr/share/factory-assistant` on first boot so site templates,
 onboarding, and future add-on repositories refer to the same defaults.
 
-The catalog covers three planned `factory-assistant-addons` entries:
+The catalog covers three available `factory-assistant-addons` entries:
 
 - **OPC UA to MQTT Bridge** — subscribes to curated OPC UA nodes in read-only
   mode, publishes MQTT discovery, and uses

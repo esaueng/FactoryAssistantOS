@@ -72,9 +72,10 @@ Supervisor forks keep upstream version numbers with the FA registry namespace.
   alarm, or stack-light, and none depicts or invites machine control —
   Factory Assistant is **monitoring, read-only**.
 - Asset inventory still to produce in Phase 2/3 (frontend follow-up): raster
-  favicon set, PWA icons, landing page art, boot console text (no splash needed
-  for v1), About-dialog logo, documentation header — generated from the SVG
-  masters above.
+  favicon set, PWA icons, About-dialog logo, and documentation header —
+  generated from the SVG masters above. Landing-page art now ships from this
+  repo's `landingpage/` image context, and boot console text ships from the
+  `/etc/issue` + `/etc/motd` overlay (no splash needed for v1).
 - All assets live in a `factory-assistant/brands`-equivalent directory in the
   frontend fork, Apache-2.0 like the code, with provenance recorded. The
   authoritative asset spec (inventory, sizes, the original-artwork mandate, and

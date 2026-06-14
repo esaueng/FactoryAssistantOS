@@ -7,6 +7,7 @@ html="$landing/rootfs/usr/share/www/index.html"
 logo="$landing/rootfs/usr/share/www/static/icons/factory-assistant-logo.svg"
 dockerfile="$landing/Dockerfile"
 workflow="$ROOT/.github/workflows/mirror-fa-plugins.yml"
+branding_doc="$ROOT/docs/BRANDING.md"
 
 fail() {
     echo "ERROR: $*" >&2
@@ -46,5 +47,10 @@ grep -q 'docker buildx build' "$workflow" \
     || fail "mirror workflow does not build the local Factory Assistant landingpage image"
 grep -q 'ghcr.io/esaueng/generic-x86-64-homeassistant:landingpage' "$workflow" \
     || fail "mirror workflow does not publish the expected landingpage tag"
+grep -q 'Landing page text/art | this repo' "$branding_doc" \
+    || fail "branding docs do not mark landing page text/art as shipped from this repo"
+if grep -q 'landing page art, boot console text' "$branding_doc"; then
+    fail "branding docs still list shipped landing page art and console text as pending assets"
+fi
 
 echo "ok  landingpage is locally branded and workflow-built"

@@ -23,7 +23,7 @@ Required commissioning posture:
 - Install or offer the Mosquitto broker add-on before onboarding MQTT
   gateways or the OPC UA bridge.
 - Plant NTP and static-IP choices are documented here, but configured through
-  the OS/Core UI or the HA CLI.
+  the OS/Core UI or the Factory Assistant CLI.
 - Local-first deployment: cloud and analytics remain off unless a site
   deliberately enables them later.
 

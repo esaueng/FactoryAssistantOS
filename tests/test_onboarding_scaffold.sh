@@ -114,10 +114,15 @@ for expected in \
     'read-only' \
     'fa/<site>/<area>/<device>/<measurement>' \
     'Mosquitto broker add-on' \
+    'Factory Assistant CLI' \
     'cloud and analytics remain off'; do
     grep -q "$expected" "$readme" \
         || fail "onboarding README is missing expected text: $expected"
 done
+
+if grep -q 'HA CLI' "$readme"; then
+    fail "onboarding README still uses upstream HA CLI wording"
+fi
 
 grep -q 'onboarding/' "$seed_script" \
     || fail "seed script comments do not mention onboarding files are copied"

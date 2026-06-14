@@ -22,6 +22,9 @@ grep -q 'Mosquitto broker add-on' "$helper" \
     || fail "posture helper must offer Mosquitto for MQTT commissioning"
 grep -q 'static IP' "$helper" \
     || fail "posture helper must provide static-IP guidance"
+if grep -q 'HA CLI' "$helper"; then
+    fail "posture helper still uses upstream HA CLI wording"
+fi
 
 if grep -Eq 'nmcli[[:space:]]+connection[[:space:]]+(modify|up|down|delete)|ip[[:space:]]+addr[[:space:]]+add|timedatectl[[:space:]]+set-' "$helper"; then
     fail "posture helper must remain read-only and must not modify network/time state"
@@ -83,6 +86,9 @@ grep -q 'Install the Mosquitto broker add-on' "$tmp/posture.out" \
     || fail "posture output did not offer Mosquitto"
 grep -q 'Monitoring only - not a safety device' "$tmp/posture.out" \
     || fail "posture output did not include the safety posture"
+if grep -q 'HA CLI' "$tmp/posture.out"; then
+    fail "posture output still uses upstream HA CLI wording"
+fi
 
 grep -q 'fa-network-posture' "$motd" \
     || fail "MOTD does not tell operators about the posture helper"

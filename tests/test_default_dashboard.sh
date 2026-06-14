@@ -8,6 +8,7 @@ defaults_doc="$ROOT/docs/INDUSTRIAL_DEFAULTS.md"
 arch_doc="$ROOT/docs/ARCHITECTURE.md"
 os_doc="$ROOT/docs/OS_BUILD.md"
 release_doc="$ROOT/RELEASE.md"
+branding_doc="$ROOT/docs/BRANDING.md"
 
 fail() {
     echo "ERROR: $*" >&2
@@ -73,7 +74,9 @@ grep -q 'Plant overview default dashboard' "$arch_doc" \
     || fail "architecture status does not mention the default Plant overview dashboard"
 grep -q 'Plant overview default dashboard' "$os_doc" \
     || fail "OS build checklist does not mark the default dashboard as shipped"
-if grep -Eq 'default factory dashboard.*P3|frontend branding/default experience' "$os_doc" "$release_doc"; then
+grep -q 'Plant overview default dashboard' "$branding_doc" \
+    || fail "branding inventory does not mark Plant overview as the shipped default dashboard"
+if grep -Eq 'default factory dashboard.*P3|frontend branding/default experience|Default dashboard \("Factory overview"\).*frontend.*P3' "$os_doc" "$release_doc" "$branding_doc"; then
     fail "status docs still list the shipped default dashboard as unresolved frontend work"
 fi
 

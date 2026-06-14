@@ -88,8 +88,8 @@ Supervisor forks keep upstream version numbers with the FA registry namespace.
 | Image name, os-release, hostname, console banner | this repo (overlay) | done |
 | Landing page text/art | this repo (`landingpage/` image context) | done |
 | CLI banner/MOTD | this repo (`plugin-cli/` image context) | done |
-| UI product name, logo, About dialog, onboarding wording | `frontend` fork | P3 |
-| Default dashboard ("Factory overview") | `frontend` fork | P3 |
+| Plant overview default dashboard | this repo (`configuration.yaml` + `dashboards/factory-overview.yaml`) | done |
+| UI product name, logo, About dialog, native cards, kiosk toggle, onboarding wording | `frontend` fork | P3 |
 | Supervisor product strings/log prefixes | `supervisor` fork | P2 |
 | Core: keep delta near zero; visible naming comes from the frontend | `core` fork | P3 |
 

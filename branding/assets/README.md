@@ -1,16 +1,17 @@
-# branding/assets/ — Factory Assistant brand assets (spec + holding dir)
+# branding/assets/ — Factory Assistant brand assets
 
 This directory is the home for Factory Assistant's **original brand artwork**
 (logo/icon, favicon set, PWA icons, landing-page and About-dialog art,
-documentation header). Until those assets are produced and reviewed it holds
-only this README, which doubles as the directory marker. The file is the
-**authoritative asset specification**; the practical branding plan it
-implements is `docs/BRANDING.md` §3, and the colour tokens it pins are
-`docs/UI_DESIGN.md` §8.
+documentation header). The original SVG master mark and 16 px-tuned app icon
+have landed here as `logo.svg` and `icon.svg`; the remaining raster/PWA/About
+dialog/documentation exports are produced from those masters. This README is
+the **authoritative asset specification** and provenance record; the practical
+branding plan it implements is `docs/BRANDING.md` §3, and the colour tokens it
+pins are `docs/UI_DESIGN.md` §8.
 
-Work item: **FA-P2-11** (Phase 2). This is specs only — no artwork is created
-or described here, and nothing in this repo derives from, traces, or resembles
-any Home Assistant asset (see the absolute rule below).
+Work item: **FA-P2-11** (Phase 2). The landed SVG artwork is original and
+documented below; nothing in this repo derives from, traces, recolours, or
+resembles any Home Assistant asset (see the absolute rule below).
 
 ## 1. The absolute rule (read first)
 

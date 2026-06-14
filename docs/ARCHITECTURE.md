@@ -214,6 +214,6 @@ Initial set, in priority order:
 |---|---|---|
 | P0 | This repo: architecture, build path, licensing, branding, safety boundary | complete |
 | P1 | Verified x86-64 image build via overlay; boots to onboarding on real hardware/VM | complete for generic x86-64 17.3 release |
-| P2 | True forks (supervisor/frontend/landingpage), FA registry, version service, RAUC keys, CI release pipeline | partial: registry/channel/release wiring exists; trusted OTA requires real external RAUC keys/secrets and final release verification |
+| P2 | True forks, FA registry, version service, branded landingpage, RAUC keys, CI release pipeline | partial: registry/channel/release wiring and branded landingpage image exist; trusted OTA requires real external RAUC keys/secrets and final release verification |
 | P3 | Industrial onboarding, config seeding, OPC UA bridge add-on, frontend fork implementing the factory UI (`docs/UI_DESIGN.md`) | partial: seed config, examples, dashboards, wallboard, and theme exist; onboarding/add-ons/frontend fork remain |
 | P4 | Limited **non-safety** machine control behind an explicit gate (see `docs/SAFETY_BOUNDARY.md` §Control roadmap gate) | gated |

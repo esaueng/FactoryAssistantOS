@@ -202,7 +202,7 @@ wallboard scale ×1.6.
 | Wallboard / kiosk board (full-screen status, view-only, browser kiosk flags) | `dashboards/wallboard.yaml` | **now** (interim until the P3 kiosk toggle) |
 | OEE (availability×performance×quality) + maintenance reminders | `packages/oee_example.yaml`, `packages/maintenance_example.yaml` (per-machine templates) | **now** |
 | KPI template sensors | commented examples in `configuration.yaml` template | **now** |
-| Landing page restyled to tokens | `landingpage` fork | P2 |
+| Landing page restyled to tokens | `landingpage/` image context | **now** |
 | `fa-machine-card`, trimmed navigation, native andon view + kiosk toggle, terminology pass ("Home"→"Plant overview", areas as lines/cells), industrial onboarding wording | `frontend` fork | P3 |
 | Auto-generated area dashboards from the line/cell taxonomy | `frontend` fork | P3 |
 

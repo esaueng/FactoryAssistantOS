@@ -1,13 +1,14 @@
 # Mirror the Home Assistant Supervisor system plugins into the Factory Assistant
-# registry so the FA update channel resolves every component from ghcr.io/esaueng.
+# registry and publish the branded Factory Assistant landingpage image so the FA
+# update channel resolves every component from ghcr.io/esaueng.
 #
 # The channel (version-service/stable.json) names ghcr.io/esaueng/{arch}-hassio-cli
 # etc.; without these images a running Supervisor 404s on the plugin pulls. The
-# plugins dns/audio/multicast/observer carry no user-visible Home Assistant
-# branding (config-only), and the CLI plugin's "Home Assistant CLI" banner lives
-# in a separate home-assistant/cli binary (a later rebrand fork). So for now we
-# mirror upstream's images unchanged, re-tagged to the FA release version the
-# channel uses.
+# plugins dns/audio/multicast/observer carry no user-visible branding
+# (config-only), and the CLI plugin's banner lives in a separate cli binary
+# (a later rebrand fork). The first-boot landingpage is not mirrored from
+# upstream: this workflow builds landingpage/ so the visible preparing page is
+# Factory Assistant branded.
 #
 # Source tags are the current upstream plugin versions; the target tag is the FA
 # release version (channel default 2026.6.0). Re-pin source tags when upstream
@@ -67,21 +68,24 @@ jobs:
           copy observer  2026.02.0
           copy multicast 2026.02.0
 
-      - name: Mirror the landingpage tag onto the core package (best effort)
-        # Goes onto the pre-existing generic-x86-64-homeassistant package; if its
-        # ACL doesn't grant this repo write, this step fails without failing the
-        # plugin mirror above. Needed so first-boot serves the "Preparing…" page.
-        continue-on-error: true
+      - name: Build and publish the Factory Assistant landingpage
         run: |
-          set -uxo pipefail
-          docker buildx imagetools create \
+          set -euxo pipefail
+          ver="${{ inputs.fa_version || env.FA_VERSION }}"
+          docker buildx build \
+            --platform linux/amd64 \
+            --pull \
+            --push \
             -t "ghcr.io/esaueng/generic-x86-64-homeassistant:landingpage" \
-            "ghcr.io/home-assistant/generic-x86-64-homeassistant:landingpage"
+            -t "ghcr.io/esaueng/generic-x86-64-homeassistant:${ver}-landingpage" \
+            --label "org.opencontainers.image.version=${ver}" \
+            landingpage
 
       - name: Next steps
         run: |
           {
             echo "Mirrored to ghcr.io/esaueng/amd64-hassio-{cli,dns,audio,observer,multicast}:${{ inputs.fa_version || env.FA_VERSION }}"
+            echo "Published branded landingpage to ghcr.io/esaueng/generic-x86-64-homeassistant:landingpage"
             echo ""
-            echo "NEXT: make the 5 new plugin packages **public** (org Packages settings) — the appliance pulls anonymously."
+            echo "NEXT: make the 5 plugin packages and the generic-x86-64-homeassistant package **public** (org Packages settings) — the appliance pulls anonymously."
           } >> "$GITHUB_STEP_SUMMARY"

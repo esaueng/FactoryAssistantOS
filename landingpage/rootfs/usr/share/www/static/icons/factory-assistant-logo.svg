@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img"
+     aria-labelledby="fa-logo-title fa-logo-desc" fill="none">
+  <title id="fa-logo-title">Factory Assistant</title>
+  <desc id="fa-logo-desc">Original Factory Assistant master mark: an industrial
+    hexagon carrying a live monitoring pulse. Original work, not derived from
+    any upstream brand asset. Informational and monitoring-only.</desc>
+
+  <g stroke="var(--fa-brand, #F5A623)" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <polygon stroke-width="30" points="256,86 403.2,171 403.2,341 256,426 108.8,341 108.8,171"/>
+    <polyline stroke-width="30" points="120,256 200,256 234,184 282,328 320,256 392,256"/>
+  </g>
+</svg>

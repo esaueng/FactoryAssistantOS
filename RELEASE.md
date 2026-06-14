@@ -98,7 +98,7 @@ and complete onboarding. Full flashing/VM notes: `docs/OS_BUILD.md` §3.
 - [ ] Re-walk the rebrand checklist (`docs/OS_BUILD.md` §4). Applied today:
       product name/ID, hostname, console banner (`etc/issue` + `etc/motd`);
       GRUB is N/A on x86-64. Still Phase 2: container registry, update-channel
-      URL, landing page, containerized CLI-plugin banner, frontend branding.
+      URL, containerized CLI-plugin banner, frontend branding.
 - [ ] Verify the Supervisor accepts the `faos` os-release identity on first
       boot (`docs/OS_BUILD.md` §4 — os-release ID verification).
 - [ ] Resolve the `branding/identity.env` go-live placeholders (org, registry,

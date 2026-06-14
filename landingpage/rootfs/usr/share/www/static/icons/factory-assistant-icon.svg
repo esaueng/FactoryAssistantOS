@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img"
+     aria-labelledby="fa-icon-title fa-icon-desc" fill="none">
+  <title id="fa-icon-title">Factory Assistant</title>
+  <desc id="fa-icon-desc">Original Factory Assistant app mark: an industrial
+    hexagon carrying a bold monitoring pulse. Informational and monitoring-only.</desc>
+
+  <g stroke="var(--fa-brand, #F5A623)" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <polygon stroke-width="40" points="256,86 403.2,171 403.2,341 256,426 108.8,341 108.8,171"/>
+    <polyline stroke-width="40" points="126,256 206,256 242,176 282,336 322,256 386,256"/>
+  </g>
+</svg>

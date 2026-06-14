@@ -1,0 +1,10 @@
+Factory Assistant OS landing page
+
+Factory Assistant is based on Home Assistant.
+
+The landingpage image reuses the upstream-compatible Home Assistant OS
+landingpage server binary as the HTTP, redirect, proxy, and mDNS runtime.
+The visible static web root in /usr/share/www is Factory Assistant content.
+
+Home Assistant and Open Home Foundation names and marks are trademarks of
+their respective owners. They are not used as Factory Assistant branding.

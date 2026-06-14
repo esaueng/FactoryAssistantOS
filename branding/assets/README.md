@@ -151,7 +151,8 @@ The brand-accent token in the shipped theme
 uses the same amber `#F5A623`; the informational state colours stay fixed (§3).
 
 Still to produce per the §2 inventory (Phase 2/3 frontend follow-up, separate
-repo): the raster favicon set / `.ico`, the PWA / maskable icons, landing-page
-art, the About-dialog export, and the documentation header. The raster icon set
-is generated from these SVG masters, not hand-drawn. This README remains the
-spec that governs all of them.
+repo): the raster favicon set / `.ico`, the PWA / maskable icons, the
+About-dialog export, and the documentation header. Landing-page art now ships
+from the SVG masters in this repo's `landingpage/` image context. The raster
+icon set is generated from these SVG masters, not hand-drawn. This README
+remains the spec that governs all of them.

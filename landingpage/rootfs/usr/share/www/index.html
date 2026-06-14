@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="dark light">
+    <title>Factory Assistant OS</title>
+    <link rel="icon" href="/static/icons/factory-assistant-icon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="/static/styles/landing.css">
+  </head>
+  <body>
+    <main class="shell" aria-labelledby="page-title">
+      <section class="status-panel" aria-live="polite">
+        <div class="brand-row">
+          <img
+            class="brand-mark"
+            src="/static/icons/factory-assistant-logo.svg"
+            alt="Factory Assistant"
+            width="72"
+            height="72"
+          >
+          <div>
+            <p class="product">Factory Assistant OS</p>
+            <h1 id="page-title">Preparing Factory Assistant</h1>
+          </div>
+        </div>
+
+        <p class="lead">
+          The appliance is starting Supervisor and preparing the local plant
+          monitoring interface. This page will hand off to Factory Assistant
+          Core when startup completes.
+        </p>
+
+        <div class="progress" role="img" aria-label="Startup in progress">
+          <span></span>
+        </div>
+
+        <dl class="checks">
+          <div>
+            <dt>Network</dt>
+            <dd>Available at factory-assistant.local on port 8123</dd>
+          </div>
+          <div>
+            <dt>Mode</dt>
+            <dd>Monitoring only - not a safety device</dd>
+          </div>
+          <div>
+            <dt>Status</dt>
+            <dd id="supervisor-status">Waiting for Supervisor</dd>
+          </div>
+        </dl>
+      </section>
+
+      <section class="log-panel" aria-labelledby="log-title">
+        <div class="log-header">
+          <h2 id="log-title">Startup log</h2>
+          <span id="log-state">Connecting</span>
+        </div>
+        <pre id="log-output">Waiting for observer logs...</pre>
+      </section>
+    </main>
+
+    <footer>
+      Factory Assistant is based on Home Assistant.
+    </footer>
+
+    <script src="/static/scripts/landing.js" defer></script>
+  </body>
+</html>

@@ -82,7 +82,7 @@ Supervisor forks keep upstream version numbers with the FA registry namespace.
 | Surface | Repo | Phase |
 |---|---|---|
 | Image name, os-release, hostname, console banner | this repo (overlay) | done |
-| Landing page text/art | `landingpage` fork | P2 |
+| Landing page text/art | this repo (`landingpage/` image context) | done |
 | CLI banner/MOTD | `plugin-cli` fork | P2 |
 | UI product name, logo, About dialog, onboarding wording | `frontend` fork | P3 |
 | Default dashboard ("Factory overview") | `frontend` fork | P3 |

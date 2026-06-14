@@ -48,6 +48,11 @@ for file in "${files[@]}"; do
         die "upstream-branded UI text or asset hook found in shipped file: $file"
     fi
 
+    if grep -Fq "Use \`ha\` to access the CLI" "$file" \
+        || grep -Fq 'Use "ha" to access the CLI' "$file"; then
+        die "shipped CLI note must use the Factory Assistant CLI product name: $file"
+    fi
+
     if grep -q 'Home Assistant' "$file" && ! grep -Fq "$canonical" "$file"; then
         die "shipped file must use canonical attribution \"$canonical\": $file"
     fi

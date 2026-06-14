@@ -41,6 +41,24 @@ for file in "$issue" "$motd" "$identity" "$defconfig"; do
         || fail "$file does not use canonical upstream attribution"
 done
 
+grep -q 'Factory Assistant CLI' "$motd" \
+    || fail "MOTD CLI note does not use the Factory Assistant CLI product name"
+
+bad_motd="$tmp/bad-motd"
+cat > "$bad_motd" <<'EOF'
+Welcome to Factory Assistant OS.
+
+Factory Assistant is based on Home Assistant.
+Monitoring appliance - not a safety device.
+
+Use `ha` to access the CLI.
+EOF
+if "$script" "$bad_motd" 2> "$tmp/bad-motd.err"; then
+    fail "shipped branding verifier allowed a generic MOTD CLI note"
+fi
+grep -q 'Factory Assistant CLI' "$tmp/bad-motd.err" \
+    || fail "generic MOTD CLI note rejection did not explain the product-name rule"
+
 grep -q 'scripts/verify-shipped-branding.sh' "$branding_doc" \
     || fail "branding docs do not document the shipped branding verifier"
 grep -q 'Master mark landed' "$asset_doc" \

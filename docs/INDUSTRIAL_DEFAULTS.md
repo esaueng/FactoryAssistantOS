@@ -31,7 +31,7 @@ contract (`ui/frontend_contract.yaml`), plus the Supervisor seed handoff
 | Terminology | "site" not "home"; areas model **line → cell → station** | matches plant mental model | template now; onboarding/frontend P3 |
 | Alerting | informational notifications only | safety boundary §4 | policy — done |
 | Industrial protocols | read-only (Modbus reads, OPC UA subscribe-only) | safety boundary §4 | template + add-on defaults |
-| Default dashboard | "Plant overview": KPI strip + machine tiles by line, alerts, energy, maintenance views | the product's purpose | Plant overview is seeded as the default dashboard; native `fa-machine-card` and `fa-andon-view` are implemented in the frontend fork, but the shipped YAML templates still use stock cards until the forked frontend/dashboard wiring is promoted (`docs/UI_DESIGN.md`) |
+| Default dashboard | "Plant overview": KPI strip + machine tiles by line, alerts, energy, maintenance views | the product's purpose | Plant overview is seeded as the default dashboard; native `fa-machine-card`, `fa-andon-view`, and `factory-wallboard-kiosk` are implemented in the frontend fork, but the shipped YAML templates still use stock cards until the forked frontend/dashboard wiring is promoted (`docs/UI_DESIGN.md`) |
 | UI theme | `factory-assistant` dark theme (light mode included), informational state colors | shop-floor glare, 24/7 wallboards, glanceability | theme template — done |
 | Logging | persistent system journal where the data partition allows | post-incident diagnosis on appliances | verify at P1 against upstream behavior |
 
@@ -70,7 +70,8 @@ The companion `ui/frontend_contract.yaml` is the native frontend handoff for
 the same default experience: trimmed plant navigation, `fa-machine-card`,
 native andon view, kiosk wallboard mode, and the monitoring-only UI safety
 rules that forbid control affordances. The frontend fork now implements the
-read-only `fa-machine-card` and `fa-andon-view`; its `about_panel` section
+read-only `fa-machine-card`, `fa-andon-view`, and `factory-wallboard-kiosk`;
+its `about_panel` section
 requires the Safety boundary and Open source licenses links in the frontend
 fork's About surface.
 
@@ -153,7 +154,10 @@ template headers say exactly that.
 The seeded `configuration.yaml` sets the main Lovelace dashboard to YAML mode
 and points it at `dashboards/factory-overview.yaml`, so first boot lands on
 Plant overview at `/lovelace`. Andon remains a separate sidebar dashboard, and
-Wallboard remains a direct-URL kiosk dashboard outside the sidebar.
+Wallboard remains a direct-URL kiosk dashboard outside the sidebar. The
+frontend fork's native `factory-wallboard-kiosk` can wrap the same wallboard
+contract; the shipped template stays stock-card compatible until dashboard
+wiring promotes that custom card by default.
 
 ## 5. Deployment guidance (NTP / static IP / Mosquitto)
 

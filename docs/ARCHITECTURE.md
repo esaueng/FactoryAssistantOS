@@ -147,9 +147,10 @@ overview" dashboard template, and the `ui/frontend_contract.yaml` frontend
 experience contract under `/usr/share/factory-assistant/`. Stock dashboards
 run on an unmodified Core now; the frontend fork consumes the contract for
 the deeper P3 changes and now includes the native read-only `fa-machine-card`
-tile and `fa-andon-view` board. Trimmed navigation, kiosk toggle, industrial
-terminology, and full onboarding integration still remain while the fork
-carries the visible product identity (`docs/BRANDING.md`). It stays
+tile, `fa-andon-view` board, and `factory-wallboard-kiosk` component. Trimmed
+navigation, industrial terminology, dashboard wiring, and full onboarding
+integration still remain while the fork carries the visible product identity
+(`docs/BRANDING.md`). It stays
 API-compatible with Core, served on port **8123** (kept for ecosystem
 compatibility).
 
@@ -226,5 +227,5 @@ monitoring-only, and explicitly disallow machine control or safety functions.
 | P0 | This repo: architecture, build path, licensing, branding, safety boundary | complete |
 | P1 | Verified x86-64 image build via overlay; boots to onboarding on real hardware/VM | complete for generic x86-64 17.3 release |
 | P2 | True forks, FA registry, version service, branded landingpage, RAUC keys, CI release pipeline | nearly complete: component ownership/channel work is verified by the release preflight, FA registry/version service/release wiring, branded landingpage image, and upstream release/security tracker exist; trusted OTA remains the P2 blocker until real external RAUC keys/secrets are configured and final release verification passes |
-| P3 | Industrial onboarding, config seeding, OPC UA bridge add-on, frontend fork implementing the factory UI (`docs/UI_DESIGN.md`) | partial: seed config, Plant overview default dashboard, examples, site/line/cell onboarding scaffold, industrial onboarding wizard contract, frontend experience contract, Supervisor seed contract, network identity contract, industrial add-on catalog, published industrial add-on manifests, wallboard, theme, OS-level network/time posture helper, and local-first Core defaults exist; cloud/analytics defaults are off in the shipped template; frontend fork has visible rebrand/About/local-first onboarding bridge, a native read-only `fa-machine-card`, and a native read-only `fa-andon-view`; trimmed navigation, kiosk toggle, area dashboards, and full industrial onboarding wizard integration remain |
+| P3 | Industrial onboarding, config seeding, OPC UA bridge add-on, frontend fork implementing the factory UI (`docs/UI_DESIGN.md`) | partial: seed config, Plant overview default dashboard, examples, site/line/cell onboarding scaffold, industrial onboarding wizard contract, frontend experience contract, Supervisor seed contract, network identity contract, industrial add-on catalog, published industrial add-on manifests, wallboard, theme, OS-level network/time posture helper, and local-first Core defaults exist; cloud/analytics defaults are off in the shipped template; frontend fork has visible rebrand/About/local-first onboarding bridge, a native read-only `fa-machine-card`, a native read-only `fa-andon-view`, and a native read-only `factory-wallboard-kiosk`; trimmed navigation, area dashboards, dashboard wiring, and full industrial onboarding wizard integration remain |
 | P4 | Limited **non-safety** machine control behind an explicit gate (see `docs/SAFETY_BOUNDARY.md` §Control roadmap gate) | gated |

@@ -4,17 +4,18 @@
 # kiosk mode). A dedicated, view-only board for an unattended HDMI/panel-PC
 # display viewed at 3–8 m: plant + per-line status and active alerts, no
 # interaction. Built from stock cards so it runs on an unmodified Core; the
-# frontend fork's kiosk toggle (type ×1.6, hidden chrome) lands in P3.
+# frontend fork now ships the native factory-wallboard-kiosk wrapper for type
+# ×1.6, hidden chrome, and view-only interaction blocking.
 #
-# DEPLOY (interim, until the P3 kiosk toggle):
+# DEPLOY:
 #   1. Dedicate a NON-ADMIN, view-only user for the display (UI_DESIGN §7).
 #   2. Point a kiosk browser at this dashboard, e.g.
 #        http://factory-assistant.local:8123/wallboard/status
 #      Chromium:  --kiosk --noerrdialogs --disable-pinch
 #                 --autoplay-policy=no-user-gesture-required
 #   3. The factory-assistant dark theme renders regardless of profile
-#      (UI_DESIGN §7); zoom the browser ~150–160 % to approximate the P3
-#      ×1.6 wallboard scale until the native toggle exists.
+#      (UI_DESIGN §7). The stock dashboard remains the shipped fallback until
+#      dashboard wiring promotes custom:factory-wallboard-kiosk by default.
 #
 # COMMISSIONING: entity IDs are EXAMPLES following docs/INDUSTRIAL_DEFAULTS.md
 # §2 (sensor.<area>_<machine>_<measurement>). They render "entity not found"

@@ -11,7 +11,7 @@ Related: `docs/ARCHITECTURE.md` §6 (frontend layer), `docs/BRANDING.md`
 `docs/SAFETY_BOUNDARY.md` (normative for everything below). The OS image also
 ships `ui/frontend_contract.yaml`, a machine-readable handoff for the
 frontend fork's native plant navigation, `fa-machine-card`, `fa-andon-view`,
-kiosk mode, and About panel (`about_panel`) obligations.
+`factory-wallboard-kiosk`, and About panel (`about_panel`) obligations.
 
 ## 1. Users and contexts
 
@@ -173,10 +173,12 @@ Open source licenses link to the per-release `legal-info` bundle.
 
 - Dedicated **non-admin, view-only** user per display; browser in kiosk mode
   on a panel PC, or any HDMI box pointed at the appliance.
-- Frontend fork (P3) adds a *kiosk toggle*: hides sidebar/header, scales
-  type ×1.6 (KPI numerals ≥ 64 px), disables interaction, optional view
-  auto-cycling. Until then: a dedicated wallboard dashboard view + the
-  browser's kiosk flags.
+- Frontend fork implements the native `factory-wallboard-kiosk`: hides
+  sidebar/header chrome, scales type ×1.6 (KPI numerals ≥ 64 px), disables
+  dashboard interaction, and leaves optional view auto-cycling as a contract
+  flag. The shipped YAML still provides a dedicated wallboard dashboard view
+  that can be opened directly by kiosk browsers until dashboard wiring promotes
+  the native card by default.
 - Wallboards render the `factory-assistant` dark theme regardless of profile.
 
 ## 8. Design tokens (implemented in the shipped theme)
@@ -209,14 +211,15 @@ wallboard scale ×1.6.
 | `factory-assistant` theme (dark+light) | `themes/factory-assistant.yaml` template in the image | **now** |
 | "Plant overview" dashboard (views: Overview, Line, Alerts, OEE, Energy, Maintenance) | `dashboards/factory-overview.yaml` template + `configuration.yaml` wiring | default landing now (adapted at commissioning) |
 | Andon board (severity sections + ack indicators, stock-card approximation) | `dashboards/andon.yaml` + `packages/andon_example.yaml` (ack helpers) | **now** |
-| Wallboard / kiosk board (full-screen status, view-only, browser kiosk flags) | `dashboards/wallboard.yaml` | **now** (interim until the P3 kiosk toggle) |
+| Wallboard / kiosk board (full-screen status, view-only, browser kiosk flags) | `dashboards/wallboard.yaml` | **now** (stock dashboard; native kiosk component implemented in fork) |
 | OEE (availability×performance×quality) + maintenance reminders | `packages/oee_example.yaml`, `packages/maintenance_example.yaml` (per-machine templates) | **now** |
 | KPI template sensors | commented examples in `configuration.yaml` template | **now** |
 | Landing page restyled to tokens | `landingpage/` image context | **now** |
 | Visible product rebrand, About panel safety/license links, and local-first onboarding bridge | `frontend` fork consuming the shipped `ui/frontend_contract.yaml` and `onboarding/wizard_steps.yaml` contracts | implemented in fork |
 | Native read-only `fa-machine-card` with status/OEE/job/maintenance freshness and detail-only tap behavior | `frontend` fork consuming the shipped `ui/frontend_contract.yaml` machine-card contract | implemented in fork |
 | Native read-only `fa-andon-view` with severity grouping, ack bookkeeping status, and detail-only alert rows | `frontend` fork consuming the shipped `ui/frontend_contract.yaml` and `dashboards/andon.yaml` contract | implemented in fork |
-| Trimmed navigation, kiosk toggle, terminology pass ("Home"→"Plant overview", areas as lines/cells), full industrial onboarding wizard | `frontend` fork consuming the shipped `ui/frontend_contract.yaml` and `onboarding/wizard_steps.yaml` contracts | P3 |
+| Native read-only `factory-wallboard-kiosk` with hidden chrome, ×1.6 wallboard type scale, and view-only dashboard interaction blocking | `frontend` fork consuming the shipped `ui/frontend_contract.yaml` kiosk contract and `dashboards/wallboard.yaml` source dashboard | implemented in fork |
+| Trimmed navigation, terminology pass ("Home"→"Plant overview", areas as lines/cells), dashboard wiring, full industrial onboarding wizard | `frontend` fork consuming the shipped `ui/frontend_contract.yaml` and `onboarding/wizard_steps.yaml` contracts | P3 |
 | Auto-generated area dashboards from the line/cell taxonomy | frontend fork consuming the shipped `onboarding/site_model.example.yaml` line/cell taxonomy scaffold | P3 |
 
 Templates are deliberately stock-Lovelace (glance/entities/gauge/history

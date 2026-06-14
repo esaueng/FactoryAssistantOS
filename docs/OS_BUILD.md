@@ -117,7 +117,8 @@ paths move between upstream releases).
 | Native read-only machine card | `frontend` fork (`custom:fa-machine-card`) | P3 implemented in fork |
 | Native read-only andon view | `frontend` fork (`custom:fa-andon-view`) | P3 implemented in fork |
 | Native read-only wallboard kiosk | `frontend` fork (`custom:factory-wallboard-kiosk`) | P3 implemented in fork |
-| Trimmed navigation and full industrial onboarding wizard | `frontend` fork | P3 |
+| Native plant navigation | `frontend` fork (`ha-sidebar`) | P3 implemented in fork |
+| Dashboard wiring and full industrial onboarding wizard | `frontend` fork | P3 |
 
 **Component ownership preflight.** Before cutting a trusted tag, run
 `scripts/verify-component-ownership.sh --channel version-service/stable.json

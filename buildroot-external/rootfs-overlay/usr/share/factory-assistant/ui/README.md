@@ -9,9 +9,9 @@ The contract is deliberately monitoring-only. Machine tiles open detail views
 instead of controls, the wallboard is view-only, and the andon acknowledge flow
 is bookkeeping only. Factory Assistant is a monitoring tool, not a safety device.
 
-The frontend fork now implements the contract's read-only `fa-machine-card`,
-`fa-andon-view`, and `factory-wallboard-kiosk`. Native plant navigation,
-dashboard wiring, and the full industrial onboarding wizard remain P3 frontend
+The frontend fork now implements native plant navigation plus the contract's
+read-only `fa-machine-card`, `fa-andon-view`, and `factory-wallboard-kiosk`.
+Dashboard wiring and the full industrial onboarding wizard remain P3 frontend
 work.
 
 The About panel contract keeps the product identity honest: it carries the

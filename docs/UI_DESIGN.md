@@ -78,7 +78,7 @@ Site (the appliance)
 Entity/topic naming follows `docs/INDUSTRIAL_DEFAULTS.md` §2; the UI sorts
 and groups by area throughout.
 
-**Navigation (frontend fork, P3).** Sidebar trimmed for plant use:
+**Navigation (frontend fork, implemented).** Sidebar trimmed for plant use:
 *Plant overview* (default) · *Alerts* · *Energy* · *History* · *Logbook* ·
 *Maintenance* · Settings (admin only). Home-centric items (Media, Map, To-do)
 are hidden by default. Until the fork lands, the shipped YAML dashboard
@@ -219,7 +219,8 @@ wallboard scale ×1.6.
 | Native read-only `fa-machine-card` with status/OEE/job/maintenance freshness and detail-only tap behavior | `frontend` fork consuming the shipped `ui/frontend_contract.yaml` machine-card contract | implemented in fork |
 | Native read-only `fa-andon-view` with severity grouping, ack bookkeeping status, and detail-only alert rows | `frontend` fork consuming the shipped `ui/frontend_contract.yaml` and `dashboards/andon.yaml` contract | implemented in fork |
 | Native read-only `factory-wallboard-kiosk` with hidden chrome, ×1.6 wallboard type scale, and view-only dashboard interaction blocking | `frontend` fork consuming the shipped `ui/frontend_contract.yaml` kiosk contract and `dashboards/wallboard.yaml` source dashboard | implemented in fork |
-| Trimmed navigation, terminology pass ("Home"→"Plant overview", areas as lines/cells), dashboard wiring, full industrial onboarding wizard | `frontend` fork consuming the shipped `ui/frontend_contract.yaml` and `onboarding/wizard_steps.yaml` contracts | P3 |
+| Native plant navigation: Plant overview first, Energy/History/Logbook priority, Map/Media/To-do hidden by default with user opt-in | `frontend` fork consuming the shipped `ui/frontend_contract.yaml` navigation contract | implemented in fork |
+| Terminology pass ("Home"→"Plant overview", areas as lines/cells), dashboard wiring, full industrial onboarding wizard | `frontend` fork consuming the shipped `ui/frontend_contract.yaml` and `onboarding/wizard_steps.yaml` contracts | P3 |
 | Auto-generated area dashboards from the line/cell taxonomy | frontend fork consuming the shipped `onboarding/site_model.example.yaml` line/cell taxonomy scaffold | P3 |
 
 Templates are deliberately stock-Lovelace (glance/entities/gauge/history

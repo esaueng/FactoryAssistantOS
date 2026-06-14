@@ -70,8 +70,8 @@ The companion `ui/frontend_contract.yaml` is the native frontend handoff for
 the same default experience: trimmed plant navigation, `fa-machine-card`,
 native andon view, kiosk wallboard mode, and the monitoring-only UI safety
 rules that forbid control affordances. The frontend fork now implements the
-read-only `fa-machine-card`, `fa-andon-view`, and `factory-wallboard-kiosk`;
-its `about_panel` section
+trimmed native plant navigation plus the read-only `fa-machine-card`,
+`fa-andon-view`, and `factory-wallboard-kiosk`; its `about_panel` section
 requires the Safety boundary and Open source licenses links in the frontend
 fork's About surface.
 

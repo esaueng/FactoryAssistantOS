@@ -109,6 +109,15 @@ To go live:
 3. **Cut the OS Release.** Attach the signed `.raucb` bundle to a GitHub
    Release of `esaueng/FactoryAssistantOS` tagged with the OS `{version}`, so the
    OTA URL above resolves.
+   Before publishing or promoting the channel, verify the local release
+   directory contains the exact bundle the channel will request:
+
+   ```sh
+   scripts/verify-ota-channel-artifact.sh \
+       --channel version-service/stable.json \
+       --board generic-x86-64 \
+       --release-dir release
+   ```
 
 Other operational requirements:
 

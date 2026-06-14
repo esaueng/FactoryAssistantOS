@@ -139,6 +139,18 @@ and complete onboarding. Full flashing/VM notes: `docs/OS_BUILD.md` §3.
       This checks the flash image, RAUC bundle, license archive, checksums,
       trusted release notes, and rejects accidental publication of signing
       material.
+- [ ] Confirm the channel OTA template resolves to the exact RAUC bundle in
+      the release directory:
+
+      ```sh
+      scripts/verify-ota-channel-artifact.sh \
+        --channel version-service/stable.json \
+        --board generic-x86-64 \
+        --release-dir release
+      ```
+
+      This verifies the bundle filename devices will request and its
+      `SHA256SUMS` coverage before publishing or promoting the channel.
 - [ ] Factory Assistant RAUC keys are configured with
       `scripts/configure-rauc-signing.sh` or the three GitHub Actions secrets
       (`docs/OS_BUILD.md` §Signing). Without that, the image is **flash-only**

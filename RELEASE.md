@@ -105,6 +105,19 @@ and complete onboarding. Full flashing/VM notes: `docs/OS_BUILD.md` §3.
       This validates the Factory Assistant RAUC chain/key match and confirms
       the channel points at esaueng-owned images and OTA URLs before a tag is
       cut.
+- [ ] After the build produces `release/`, verify the upload set before
+      publishing:
+
+      ```sh
+      scripts/verify-release-artifacts.sh \
+        --release-dir release \
+        --board generic-x86-64 \
+        --trusted
+      ```
+
+      This checks the flash image, RAUC bundle, license archive, checksums,
+      trusted release notes, and rejects accidental publication of signing
+      material.
 - [ ] Factory Assistant RAUC keys are configured with
       `scripts/configure-rauc-signing.sh` or the three GitHub Actions secrets
       (`docs/OS_BUILD.md` §Signing). Without that, the image is **flash-only**

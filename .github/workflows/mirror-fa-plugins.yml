@@ -1,0 +1,87 @@
+# Mirror the Home Assistant Supervisor system plugins into the Factory Assistant
+# registry so the FA update channel resolves every component from ghcr.io/esaueng.
+#
+# The channel (version-service/stable.json) names ghcr.io/esaueng/{arch}-hassio-cli
+# etc.; without these images a running Supervisor 404s on the plugin pulls. The
+# plugins dns/audio/multicast/observer carry no user-visible Home Assistant
+# branding (config-only), and the CLI plugin's "Home Assistant CLI" banner lives
+# in a separate home-assistant/cli binary (a later rebrand fork). So for now we
+# mirror upstream's images unchanged, re-tagged to the FA release version the
+# channel uses.
+#
+# Source tags are the current upstream plugin versions; the target tag is the FA
+# release version (channel default 2026.6.0). Re-pin source tags when upstream
+# plugin versions move. Push auth prefers a GHCR_PAT secret (write:packages),
+# falling back to GITHUB_TOKEN (which can create these NEW org packages).
+#
+# After a successful run, make the 5 new plugin packages PUBLIC (the appliance
+# pulls anonymously).
+name: Mirror FA plugins + landingpage
+
+on:
+  workflow_dispatch:
+    inputs:
+      fa_version:
+        description: "FA release tag to publish plugins under (matches the channel)"
+        required: true
+        default: "2026.6.0"
+  push:
+    branches: ["mirror-fa-plugins"]
+    paths:
+      - ".github/workflows/mirror-fa-plugins.yml"
+
+env:
+  FA_VERSION: "2026.6.0"
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  mirror:
+    name: Mirror plugins (upstream -> esaueng)
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_PAT || secrets.GITHUB_TOKEN }}
+
+      - name: Mirror the 5 system plugins (re-tagged to the FA version)
+        run: |
+          set -euxo pipefail
+          ver="${{ inputs.fa_version || env.FA_VERSION }}"
+          copy() { # $1 = plugin slug, $2 = upstream source tag
+            docker buildx imagetools create \
+              -t "ghcr.io/esaueng/amd64-hassio-$1:${ver}" \
+              "ghcr.io/home-assistant/amd64-hassio-$1:$2"
+          }
+          copy cli       2026.05.0
+          copy dns       2026.02.0
+          copy audio     2026.02.0
+          copy observer  2026.02.0
+          copy multicast 2026.02.0
+
+      - name: Mirror the landingpage tag onto the core package (best effort)
+        # Goes onto the pre-existing generic-x86-64-homeassistant package; if its
+        # ACL doesn't grant this repo write, this step fails without failing the
+        # plugin mirror above. Needed so first-boot serves the "Preparing…" page.
+        continue-on-error: true
+        run: |
+          set -uxo pipefail
+          docker buildx imagetools create \
+            -t "ghcr.io/esaueng/generic-x86-64-homeassistant:landingpage" \
+            "ghcr.io/home-assistant/generic-x86-64-homeassistant:landingpage"
+
+      - name: Next steps
+        run: |
+          {
+            echo "Mirrored to ghcr.io/esaueng/amd64-hassio-{cli,dns,audio,observer,multicast}:${{ inputs.fa_version || env.FA_VERSION }}"
+            echo ""
+            echo "NEXT: make the 5 new plugin packages **public** (org Packages settings) — the appliance pulls anonymously."
+          } >> "$GITHUB_STEP_SUMMARY"

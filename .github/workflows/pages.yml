@@ -1,0 +1,100 @@
+# Publish the Factory Assistant update channel to GitHub Pages.
+#
+# The appliance's Supervisor polls the channel document anonymously at
+#   https://esaueng.github.io/FactoryAssistant/stable.json
+# (see buildroot-external/rootfs-overlay/usr/sbin/hassos-supervisor and
+# branding/identity.env: FAOS_VERSION_CHANNEL_URL). This workflow serves
+# version-service/stable.json at that exact URL, and the channel schema at its
+# $id (schema/channel.schema.json), so the single source of truth under
+# version-service/ is what reaches the field — no hand-copied duplicate.
+#
+# PREREQUISITES (one-time, in repo Settings — see version-service/README.md):
+#   1. A PUBLIC Pages site. The appliance fetches the channel anonymously, so
+#      the site must be reachable without credentials. On the Free org plan that
+#      means the repo must be public; alternatively a paid plan (Pro/Team) can
+#      serve a public Pages site from a private repo.
+#   2. Settings -> Pages -> Build and deployment -> Source: "GitHub Actions".
+#      The default GITHUB_TOKEN cannot enable Pages itself, so this is manual;
+#      once set, this workflow deploys on every channel change to main.
+name: Publish update channel (Pages)
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "version-service/stable.json"
+      - "version-service/schema/**"
+      - ".github/workflows/pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One publish at a time, and never cancel an in-flight one: a half-applied
+# deploy would leave the field channel in an undefined state.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: Validate channel + deploy to Pages
+    runs-on: ubuntu-22.04
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Validate channel document against schema
+        # The field Supervisor parses this document; never publish one the
+        # schema rejects. Mirrors the check in lint.yml.
+        run: |
+          python -m pip install --quiet --upgrade pip
+          python -m pip install --quiet check-jsonschema
+          check-jsonschema --schemafile version-service/schema/channel.schema.json \
+            version-service/stable.json
+
+      - name: Assemble Pages site
+        # Copy only the public channel artifacts so the URLs are clean:
+        #   /stable.json                  <- the channel the appliance polls
+        #   /schema/channel.schema.json   <- matches the schema's own $id
+        run: |
+          set -euo pipefail
+          mkdir -p _site/schema
+          cp version-service/stable.json                 _site/stable.json
+          cp version-service/schema/channel.schema.json  _site/schema/channel.schema.json
+          cat > _site/index.html <<'HTML'
+          <!doctype html>
+          <meta charset="utf-8">
+          <title>Factory Assistant &mdash; update channel</title>
+          <h1>Factory Assistant update channel</h1>
+          <p>Endpoints served from this site:</p>
+          <ul>
+            <li><a href="stable.json">stable.json</a> &mdash; the stable update channel the appliance polls</li>
+            <li><a href="schema/channel.schema.json">schema/channel.schema.json</a> &mdash; channel document schema</li>
+          </ul>
+          HTML
+
+      - name: Configure Pages
+        # Pages must already be enabled with Source "GitHub Actions" (prereq #2
+        # above). The default GITHUB_TOKEN cannot self-enable Pages, so there is
+        # deliberately no enablement: true here.
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - name: Deploy to GitHub Pages
+        id: deploy
+        uses: actions/deploy-pages@v4

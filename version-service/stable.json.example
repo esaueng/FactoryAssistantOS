@@ -14,8 +14,13 @@
   "cli": "2026.6.0",
   "multicast": "2026.6.0",
   "observer": "2026.6.0",
-  "image": {
+  "images": {
     "core": "ghcr.io/esaueng/{machine}-homeassistant",
-    "supervisor": "ghcr.io/esaueng/{arch}-hassio-supervisor"
+    "supervisor": "ghcr.io/esaueng/{arch}-hassio-supervisor",
+    "cli": "ghcr.io/esaueng/{arch}-hassio-cli",
+    "dns": "ghcr.io/esaueng/{arch}-hassio-dns",
+    "audio": "ghcr.io/esaueng/{arch}-hassio-audio",
+    "observer": "ghcr.io/esaueng/{arch}-hassio-observer",
+    "multicast": "ghcr.io/esaueng/{arch}-hassio-multicast"
   }
 }

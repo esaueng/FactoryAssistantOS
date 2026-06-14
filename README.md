@@ -20,11 +20,22 @@ a web frontend, and add-ons as containers — re-targeted at industrial
 
 ## Status
 
-Pre-alpha scaffold. This repository defines the architecture, build path,
-branding, licensing, and safety rules, and provides the build automation for a
-first **generic x86-64** image. The build pipeline is defined but has not yet
-been CI-verified end to end (an OS build needs a Linux host with Docker,
-~50 GB of disk, and several hours — see [`docs/OS_BUILD.md`](docs/OS_BUILD.md)).
+P0 foundations and P1 buildable/bootable image work are complete. The
+generic x86-64 image has been produced and boot-verified as Factory Assistant
+OS 17.3, with release image, RAUC bundle, and checksum artifacts.
+
+P2 is nearly complete: esaueng-owned component forks, GHCR image wiring,
+channel validation, branded landing page/CLI images, mirrored plugins, and
+scheduled upstream release/security tracking are in place; trusted OTA remains
+the P2 blocker until real external Factory Assistant RAUC keys, device
+keyring, repository secrets, signed release bundles, and final release
+verification are configured.
+
+P3 industrial product experience is partial. The OS image ships industrial
+defaults, a Plant overview dashboard, andon/wallboard templates, network/NTP
+posture handoffs, onboarding contracts, and industrial add-on catalog
+contracts; the frontend/Core/Supervisor fork work still needs to complete the
+native industrial onboarding and default factory UI experience.
 
 ## Quick start (build an x86-64 image)
 

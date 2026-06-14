@@ -38,6 +38,12 @@ grep -q 'not a safety device' "$entrypoint" \
     || fail "CLI banner is missing the non-safety disclaimer"
 grep -q 'fa >' "$entrypoint" \
     || fail "CLI prompt is not Factory Assistant branded"
+grep -q 'Factory Assistant OS shell' "$entrypoint" \
+    || fail "CLI help note does not use the Factory Assistant OS product name"
+
+if grep -q 'operating system shell' "$entrypoint"; then
+    fail "CLI help note still uses generic shell wording instead of Factory Assistant OS"
+fi
 
 if grep -Eiq 'ha banner|Home Assistant CLI|HA CLI' "$entrypoint"; then
     fail "CLI entrypoint still contains upstream Home Assistant-branded banner text"

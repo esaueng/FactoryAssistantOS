@@ -18,7 +18,7 @@ while true; do
     COMMAND="$(rlwrap -S $'\e[32mfa > \e[0m' -H /tmp/.cli_history -o cat)"
 
     if [ "$COMMAND" == "help" ]; then
-        echo 'Note: Use "login" to enter operating system shell'
+        echo 'Note: Use "login" to enter the Factory Assistant OS shell'
     elif [ "$COMMAND" == "login" ]; then
         exit 10
     elif [ "$COMMAND" == "exit" ]; then

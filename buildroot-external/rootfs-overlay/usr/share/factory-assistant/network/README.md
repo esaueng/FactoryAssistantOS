@@ -9,7 +9,9 @@ The canonical host is `factory-assistant`, the mDNS target is
 posture: DHCP works for initial commissioning, static IP setup is first-class
 site guidance, `zeroconf` remains enabled for plant LAN discovery, and
 `fa-network-posture` is the read-only checklist helper for NTP, hostname,
-routes, static IP posture, and the Mosquitto offer.
+routes, static IP posture, and the Mosquitto offer. Onboarding, Supervisor,
+frontend, and CLI consumers should call `fa-network-posture --json` when they
+need stable check IDs instead of operator-facing text.
 
 The contract is monitoring-only. It must not create machine-control paths,
 claim safety-network placement, or change the upstream-compatible UI port 8123.

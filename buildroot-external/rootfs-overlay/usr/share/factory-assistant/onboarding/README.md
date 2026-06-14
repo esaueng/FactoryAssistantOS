@@ -19,7 +19,9 @@ conventions used by the shipped dashboards and packages.
 frontend/Supervisor forks. It sequences safety acknowledgement, site identity,
 line/cell hierarchy, NTP, static IP guidance, the Mosquitto broker add-on
 offer, local-first privacy defaults, and the Plant overview/andon/wallboard
-default experience.
+default experience. The network posture step consumes
+`fa-network-posture --json` so the UI can show the same read-only checks
+without parsing terminal text.
 
 Required commissioning posture:
 

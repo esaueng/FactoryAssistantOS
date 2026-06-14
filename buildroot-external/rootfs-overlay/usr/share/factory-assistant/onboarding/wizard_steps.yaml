@@ -62,6 +62,7 @@ steps:
     title: Network posture
     required: true
     helper: fa-network-posture
+    helper_output_format: json
     read_only: true
     checks:
       - hostname

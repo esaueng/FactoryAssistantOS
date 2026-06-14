@@ -76,6 +76,8 @@ if commissioning.get("static_ip_guidance") is not True:
     raise SystemExit("network identity must keep static-IP guidance")
 if commissioning.get("posture_helper") != "fa-network-posture":
     raise SystemExit("network identity must point at fa-network-posture")
+if commissioning.get("posture_output_format") != "json":
+    raise SystemExit("network identity must require machine-readable posture JSON")
 if commissioning.get("ntp_required") is not True:
     raise SystemExit("network identity must require NTP review")
 if commissioning.get("mosquitto_offer") is not True:
@@ -110,8 +112,9 @@ for expected in \
     'local-network only' \
     'static IP' \
     'fa-network-posture' \
+    '--json' \
     'zeroconf'; do
-    grep -q "$expected" "$readme" \
+    grep -q -- "$expected" "$readme" \
         || fail "network identity README is missing expected text: $expected"
 done
 

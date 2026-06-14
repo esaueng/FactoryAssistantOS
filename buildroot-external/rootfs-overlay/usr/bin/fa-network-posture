@@ -10,6 +10,39 @@ TIMEDATECTL="${FA_POSTURE_TIMEDATECTL:-timedatectl}"
 IP="${FA_POSTURE_IP:-ip}"
 NMCLI="${FA_POSTURE_NMCLI:-nmcli}"
 HOSTNAME_CMD="${FA_POSTURE_HOSTNAME:-hostname}"
+json_output=0
+
+usage() {
+    cat <<'EOF'
+Usage: fa-network-posture [--json]
+
+Reports read-only Factory Assistant host network/time commissioning posture.
+Use --json for machine-readable onboarding/Supervisor/frontend handoff output.
+EOF
+}
+
+while [ $# -gt 0 ]; do
+    case "$1" in
+        --json) json_output=1; shift;;
+        -h|--help) usage; exit 0;;
+        *)
+            echo "ERROR: unknown argument: $1" >&2
+            usage >&2
+            exit 2
+            ;;
+    esac
+done
+
+check_ids=()
+check_levels=()
+check_messages=()
+check_values=()
+reminders=(
+    "Static IP: plants usually require fixed addressing; use Settings -> System -> Network after DHCP discovery."
+    "NTP: use a plant NTP source so recorder, OEE, maintenance, and andon timelines are trustworthy."
+    "MQTT: Install the Mosquitto broker add-on before adding MQTT gateways or the OPC UA bridge."
+    "Safety: monitoring only; do not connect this appliance as a safety controller or interlock."
+)
 
 have_command() {
     local cmd="$1"
@@ -32,53 +65,116 @@ status() {
     printf '[%s] %s\n' "$level" "$*"
 }
 
+add_check() {
+    local id="$1"
+    local level="$2"
+    local message="$3"
+    local value="${4:-}"
+
+    check_ids+=("$id")
+    check_levels+=("$level")
+    check_messages+=("$message")
+    check_values+=("$value")
+
+    if [ "$json_output" -eq 0 ]; then
+        status "$level" "$message"
+    fi
+}
+
+json_escape() {
+    local value="${1:-}"
+
+    value="${value//\\/\\\\}"
+    value="${value//\"/\\\"}"
+    value="${value//$'\n'/\\n}"
+    value="${value//$'\r'/}"
+    value="${value//$'\t'/\\t}"
+    printf '%s' "$value"
+}
+
+emit_json() {
+    local i
+
+    printf '{\n'
+    printf '  "schema_version": 1,\n'
+    printf '  "product": "Factory Assistant",\n'
+    printf '  "helper": "fa-network-posture",\n'
+    printf '  "mode": "monitoring_only",\n'
+    printf '  "safety": {\n'
+    printf '    "monitoring_only": true,\n'
+    printf '    "machine_control": false,\n'
+    printf '    "safety_function": false\n'
+    printf '  },\n'
+    printf '  "checks": [\n'
+    for i in "${!check_ids[@]}"; do
+        [ "$i" -eq 0 ] || printf ',\n'
+        printf '    {"id": "%s", "level": "%s", "message": "%s", "value": "%s"}' \
+            "$(json_escape "${check_ids[$i]}")" \
+            "$(json_escape "${check_levels[$i]}")" \
+            "$(json_escape "${check_messages[$i]}")" \
+            "$(json_escape "${check_values[$i]}")"
+    done
+    printf '\n'
+    printf '  ],\n'
+    printf '  "reminders": [\n'
+    for i in "${!reminders[@]}"; do
+        [ "$i" -eq 0 ] || printf ',\n'
+        printf '    "%s"' "$(json_escape "${reminders[$i]}")"
+    done
+    printf '\n'
+    printf '  ]\n'
+    printf '}\n'
+}
+
 first_nonempty_line() {
     awk 'NF { print; exit }'
 }
 
-printf 'Factory Assistant network/time posture\n'
-printf 'Monitoring only - not a safety device.\n\n'
+if [ "$json_output" -eq 0 ]; then
+    printf 'Factory Assistant network/time posture\n'
+    printf 'Monitoring only - not a safety device.\n\n'
+fi
 
 if ntp_state="$(run_command "$TIMEDATECTL" show -p NTPSynchronized --value 2>/dev/null | first_nonempty_line)"; then
     case "$ntp_state" in
         yes)
-            status OK "NTP synchronized"
+            add_check ntp_synchronized OK "NTP synchronized" "$ntp_state"
             ;;
         no)
-            status WARN "NTP is not synchronized; point systemd-timesyncd at the plant NTP source before trusting telemetry timestamps"
+            add_check ntp_synchronized WARN "NTP is not synchronized; point systemd-timesyncd at the plant NTP source before trusting telemetry timestamps" "$ntp_state"
             ;;
         *)
-            status WARN "NTP synchronization state is unknown: $ntp_state"
+            add_check ntp_synchronized WARN "NTP synchronization state is unknown: $ntp_state" "$ntp_state"
             ;;
     esac
 else
-    status WARN "timedatectl is unavailable; verify host NTP manually"
+    add_check ntp_synchronized WARN "timedatectl is unavailable; verify host NTP manually" "unavailable"
 fi
 
 if timezone="$(run_command "$TIMEDATECTL" show -p Timezone --value 2>/dev/null | first_nonempty_line)"; then
-    status INFO "Time zone: ${timezone:-unset}"
+    add_check time_zone INFO "Time zone: ${timezone:-unset}" "${timezone:-unset}"
 fi
 
 if hostname_value="$(run_command "$HOSTNAME_CMD" 2>/dev/null | first_nonempty_line)"; then
     if [ "$hostname_value" = "factory-assistant" ]; then
-        status OK "Hostname is factory-assistant; mDNS target is factory-assistant.local"
+        add_check hostname_mdns OK "Hostname is factory-assistant; mDNS target is factory-assistant.local" "$hostname_value"
     else
-        status WARN "Hostname is $hostname_value; expected factory-assistant for predictable mDNS commissioning"
+        add_check hostname_mdns WARN "Hostname is $hostname_value; expected factory-assistant for predictable mDNS commissioning" "$hostname_value"
     fi
 else
-    status WARN "hostname command is unavailable; verify mDNS name manually"
+    add_check hostname_mdns WARN "hostname command is unavailable; verify mDNS name manually" "unavailable"
 fi
 
 if default_route="$(run_command "$IP" route show default 2>/dev/null | first_nonempty_line)"; then
-    status OK "Default route present: $default_route"
+    add_check default_route OK "Default route present: $default_route" "$default_route"
 else
-    status WARN "No default route detected; initial onboarding and add-on pulls may fail"
+    add_check default_route WARN "No default route detected; initial onboarding and add-on pulls may fail" "missing"
 fi
 
 if addresses="$(run_command "$IP" -brief addr show scope global 2>/dev/null | first_nonempty_line)"; then
-    status INFO "Global address: $addresses"
+    add_check global_address INFO "Global address: $addresses" "$addresses"
 else
-    status WARN "No global interface address detected"
+    add_check global_address WARN "No global interface address detected" "missing"
 fi
 
 if nm_lines="$(run_command "$NMCLI" -t -f NAME,DEVICE,IP4.METHOD connection show --active 2>/dev/null)"; then
@@ -88,23 +184,26 @@ if nm_lines="$(run_command "$NMCLI" -t -f NAME,DEVICE,IP4.METHOD connection show
         found_nm=1
         case "$method" in
             manual)
-                status INFO "NetworkManager active connection: $name on ${device:-unknown} uses manual IPv4"
+                add_check networkmanager_ipv4_method INFO "NetworkManager active connection: $name on ${device:-unknown} uses manual IPv4" "$method"
                 ;;
             auto|shared|link-local|disabled)
-                status INFO "NetworkManager active connection: $name on ${device:-unknown} uses ${method:-unknown} IPv4; configure a static IP during commissioning if the plant requires fixed addressing"
+                add_check networkmanager_ipv4_method INFO "NetworkManager active connection: $name on ${device:-unknown} uses ${method:-unknown} IPv4; configure a static IP during commissioning if the plant requires fixed addressing" "$method"
                 ;;
             *)
-                status INFO "NetworkManager active connection: $name on ${device:-unknown}; verify static IP requirements in Settings -> System -> Network"
+                add_check networkmanager_ipv4_method INFO "NetworkManager active connection: $name on ${device:-unknown}; verify static IP requirements in Settings -> System -> Network" "${method:-unknown}"
                 ;;
         esac
     done <<< "$nm_lines"
-    [ "$found_nm" -eq 1 ] || status WARN "NetworkManager reported no active connections"
+    [ "$found_nm" -eq 1 ] || add_check networkmanager_ipv4_method WARN "NetworkManager reported no active connections" "missing"
 else
-    status INFO "NetworkManager details unavailable; configure static IP guidance through Settings -> System -> Network or the Factory Assistant CLI"
+    add_check networkmanager_ipv4_method INFO "NetworkManager details unavailable; configure static IP guidance through Settings -> System -> Network or the Factory Assistant CLI" "unavailable"
 fi
 
-printf '\nCommissioning reminders:\n'
-printf '%s\n' '- Static IP: plants usually require fixed addressing; use Settings -> System -> Network after DHCP discovery.'
-printf '%s\n' '- NTP: use a plant NTP source so recorder, OEE, maintenance, and andon timelines are trustworthy.'
-printf '%s\n' '- MQTT: Install the Mosquitto broker add-on before adding MQTT gateways or the OPC UA bridge.'
-printf '%s\n' '- Safety: monitoring only; do not connect this appliance as a safety controller or interlock.'
+if [ "$json_output" -eq 1 ]; then
+    emit_json
+else
+    printf '\nCommissioning reminders:\n'
+    for reminder in "${reminders[@]}"; do
+        printf -- '- %s\n' "$reminder"
+    done
+fi

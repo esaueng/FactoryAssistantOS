@@ -151,6 +151,14 @@ and complete onboarding. Full flashing/VM notes: `docs/OS_BUILD.md` §3.
 
       This verifies the bundle filename devices will request and its
       `SHA256SUMS` coverage before publishing or promoting the channel.
+- [ ] Run the shipped safety-boundary verifier:
+
+      ```sh
+      scripts/verify-safety-boundary.sh
+      ```
+
+      This rejects accidental machine-control domains, forbidden services, or
+      safety contract flags in the OS-shipped Factory Assistant defaults.
 - [ ] Factory Assistant RAUC keys are configured with
       `scripts/configure-rauc-signing.sh` or the three GitHub Actions secrets
       (`docs/OS_BUILD.md` §Signing). Without that, the image is **flash-only**

@@ -55,6 +55,10 @@ structurally unfit for safety functions, by design and on purpose.
 - **Review gate**: any PR that adds a machine-write/control path, in any
   repo, is rejected unless the P4 roadmap gate (§6) has been explicitly
   opened and this document updated first (see `AGENTS.md` invariant 3).
+- **Shipped-default verifier**: run `scripts/verify-safety-boundary.sh` before
+  release work. It structurally scans the OS-shipped Factory Assistant YAML
+  defaults for machine-control domains, forbidden services, and safety flags
+  that drift away from monitoring-only behavior.
 - **Vocabulary ban**: features, entities, add-ons, or docs named or styled
   as "e-stop", "emergency stop", "interlock", "safety PLC", "safety alarm",
   or similar are rejected outright — including "soft" or "virtual" variants.

@@ -140,30 +140,24 @@ images are flash-only (no OTA), which is acceptable for P1.
 
 Do this on an air-gapped machine. The CA private key signs the signing cert
 and is then locked away; day-to-day bundle signing uses only the signing key.
+Use the repository helper so the certificate extensions and file names match
+the release workflow:
 
 ```sh
-# 1. Root CA (long-lived; key stays offline / on HSM)
-openssl genrsa -out faos-ca.key 4096
-openssl req -x509 -new -key faos-ca.key -sha256 -days 7300 \
-  -out faos-ca.crt \
-  -subj "/O=Factory Assistant/CN=Factory Assistant OS OTA Root CA"
-
-# 2. Signing key + CSR (this key signs release bundles)
-openssl genrsa -out faos-ota.key 4096
-openssl req -new -key faos-ota.key \
-  -out faos-ota.csr \
-  -subj "/O=Factory Assistant/CN=Factory Assistant OS OTA Signing"
-
-# 3. Sign the signing cert with the CA (codesign EKU)
-openssl x509 -req -in faos-ota.csr -CA faos-ca.crt -CAkey faos-ca.key \
-  -CAcreateserial -sha256 -days 1825 \
-  -extfile <(printf 'keyUsage=digitalSignature\nextendedKeyUsage=codeSigning\n') \
-  -out faos-ota.crt
+scripts/generate-rauc-signing-material.sh --out-dir /secure/faos-rauc
 ```
 
-Keep `faos-ca.key` and `faos-ota.key` offline. Only the **public**
-`faos-ca.crt` (the keyring) is needed on the build host, and even that is
-referenced from outside the repo — it is gitignored as a `*.crt`.
+The helper writes:
+
+- `/secure/faos-rauc/faos-rauc-ca.key` — root CA private key; keep offline.
+- `/secure/faos-rauc/faos-rauc-ca.crt` — public root CA/device keyring.
+- `/secure/faos-rauc/faos-rauc-signing.key` — bundle-signing private key.
+- `/secure/faos-rauc/faos-rauc-signing.csr` — signing CSR.
+- `/secure/faos-rauc/faos-rauc-signing.crt` — code-signing certificate.
+
+Keep the two `*.key` files offline. Only the **public**
+`faos-rauc-ca.crt` is the device keyring input, and even that is referenced
+from outside the repo — `*.crt` remains gitignored.
 
 ### 5.2 Wire the device keyring at build time
 
@@ -174,9 +168,9 @@ After `make bootstrap && make overlay`, run:
 
 ```sh
 scripts/configure-rauc-signing.sh \
-  --keyring /secure/faos-ca.crt \
-  --cert /secure/faos-ota.crt \
-  --key /secure/faos-ota.key
+  --keyring /secure/faos-rauc/faos-rauc-ca.crt \
+  --cert /secure/faos-rauc/faos-rauc-signing.crt \
+  --key /secure/faos-rauc/faos-rauc-signing.key
 ```
 
 The script validates that the signing certificate verifies against the supplied
@@ -207,9 +201,9 @@ with the Factory Assistant signing key:
 make bootstrap
 make overlay
 scripts/configure-rauc-signing.sh \
-  --keyring /secure/faos-ca.crt \
-  --cert /secure/faos-ota.crt \
-  --key /secure/faos-ota.key
+  --keyring /secure/faos-rauc/faos-rauc-ca.crt \
+  --cert /secure/faos-rauc/faos-rauc-signing.crt \
+  --key /secure/faos-rauc/faos-rauc-signing.key
 make os
 ```
 
@@ -222,8 +216,10 @@ release host). In GitHub Actions, set all three repository secrets together:
 
 If all three are present, `.github/workflows/build-os-image.yml` installs them
 with `scripts/configure-rauc-signing.sh` and the generated `.raucb` is trusted
-by images from that run. If none are present, the workflow intentionally falls
-back to a public self-signed development certificate and labels the result
+by images from that run. The tag release workflow refuses to publish without
+all three RAUC secrets, so GitHub Releases cannot accidentally ship a
+self-signed OTA bundle. Manual `workflow_dispatch` builds with no RAUC secrets
+may still use a public self-signed development certificate and are labeled
 flash-only. A partial secret configuration fails the build.
 
 ### 5.4 Publish

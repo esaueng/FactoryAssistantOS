@@ -29,15 +29,19 @@ upstream builder container, then uploads the image (and on a tag, publishes a
 Release with checksums + license bundle).
 
 For a trusted OTA release, configure all three repository secrets before
-running the tag build:
+running the tag build. Generate the external inputs with
+`scripts/generate-rauc-signing-material.sh --out-dir /secure/faos-rauc`, then
+copy the PEM contents into the matching secrets:
 
 - `FAOS_RAUC_KEYRING_PEM` — Factory Assistant OTA root CA certificate.
 - `FAOS_RAUC_CERT_PEM` — Factory Assistant OTA signing certificate.
 - `FAOS_RAUC_KEY_PEM` — Factory Assistant OTA signing private key.
 
-If none are present, the workflow produces a flash-only build with a public
-self-signed development certificate. If only some are present, the workflow
-fails rather than publishing a misleading OTA bundle.
+Tag builds require all three RAUC secrets and fail without them. Manual
+`workflow_dispatch` builds may still produce flash-only development artifacts
+with a public self-signed development certificate when no RAUC secrets are
+present. If only some are present, the workflow fails rather than publishing a
+misleading OTA bundle.
 
 - **Ad-hoc build**: Actions → *Build Factory Assistant OS image* → *Run
   workflow*. Download the `faos-generic-x86-64` artifact when it finishes.
@@ -66,9 +70,9 @@ make overlay          # apply the Factory Assistant overlay  (verified)
 # upstream checkout. Omit this and use upstream's generate-signing-key.sh only
 # for explicit flash-only development images.
 scripts/configure-rauc-signing.sh \
-  --keyring /secure/faos-ca.crt \
-  --cert /secure/faos-ota.crt \
-  --key /secure/faos-ota.key
+  --keyring /secure/faos-rauc/faos-rauc-ca.crt \
+  --cert /secure/faos-rauc/faos-rauc-signing.crt \
+  --key /secure/faos-rauc/faos-rauc-signing.key
 make os               # full build (hours); or: cd upstream/operating-system && scripts/enter.sh make generic_x86_64
 ```
 

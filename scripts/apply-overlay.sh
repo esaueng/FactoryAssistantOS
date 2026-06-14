@@ -98,8 +98,9 @@ cat <<'EOF'
     Separate post-overlay step (Phase 2 — see docs/OS_BUILD.md §Signing):
       - Trusted RAUC signing/keyring:
         scripts/configure-rauc-signing.sh --keyring ... --cert ... --key ...
-        REQUIRED before shipping OTA updates. Without it, the build workflow
-        intentionally falls back to a flash-only self-signed development bundle.
+        REQUIRED before shipping OTA updates. Tag releases require trusted
+        secrets; only manual development builds may use the flash-only
+        self-signed fallback.
 
     NOT covered yet (Phase 2 — see docs/OS_BUILD.md §Rebrand checklist):
       - Running Supervisor's update-channel URL (hardcoded in supervisor/const.py;

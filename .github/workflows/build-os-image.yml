@@ -13,9 +13,10 @@
 #     and license bundle to a GitHub Release.
 #
 # Signing: set the FAOS_RAUC_KEYRING_PEM, FAOS_RAUC_CERT_PEM, and
-# FAOS_RAUC_KEY_PEM repository secrets to produce trusted OTA bundles. If none
-# are set, the workflow deliberately falls back to upstream's public self-signed
-# dev certificate and marks the result flash-only.
+# FAOS_RAUC_KEY_PEM repository secrets to produce trusted OTA bundles. Tag
+# release builds require all three secrets. Manual workflow_dispatch builds may
+# still produce flash-only development artifacts with upstream's public
+# self-signed dev certificate when no RAUC secrets are set.
 name: Build Factory Assistant OS image
 
 on:
@@ -118,12 +119,16 @@ jobs:
             echo "::error::Configure all three RAUC secrets together: FAOS_RAUC_KEYRING_PEM, FAOS_RAUC_CERT_PEM, and FAOS_RAUC_KEY_PEM."
             exit 1
           else
-            echo "::warning::No Factory Assistant RAUC keys configured — building with a PUBLIC self-signed dev certificate. The image is flash-only; its OTA bundle is NOT trusted. See docs/OS_BUILD.md §Signing."
+            if [[ "${GITHUB_REF:-}" == refs/tags/* ]]; then
+              echo "::error::Trusted tag releases require all three RAUC secrets: FAOS_RAUC_KEYRING_PEM, FAOS_RAUC_CERT_PEM, and FAOS_RAUC_KEY_PEM."
+              exit 1
+            fi
+            echo "::warning::No Factory Assistant RAUC keys configured — workflow_dispatch builds may still produce flash-only development artifacts with a PUBLIC self-signed dev certificate. The OTA bundle is NOT trusted. See docs/OS_BUILD.md §Signing."
             ( cd upstream/operating-system && buildroot-external/scripts/generate-signing-key.sh cert.pem key.pem )
             {
               echo "trusted=false"
               echo "release_note<<EOF"
-              echo "WARNING: Built with a public self-signed RAUC certificate: flash-only, OTA updates are not trusted on this build. Configure the Factory Assistant RAUC secrets before publishing OTA-capable releases."
+              echo "WARNING: Manual development build with a public self-signed RAUC certificate: flash-only, OTA updates are not trusted on this build. Tag builds require all three Factory Assistant RAUC secrets."
               echo "EOF"
             } >> "${GITHUB_OUTPUT}"
           fi

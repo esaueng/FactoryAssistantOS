@@ -21,7 +21,7 @@
       "pattern": "^https://.*\\{version\\}.*$"
     }
   },
-  "required": ["channel", "supervisor", "homeassistant", "hassos"],
+  "required": ["channel", "supervisor", "homeassistant", "hassos", "images"],
   "additionalProperties": false,
   "properties": {
     "_comment": {
@@ -63,12 +63,18 @@
     "cli": { "$ref": "#/$defs/version" },
     "multicast": { "$ref": "#/$defs/version" },
     "observer": { "$ref": "#/$defs/version" },
-    "image": {
+    "images": {
       "type": "object",
-      "description": "Container image name templates pulled from the Factory Assistant registry.",
+      "description": "Container image name templates pulled from the Factory Assistant registry. The Supervisor reads this under the key 'images' (PLURAL) — see home-assistant/supervisor updater.py fetch_data(), which does data['images']['core'] etc. Every component the appliance runs MUST be listed, or that component silently falls back to the upstream ghcr.io/home-assistant default (plugins/base.py default_image). {machine}/{arch} placeholders are expanded by the Supervisor.",
+      "required": ["core", "supervisor", "cli", "dns", "audio", "observer", "multicast"],
       "properties": {
         "core": { "$ref": "#/$defs/imageRef" },
-        "supervisor": { "$ref": "#/$defs/imageRef" }
+        "supervisor": { "$ref": "#/$defs/imageRef" },
+        "cli": { "$ref": "#/$defs/imageRef" },
+        "dns": { "$ref": "#/$defs/imageRef" },
+        "audio": { "$ref": "#/$defs/imageRef" },
+        "observer": { "$ref": "#/$defs/imageRef" },
+        "multicast": { "$ref": "#/$defs/imageRef" }
       },
       "additionalProperties": { "$ref": "#/$defs/imageRef" }
     }

@@ -31,8 +31,10 @@ if not isinstance(addons, list):
     raise SystemExit("catalog.addons must be a list")
 
 catalog = data.get("catalog") or {}
-if catalog.get("repository_url") != "https://github.com/esaueng/addons-industrial":
-    raise SystemExit("catalog must name the addons-industrial repository URL")
+if catalog.get("repository") != "factory-assistant-addons":
+    raise SystemExit("catalog must target the live factory-assistant-addons repository")
+if catalog.get("repository_url") != "https://github.com/esaueng/factory-assistant-addons":
+    raise SystemExit("catalog must name the factory-assistant-addons repository URL")
 
 expected_ids = [
     "opcua_mqtt_bridge",
@@ -45,11 +47,13 @@ if seen_ids != expected_ids:
 
 for addon in addons:
     addon_id = addon["id"]
+    if addon.get("repository") != "factory-assistant-addons":
+        raise SystemExit(f"{addon_id} must live in factory-assistant-addons")
     if addon.get("local_first") is not True:
         raise SystemExit(f"{addon_id} must be local_first")
     packaging = addon.get("packaging") or {}
-    if packaging.get("repository") != "addons-industrial":
-        raise SystemExit(f"{addon_id} packaging must target addons-industrial")
+    if packaging.get("repository") != "factory-assistant-addons":
+        raise SystemExit(f"{addon_id} packaging must target factory-assistant-addons")
     if packaging.get("slug") != addon_id:
         raise SystemExit(f"{addon_id} packaging slug must match the add-on id")
     expected_image = f"ghcr.io/esaueng/{{arch}}-addon-{addon_id.replace('_', '-')}"
@@ -77,8 +81,6 @@ for addon in addons:
         raise SystemExit(f"{addon_id} must not claim safety function behavior")
 
 opcua = addons[0]
-if opcua.get("repository") != "addons-industrial":
-    raise SystemExit("OPC UA bridge must live in addons-industrial")
 if opcua.get("depends_on") != ["mosquitto"]:
     raise SystemExit("OPC UA bridge must depend on Mosquitto")
 opcua_cfg = opcua.get("opcua") or {}
@@ -101,8 +103,6 @@ if opcua_options.get("write_nodes_allowed") is not False:
     raise SystemExit("OPC UA bridge option schema must hard-disable writes")
 
 plc = addons[1]
-if plc.get("repository") != "addons-industrial":
-    raise SystemExit("PLC helper must live in addons-industrial")
 modbus = plc.get("modbus_tcp") or {}
 if modbus.get("read_only") is not True:
     raise SystemExit("PLC helper Modbus contract must be read-only")
@@ -122,8 +122,6 @@ if plc_options.get("write_functions_allowed") is not False:
     raise SystemExit("PLC helper option schema must hard-disable writes")
 
 historian = addons[2]
-if historian.get("repository") != "addons-industrial":
-    raise SystemExit("Historian must live in addons-industrial")
 if historian.get("cloud_required") is not False:
     raise SystemExit("Historian must not require cloud services")
 if historian.get("machine_control") is not False:
@@ -159,6 +157,12 @@ grep -q 'addons/' "$seed_script" \
     || fail "seed script comments do not mention add-on catalog files are copied"
 grep -q 'addons/industrial_addons.catalog.yaml' "$defaults_doc" \
     || fail "industrial defaults doc does not mention the add-on catalog"
+grep -q 'factory-assistant-addons' "$defaults_doc" \
+    || fail "industrial defaults doc does not mention the live add-on repository"
+grep -q 'factory-assistant-addons' "$arch_doc" \
+    || fail "architecture repo map does not mention the live add-on repository"
+grep -q 'factory-assistant-addons' "$readme" \
+    || fail "industrial add-on README does not mention the live add-on repository"
 grep -q 'industrial add-on catalog' "$arch_doc" \
     || fail "architecture phase status does not mention the industrial add-on catalog"
 

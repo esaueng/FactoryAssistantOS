@@ -50,8 +50,7 @@ track upstream tags** (AGENTS.md invariant 4).
 | `supervisor` | `home-assistant/supervisor` | Container/lifecycle manager | Fork; deltas limited to registry namespace, update channel URL, product strings, OS identity acceptance |
 | `core` | `home-assistant/core` | Application runtime, integrations (MQTT, Modbus, …) | Fork; near-zero delta, track upstream releases for integration/security fixes |
 | `frontend` | `home-assistant/frontend` | Web UI | Fork; branding strings/assets, industrial default dashboard, onboarding wording |
-| `addons` | `home-assistant/addons` | Official add-ons (Mosquitto, SSH, …) | Fork; keep upstream add-ons, add industrial ones |
-| `addons-industrial` | — (new) | OPC UA bridge, PLC gateway helpers, historian | New repo, Apache 2.0 |
+| `factory-assistant-addons` | `home-assistant/addons` | Official add-ons (Mosquitto, SSH, …), OPC UA bridge, PLC gateway helpers, historian | Fork; keep upstream add-ons, add industrial ones |
 | `os-agent` | `home-assistant/os-agent` | Host D-Bus agent for the Supervisor | Mirror, initially unmodified |
 | `plugins` (dns/audio/cli/multicast/observer) | `home-assistant/plugin-*` | Supervisor system plugins | Mirror; rebuild under FA registry, CLI banner rebrand |
 | `landingpage` | `home-assistant/landingpage` | First-boot "preparing" page | Fork; branding only |
@@ -174,7 +173,7 @@ keeps security patch provenance obvious.
 Initial set, in priority order:
 
 1. **Mosquitto MQTT broker** (upstream add-on, kept) — the data backbone.
-2. **OPC UA → MQTT bridge** (new, `addons-industrial`) — subscribes to OPC UA
+2. **OPC UA → MQTT bridge** (new, `factory-assistant-addons`) — subscribes to OPC UA
    server nodes **read-only** and republishes on the FA topic convention;
    this is the "OPC UA-ready structure": entities arrive via MQTT discovery
    without Core changes.
@@ -185,8 +184,8 @@ Initial set, in priority order:
 
 The OS image ships an industrial add-on catalog at
 `/usr/share/factory-assistant/addons/industrial_addons.catalog.yaml`. It is a
-contract for the separate `addons-industrial` repository, not executable add-on
-code: OPC UA, PLC gateway helper, and historian entries are local-first,
+contract for the separate `factory-assistant-addons` repository, not executable
+add-on code: OPC UA, PLC gateway helper, and historian entries are local-first,
 monitoring-only, and explicitly disallow machine control or safety functions.
 
 ## 9. First boot and onboarding

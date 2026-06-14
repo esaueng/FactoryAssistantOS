@@ -5,7 +5,7 @@ industrial add-ons that live outside the OS repository. It is copied with the
 rest of `/usr/share/factory-assistant` on first boot so site templates,
 onboarding, and future add-on repositories refer to the same defaults.
 
-The catalog covers three planned `addons-industrial` entries:
+The catalog covers three planned `factory-assistant-addons` entries:
 
 - **OPC UA to MQTT Bridge** — subscribes to curated OPC UA nodes in read-only
   mode, publishes MQTT discovery, and uses
@@ -19,8 +19,8 @@ The catalog covers three planned `addons-industrial` entries:
 Each entry includes a Home Assistant add-on manifest contract: slug, image
 name, supported architecture, startup/boot policy, and the required non-host,
 non-privileged runtime posture. The option schemas are intentionally small and
-site-editable so the downstream `addons-industrial` repository can implement
-the same read-only defaults without inventing product behavior.
+site-editable so the downstream `factory-assistant-addons` repository can
+implement the same read-only defaults without inventing product behavior.
 
 Install the Mosquitto broker add-on before commissioning MQTT gateways or the
 OPC UA bridge. The add-ons are local-first by default and do not require cloud

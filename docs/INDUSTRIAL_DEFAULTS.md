@@ -84,9 +84,9 @@ rules that forbid control affordances.
   current clamps, temperatures, andon light states).
 
 The shipped `addons/industrial_addons.catalog.yaml` records the planned
-industrial add-on contract for the separate `addons-industrial` repository:
-OPC UA bridge, PLC gateway helper, and historian storage are local-first,
-monitoring-only, and must not add machine write/control behavior.
+industrial add-on contract for the separate `factory-assistant-addons`
+repository: OPC UA bridge, PLC gateway helper, and historian storage are
+local-first, monitoring-only, and must not add machine write/control behavior.
 
 ## 3.1 Local-first Core defaults
 

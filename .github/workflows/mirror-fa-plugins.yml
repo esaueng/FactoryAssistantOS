@@ -1,23 +1,22 @@
 # Mirror the Home Assistant Supervisor system plugins into the Factory Assistant
-# registry and publish the branded Factory Assistant landingpage image so the FA
-# update channel resolves every component from ghcr.io/esaueng.
+# registry and publish the branded Factory Assistant CLI + landingpage images so
+# the FA update channel resolves every component from ghcr.io/esaueng.
 #
 # The channel (version-service/stable.json) names ghcr.io/esaueng/{arch}-hassio-cli
 # etc.; without these images a running Supervisor 404s on the plugin pulls. The
 # plugins dns/audio/multicast/observer carry no user-visible branding
-# (config-only), and the CLI plugin's banner lives in a separate cli binary
-# (a later rebrand fork). The first-boot landingpage is not mirrored from
-# upstream: this workflow builds landingpage/ so the visible preparing page is
-# Factory Assistant branded.
+# (config-only). The CLI and first-boot landingpage are not mirrored from
+# upstream: this workflow builds plugin-cli/ and landingpage/ so the visible
+# shell and preparing page are Factory Assistant branded.
 #
 # Source tags are the current upstream plugin versions; the target tag is the FA
 # release version (channel default 2026.6.0). Re-pin source tags when upstream
 # plugin versions move. Push auth prefers a GHCR_PAT secret (write:packages),
 # falling back to GITHUB_TOKEN (which can create these NEW org packages).
 #
-# After a successful run, make the 5 new plugin packages PUBLIC (the appliance
-# pulls anonymously).
-name: Mirror FA plugins + landingpage
+# After a successful run, make the 5 plugin packages and generic-x86-64 image
+# package PUBLIC (the appliance pulls anonymously).
+name: Mirror FA plugins + branded local images
 
 on:
   workflow_dispatch:
@@ -30,6 +29,8 @@ on:
     branches: ["mirror-fa-plugins"]
     paths:
       - ".github/workflows/mirror-fa-plugins.yml"
+      - "plugin-cli/**"
+      - "landingpage/**"
 
 env:
   FA_VERSION: "2026.6.0"
@@ -40,9 +41,12 @@ permissions:
 
 jobs:
   mirror:
-    name: Mirror plugins (upstream -> esaueng)
+    name: Publish plugins (upstream mirrors + local branding)
     runs-on: ubuntu-24.04
     steps:
+      - name: Check out local build contexts
+        uses: actions/checkout@v4
+
       - name: Set up Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -53,7 +57,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GHCR_PAT || secrets.GITHUB_TOKEN }}
 
-      - name: Mirror the 5 system plugins (re-tagged to the FA version)
+      - name: Mirror the unbranded system plugins (re-tagged to the FA version)
         run: |
           set -euxo pipefail
           ver="${{ inputs.fa_version || env.FA_VERSION }}"
@@ -62,11 +66,23 @@ jobs:
               -t "ghcr.io/esaueng/amd64-hassio-$1:${ver}" \
               "ghcr.io/home-assistant/amd64-hassio-$1:$2"
           }
-          copy cli       2026.05.0
           copy dns       2026.02.0
           copy audio     2026.02.0
           copy observer  2026.02.0
           copy multicast 2026.02.0
+
+      - name: Build and publish the Factory Assistant CLI plugin
+        run: |
+          set -euxo pipefail
+          ver="${{ inputs.fa_version || env.FA_VERSION }}"
+          docker buildx build \
+            --platform linux/amd64 \
+            --pull \
+            --push \
+            --build-arg CLI_SOURCE_TAG=2026.05.0 \
+            -t "ghcr.io/esaueng/amd64-hassio-cli:${ver}" \
+            --label "org.opencontainers.image.version=${ver}" \
+            plugin-cli
 
       - name: Build and publish the Factory Assistant landingpage
         run: |
@@ -84,7 +100,8 @@ jobs:
       - name: Next steps
         run: |
           {
-            echo "Mirrored to ghcr.io/esaueng/amd64-hassio-{cli,dns,audio,observer,multicast}:${{ inputs.fa_version || env.FA_VERSION }}"
+            echo "Mirrored to ghcr.io/esaueng/amd64-hassio-{dns,audio,observer,multicast}:${{ inputs.fa_version || env.FA_VERSION }}"
+            echo "Published branded CLI plugin to ghcr.io/esaueng/amd64-hassio-cli:${{ inputs.fa_version || env.FA_VERSION }}"
             echo "Published branded landingpage to ghcr.io/esaueng/generic-x86-64-homeassistant:landingpage"
             echo ""
             echo "NEXT: make the 5 plugin packages and the generic-x86-64-homeassistant package **public** (org Packages settings) — the appliance pulls anonymously."

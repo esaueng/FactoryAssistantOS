@@ -96,9 +96,10 @@ and complete onboarding. Full flashing/VM notes: `docs/OS_BUILD.md` §3.
       by `.github/workflows/upstream-tracker.yml`; resolve any pinned upstream
       drift or security-review checklist items before publishing.
 - [ ] Re-walk the rebrand checklist (`docs/OS_BUILD.md` §4). Applied today:
-      product name/ID, hostname, console banner (`etc/issue` + `etc/motd`);
-      GRUB is N/A on x86-64. Still Phase 2: container registry, update-channel
-      URL, containerized CLI-plugin banner, frontend branding.
+      product name/ID, hostname, console banner (`etc/issue` + `etc/motd`),
+      branded landing page image, and branded CLI plugin image; GRUB is N/A on
+      x86-64. Still Phase 2/P3: running Supervisor update-channel URL and
+      frontend branding/default experience.
 - [ ] Verify the Supervisor accepts the `faos` os-release identity on first
       boot (`docs/OS_BUILD.md` §4 — os-release ID verification).
 - [ ] Resolve the `branding/identity.env` go-live placeholders (org, registry,

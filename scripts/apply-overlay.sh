@@ -91,6 +91,9 @@ cat <<'EOF'
     Covered by the meta/post-build edits above:
       - OS "supported" acceptance — CPE product kept = haos (post-build.sh), so
         the unmodified Supervisor does not flag the OS unsupported.
+    Covered by local image contexts published in .github/workflows/mirror-fa-plugins.yml:
+      - Landing page text/art (landingpage/)
+      - Containerized CLI-plugin banner (plugin-cli/)
 
     Separate post-overlay step (Phase 2 — see docs/OS_BUILD.md §Signing):
       - Trusted RAUC signing/keyring:
@@ -99,7 +102,6 @@ cat <<'EOF'
         intentionally falls back to a flash-only self-signed development bundle.
 
     NOT covered yet (Phase 2 — see docs/OS_BUILD.md §Rebrand checklist):
-      - Landing page + containerized CLI-plugin banner (landingpage/plugin-cli forks)
       - Running Supervisor's update-channel URL (hardcoded in supervisor/const.py;
         needs the Supervisor fork — see docs/forks/supervisor/). Until that lands,
         the running Supervisor reads versions from version.home-assistant.io, NOT

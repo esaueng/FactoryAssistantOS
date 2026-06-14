@@ -221,7 +221,9 @@ by images from that run. The tag release workflow refuses to publish without
 all three RAUC secrets, so GitHub Releases cannot accidentally ship a
 self-signed OTA bundle. Manual `workflow_dispatch` builds with no RAUC secrets
 may still use a public self-signed development certificate and are labeled
-flash-only. A partial secret configuration fails the build.
+flash-only. A partial secret configuration fails the build. After the release
+steps, CI scrubs the temporary RAUC PEM files and upstream build-tree signing
+inputs from the runner workspace.
 
 ### 5.4 Publish
 

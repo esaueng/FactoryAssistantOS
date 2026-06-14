@@ -22,6 +22,14 @@ grep -q "scripts/verify-release-readiness.sh" "$workflow" \
     || fail "build workflow does not run the release-readiness preflight before trusted signing"
 grep -q -- "--channel version-service/stable.json" "$workflow" \
     || fail "build workflow release preflight does not validate the stable channel"
+grep -q "Scrub RAUC signing inputs" "$workflow" \
+    || fail "build workflow does not scrub RAUC signing inputs after build"
+grep -q 'upstream/operating-system/key.pem' "$workflow" \
+    || fail "build workflow does not remove upstream RAUC signing key"
+grep -q 'upstream/operating-system/cert.pem' "$workflow" \
+    || fail "build workflow does not remove upstream RAUC signing certificate"
+grep -q 'RUNNER_TEMP}/faos-rauc' "$workflow" \
+    || fail "build workflow does not remove temporary RAUC secret files"
 
 grep -q "scripts/generate-rauc-signing-material.sh" "$release_doc" \
     || fail "release runbook does not point operators at the RAUC key generator"
@@ -35,6 +43,10 @@ grep -q "scripts/generate-rauc-signing-material.sh" "$build_doc" \
 case "$build_doc_text" in
     *"tag release workflow refuses to publish without all three RAUC secrets"*) ;;
     *) fail "OS build docs do not document the tag-release RAUC gate";;
+esac
+case "$build_doc_text" in
+    *"scrubs the temporary RAUC PEM files and upstream build-tree signing inputs"*) ;;
+    *) fail "OS build docs do not document CI RAUC signing input cleanup";;
 esac
 
 echo "ok  build workflow enforces trusted RAUC signing for tag releases"

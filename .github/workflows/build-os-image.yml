@@ -230,3 +230,24 @@ jobs:
             release/faos_${{ env.BOARD_ID }}-legal-info.tar.gz
             release/SHA256SUMS
           body_path: release/RELEASE_NOTES.md
+
+      - name: Scrub RAUC signing inputs
+        if: always()
+        run: |
+          set -euo pipefail
+          scrub_file() {
+            local path="$1"
+            [ -f "$path" ] || return 0
+            if command -v shred >/dev/null 2>&1; then
+              shred -u "$path"
+            else
+              rm -f "$path"
+            fi
+          }
+
+          scrub_file "${GITHUB_WORKSPACE}/upstream/operating-system/key.pem"
+          scrub_file "${GITHUB_WORKSPACE}/upstream/operating-system/cert.pem"
+          scrub_file "${RUNNER_TEMP}/faos-rauc/key.pem"
+          scrub_file "${RUNNER_TEMP}/faos-rauc/cert.pem"
+          scrub_file "${RUNNER_TEMP}/faos-rauc/keyring.pem"
+          rm -rf "${RUNNER_TEMP}/faos-rauc"

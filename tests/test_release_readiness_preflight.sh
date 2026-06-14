@@ -36,6 +36,14 @@ openssl x509 -req -in "$tmp/faos-ota.csr" \
 
 grep -q 'release readiness preflight passed' "$tmp/ok.out" \
     || fail "preflight success output is missing"
+grep -q 'shipped branding: verified' "$tmp/ok.out" \
+    || fail "preflight success output does not report shipped branding verification"
+grep -q 'safety boundary: verified' "$tmp/ok.out" \
+    || fail "preflight success output does not report safety-boundary verification"
+grep -q 'scripts/verify-shipped-branding.sh' "$script" \
+    || fail "preflight does not run the shipped branding verifier"
+grep -q 'scripts/verify-safety-boundary.sh' "$script" \
+    || fail "preflight does not run the safety-boundary verifier"
 
 if "$script" --channel "$ROOT/version-service/stable.json" \
     --keyring "$tmp/faos-ca.crt" --cert "$tmp/faos-ota.crt" \
@@ -78,7 +86,11 @@ grep -Eq 'channel image is not under ghcr.io/esaueng|OTA URL template must match
 
 grep -q 'scripts/verify-release-readiness.sh' "$release_doc" \
     || fail "release runbook does not document the release-readiness preflight"
+grep -q 'verify-shipped-branding.sh' "$release_doc" \
+    || fail "release runbook does not connect release readiness to shipped branding verification"
+grep -q 'verify-safety-boundary.sh' "$release_doc" \
+    || fail "release runbook does not connect release readiness to safety-boundary verification"
 grep -q 'scripts/verify-release-readiness.sh' "$build_doc" \
     || fail "OS build docs do not document the release-readiness preflight"
 
-echo "ok  release readiness preflight validates trusted OTA inputs and channel wiring"
+echo "ok  release readiness preflight validates trusted OTA inputs, policy gates, and channel wiring"

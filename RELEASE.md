@@ -102,9 +102,10 @@ and complete onboarding. Full flashing/VM notes: `docs/OS_BUILD.md` §3.
         --key /secure/faos-rauc/faos-rauc-signing.key
       ```
 
-      This validates the Factory Assistant RAUC chain/key match and confirms
-      the channel points at esaueng-owned images and OTA URLs before a tag is
-      cut.
+      This validates the Factory Assistant RAUC chain/key match, runs
+      `scripts/verify-shipped-branding.sh` and
+      `scripts/verify-safety-boundary.sh`, and confirms the channel points at
+      esaueng-owned images and OTA URLs before a tag is cut.
 - [ ] If releasing through GitHub Actions, confirm the repository has all
       trusted RAUC secrets configured:
 

@@ -3,8 +3,9 @@
 #
 # This preflight does not build the OS image. It checks the release inputs that
 # can be validated cheaply and must be true before trusted OTA publication:
-# Factory Assistant RAUC signing material from outside the repo, and a channel
-# document that points at Factory Assistant-owned images and OTA URLs.
+# Factory Assistant RAUC signing material from outside the repo, shipped
+# branding/safety policy, and a channel document that points at
+# Factory Assistant-owned images and OTA URLs.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
@@ -24,6 +25,7 @@ Environment equivalents:
   FAOS_RAUC_KEY      Factory Assistant OTA signing private key
 
 The three signing input paths must exist and must be outside this repository.
+This also runs the shipped branding and safety-boundary verifiers.
 Run this before cutting a v* release tag.
 EOF
 }
@@ -80,6 +82,9 @@ done
     || die "trusted release readiness requires --keyring, --cert, and --key"
 command -v openssl >/dev/null 2>&1 || die "openssl is required"
 command -v python3 >/dev/null 2>&1 || die "python3 is required"
+
+"$ROOT/scripts/verify-shipped-branding.sh" >/dev/null
+"$ROOT/scripts/verify-safety-boundary.sh" >/dev/null
 
 channel="$(canonical_file "$channel")"
 keyring="$(canonical_file "$keyring")"
@@ -157,6 +162,8 @@ release readiness preflight passed
   channel: $channel
   registry: $FAOS_CONTAINER_REGISTRY
   OTA template: $FAOS_OTA_URL_TEMPLATE
+  shipped branding: verified
+  safety boundary: verified
   RAUC keyring: $keyring
   RAUC signing cert: $cert
   RAUC signing key: external private key verified

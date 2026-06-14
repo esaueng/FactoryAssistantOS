@@ -115,12 +115,13 @@ mapfile -t image_rows <<< "$image_output"
 verify_registry_tag() {
     local package="$1"
     local tag="$2"
+    local label="${3:-channel image}"
     local token
     local status
 
     if [ -n "$registry_check_bin" ]; then
         if ! "$registry_check_bin" "$owner" "$package" "$tag"; then
-            die "channel image tag is not anonymously pullable: $registry/$package:$tag"
+            die "$label tag is not anonymously pullable: $registry/$package:$tag"
         fi
         return
     fi
@@ -135,7 +136,7 @@ verify_registry_tag() {
         -H "Accept: application/vnd.oci.image.index.v1+json, application/vnd.oci.image.manifest.v1+json, application/vnd.docker.distribution.manifest.list.v2+json, application/vnd.docker.distribution.manifest.v2+json" \
         "https://ghcr.io/v2/$owner/$package/manifests/$tag" || true)"
     if [ "$status" != "200" ]; then
-        die "channel image tag is not anonymously pullable: $registry/$package:$tag (HTTP $status)"
+        die "$label tag is not anonymously pullable: $registry/$package:$tag (HTTP $status)"
     fi
 }
 
@@ -167,13 +168,45 @@ reject_text() {
     fi
 }
 
+yaml_scalar() {
+    local label="$1"
+    local haystack="$2"
+    local key="$3"
+    local value
+
+    value="$(sed -n "s/^${key}:[[:space:]]*//p" <<< "$haystack" | head -n 1)"
+    [ -n "$value" ] || die "$label missing required YAML key: $key"
+    value="${value%\"}"
+    value="${value#\"}"
+    printf '%s\n' "$value"
+}
+
+addon_image_count=0
+
 verify_addon_manifest() {
     local addon_id="$1"
     local path="$2"
+    local expected_package="$3"
     local config
+    local version
+    local image
+    local package
 
     config="$(fetch_addon_file "$path/config.yaml")"
     require_text "published add-on $addon_id" "$config" "slug: $addon_id"
+    version="$(yaml_scalar "published add-on $addon_id" "$config" version)"
+    image="$(yaml_scalar "published add-on $addon_id" "$config" image)"
+    if [ "$image" != "$registry/{arch}-addon-$expected_package" ]; then
+        die "published add-on $addon_id image must be $registry/{arch}-addon-$expected_package"
+    fi
+    package="${image#"$registry/"}"
+    package="${package//\{arch\}/amd64}"
+    if [ "$package" != "amd64-addon-$expected_package" ]; then
+        die "published add-on $addon_id image package resolved unexpectedly: $registry/$package"
+    fi
+    verify_registry_tag "$package" "$version" "published add-on image"
+    addon_image_count=$((addon_image_count + 1))
+
     require_text "published add-on $addon_id" "$config" "startup: services"
     if ! grep -Eq '^boot:[[:space:]]*manual$' <<< "$config"; then
         die "published add-on $addon_id must be boot: manual"
@@ -212,9 +245,10 @@ verify_industrial_addons() {
     require_text "published add-on repository" "$repository" \
         'url: "https://github.com/esaueng/factory-assistant-addons"'
 
-    verify_addon_manifest opcua_mqtt_bridge opcua-mqtt-bridge
-    verify_addon_manifest plc_gateway_helper plc-gateway-helper
-    verify_addon_manifest historian_storage historian-storage
+    addon_image_count=0
+    verify_addon_manifest opcua_mqtt_bridge opcua-mqtt-bridge opcua-mqtt-bridge
+    verify_addon_manifest plc_gateway_helper plc-gateway-helper plc-gateway-helper
+    verify_addon_manifest historian_storage historian-storage historian-storage
 }
 
 for row in "${image_rows[@]}"; do
@@ -236,5 +270,6 @@ component ownership preflight passed
   repos: ${#required_repos[@]}
   image tags: ${#image_rows[@]}
   industrial add-on manifests: verified
+  industrial add-on image tags: $addon_image_count
   supervisor channel patch: verified
 EOF

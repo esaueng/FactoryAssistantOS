@@ -122,7 +122,8 @@ component forks, rejects channel images outside `ghcr.io/esaueng`, and verifies
 every exact channel image tag is anonymously pullable from GHCR. It also runs
 the published industrial add-on manifests check for
 `factory-assistant-addons` so the installable add-on repository stays aligned
-with the OS-shipped catalog, plus
+with the OS-shipped catalog, verifies the published industrial add-on image tags
+referenced by those manifests are anonymously pullable from GHCR, plus
 `scripts/verify-supervisor-channel-patch.sh` so the running Supervisor fork
 is proven to read the Factory Assistant version channel. The tag build
 workflow runs the same check with `GH_COMPONENT_READ_TOKEN` when that secret

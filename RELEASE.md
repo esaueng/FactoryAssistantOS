@@ -139,7 +139,8 @@ and complete onboarding. Full flashing/VM notes: `docs/OS_BUILD.md` §3.
       at `ghcr.io/esaueng`, and verifies every exact channel image tag is
       anonymously pullable from GHCR. It also verifies the published
       industrial add-on manifests in `factory-assistant-addons` against the
-      OS-shipped add-on catalog, then runs
+      OS-shipped add-on catalog, verifies the published industrial add-on image tags
+      referenced by those manifests are anonymously pullable from GHCR, then runs
       `scripts/verify-supervisor-channel-patch.sh` to confirm the Supervisor
       fork's `URL_HASSIO_VERSION` points at the Factory Assistant channel, not
       `version.home-assistant.io`. The tag workflow runs the same check with

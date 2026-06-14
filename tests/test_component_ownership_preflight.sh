@@ -65,7 +65,9 @@ if [ "$1" = "api" ]; then
           /repos/esaueng/factory-assistant-addons/contents/opcua-mqtt-bridge/config.yaml*)
             cat <<'YAML'
 name: OPC UA → MQTT Bridge (read-only)
+version: "0.1.0"
 slug: opcua_mqtt_bridge
+image: ghcr.io/esaueng/{arch}-addon-opcua-mqtt-bridge
 startup: services
 boot: manual
 arch:
@@ -86,7 +88,9 @@ YAML
             if [ "$mode" = "bad_addon_manifest" ]; then
                 cat <<'YAML'
 name: PLC Gateway Helper (read-only)
+version: "0.1.0"
 slug: plc_gateway_helper
+image: ghcr.io/esaueng/{arch}-addon-plc-gateway-helper
 startup: services
 boot: auto
 arch:
@@ -111,7 +115,9 @@ YAML
             else
                 cat <<'YAML'
 name: PLC Gateway Helper (read-only)
+version: "0.1.0"
 slug: plc_gateway_helper
+image: ghcr.io/esaueng/{arch}-addon-plc-gateway-helper
 startup: services
 boot: manual
 arch:
@@ -139,7 +145,9 @@ YAML
           /repos/esaueng/factory-assistant-addons/contents/historian-storage/config.yaml*)
             cat <<'YAML'
 name: Historian Storage (telemetry → TSDB)
+version: "0.1.0"
 slug: historian_storage
+image: ghcr.io/esaueng/{arch}-addon-historian-storage
 startup: services
 boot: manual
 arch:
@@ -200,6 +208,10 @@ if [ "${FAKE_REGISTRY_MODE:-ok}" = "missing_image" ] \
     && [ "$package" = "amd64-hassio-cli" ]; then
     exit 1
 fi
+if [ "${FAKE_REGISTRY_MODE:-ok}" = "missing_addon_image" ] \
+    && [ "$package" = "amd64-addon-historian-storage" ]; then
+    exit 1
+fi
 EOF
 chmod +x "$tmp/registry-check"
 
@@ -219,10 +231,18 @@ grep -q 'supervisor channel patch: verified' "$tmp/ok.out" \
     || fail "component ownership preflight does not report Supervisor channel patch verification"
 grep -q 'industrial add-on manifests: verified' "$tmp/ok.out" \
     || fail "component ownership preflight does not report add-on manifest verification"
+grep -q 'industrial add-on image tags: 3' "$tmp/ok.out" \
+    || fail "component ownership preflight does not report add-on image tag verification"
 grep -q 'esaueng/generic-x86-64-homeassistant:2026.6.0' "$tmp/registry.log" \
     || fail "component ownership preflight did not verify the Core image tag"
 grep -q 'esaueng/amd64-hassio-cli:2026.6.0' "$tmp/registry.log" \
     || fail "component ownership preflight did not verify the CLI image tag"
+grep -q 'esaueng/amd64-addon-opcua-mqtt-bridge:0.1.0' "$tmp/registry.log" \
+    || fail "component ownership preflight did not verify the OPC UA add-on image tag"
+grep -q 'esaueng/amd64-addon-plc-gateway-helper:0.1.0' "$tmp/registry.log" \
+    || fail "component ownership preflight did not verify the PLC helper add-on image tag"
+grep -q 'esaueng/amd64-addon-historian-storage:0.1.0' "$tmp/registry.log" \
+    || fail "component ownership preflight did not verify the historian add-on image tag"
 
 if FAKE_REGISTRY_LOG="$tmp/missing-repo-registry.log" \
     FAKE_GH_MODE=missing_repo \
@@ -247,6 +267,18 @@ if FAKE_REGISTRY_LOG="$tmp/missing-image-registry.log" \
 fi
 grep -q 'channel image tag is not anonymously pullable: ghcr.io/esaueng/amd64-hassio-cli:2026.6.0' "$tmp/missing-image.err" \
     || fail "missing image-tag rejection did not identify the absent tag"
+
+if FAKE_REGISTRY_LOG="$tmp/missing-addon-image-registry.log" \
+    FAKE_REGISTRY_MODE=missing_addon_image \
+    FAOS_GH_BIN="$tmp/gh" \
+    FAOS_REGISTRY_CHECK_BIN="$tmp/registry-check" \
+    "$script" \
+    --channel "$ROOT/version-service/stable.json" --owner esaueng \
+    2> "$tmp/missing-addon-image.err"; then
+    fail "component ownership preflight allowed a missing published add-on image tag"
+fi
+grep -q 'published add-on image tag is not anonymously pullable: ghcr.io/esaueng/amd64-addon-historian-storage:0.1.0' "$tmp/missing-addon-image.err" \
+    || fail "missing add-on image-tag rejection did not identify the absent tag"
 
 python3 - "$ROOT/version-service/stable.json" "$tmp/bad-channel.json" <<'PY'
 import json
@@ -298,10 +330,14 @@ grep -q 'scripts/verify-component-ownership.sh' "$release_doc" \
     || fail "release runbook does not document component ownership preflight"
 grep -q 'industrial add-on manifests' "$release_doc" \
     || fail "release runbook does not document published industrial add-on manifest verification"
+grep -q 'industrial add-on image tags' "$release_doc" \
+    || fail "release runbook does not document published industrial add-on image tag verification"
 grep -q 'scripts/verify-component-ownership.sh' "$build_doc" \
     || fail "OS build docs do not document component ownership preflight"
 grep -q 'industrial add-on manifests' "$build_doc" \
     || fail "OS build docs do not document published industrial add-on manifest verification"
+grep -q 'industrial add-on image tags' "$build_doc" \
+    || fail "OS build docs do not document published industrial add-on image tag verification"
 grep -q 'component ownership/channel work is verified' "$arch_doc" \
     || fail "architecture phase status does not mark P2 component ownership/channel work as verified"
 grep -q 'trusted OTA remains the P2 blocker' "$arch_doc" \

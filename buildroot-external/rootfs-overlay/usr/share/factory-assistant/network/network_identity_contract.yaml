@@ -1,0 +1,35 @@
+# Factory Assistant network identity contract.
+#
+# SPDX-License-Identifier: Apache-2.0
+# Copyright Factory Assistant contributors.
+#
+# This OS-shipped handoff keeps hostname, mDNS, Core display name, onboarding,
+# and commissioning guidance aligned across repos without changing upstream
+# internal ports or network APIs.
+contract:
+  id: factory_assistant_network_identity
+  version: 1
+  status: os_shipped_handoff
+
+identity:
+  product_name: Factory Assistant
+  os_name: Factory Assistant OS
+  hostname: factory-assistant
+  mdns_name: factory-assistant.local
+  web_ui_url: http://factory-assistant.local:8123
+  port: 8123
+  core_display_name: Factory Assistant
+  local_network_only: true
+  zeroconf_enabled: true
+
+commissioning:
+  dhcp_default: true
+  static_ip_guidance: true
+  posture_helper: fa-network-posture
+  ntp_required: true
+  mosquitto_offer: true
+
+safety:
+  monitoring_only: true
+  safety_network_allowed: false
+  machine_control: false

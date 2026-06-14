@@ -24,7 +24,7 @@ Contents:
 | `configs/factory-assistant.config` | Defconfig fragment appended to upstream `generic_x86_64_defconfig` |
 | `rootfs-overlay/etc/hostname` | Default hostname → `factory-assistant` (mDNS: `factory-assistant.local`) |
 | `rootfs-overlay/etc/issue` | Console pre-login banner with factual attribution |
-| `rootfs-overlay/usr/share/factory-assistant/` | Industrial default templates and handoffs: Core `configuration.yaml`, `factory-assistant` UI theme (`themes/`), "Plant overview" dashboard (`dashboards/`), frontend contract (`ui/frontend_contract.yaml`), Supervisor seed contract (`supervisor/defaults_seed_contract.yaml`) — see `docs/INDUSTRIAL_DEFAULTS.md` and `docs/UI_DESIGN.md` |
+| `rootfs-overlay/usr/share/factory-assistant/` | Industrial default templates and handoffs: Core `configuration.yaml`, `factory-assistant` UI theme (`themes/`), "Plant overview" dashboard (`dashboards/`), network identity contract (`network/network_identity_contract.yaml`), frontend contract (`ui/frontend_contract.yaml`), Supervisor seed contract (`supervisor/defaults_seed_contract.yaml`) — see `docs/INDUSTRIAL_DEFAULTS.md` and `docs/UI_DESIGN.md` |
 | `package/` | Reserved for Factory Assistant host-OS packages (see its README) |
 
 Identity values that live in upstream files (`buildroot-external/meta`) are

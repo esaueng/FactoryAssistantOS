@@ -28,7 +28,7 @@ in prose (repo slugs excepted); never abbreviate to "FA" in user-facing UI.
 | Identifier | Value | Notes |
 |---|---|---|
 | OS ID / artifact prefix | `faos` | image: `faos_generic-x86-64-<ver>.img.xz`, bundles: `faos_<board>-<ver>.raucb` |
-| Default hostname / mDNS | `factory-assistant` → `factory-assistant.local` | set via overlay |
+| Default hostname / mDNS | `factory-assistant` → `factory-assistant.local` | set via overlay; aligned by `network/network_identity_contract.yaml` |
 | Web UI port | `8123` (unchanged) | deliberate ecosystem compatibility |
 | Org/repo slugs | `esaueng/<component>` | mirrors upstream repo names where there is an upstream component |
 | Container registry | `ghcr.io/esaueng` | settled in `branding/identity.env` |

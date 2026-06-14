@@ -92,6 +92,19 @@ and complete onboarding. Full flashing/VM notes: `docs/OS_BUILD.md` §3.
 
 ## Before calling a build a real "release"
 
+- [ ] Run the local trusted-release preflight with the external RAUC inputs:
+
+      ```sh
+      scripts/verify-release-readiness.sh \
+        --channel version-service/stable.json \
+        --keyring /secure/faos-rauc/faos-rauc-ca.crt \
+        --cert /secure/faos-rauc/faos-rauc-signing.crt \
+        --key /secure/faos-rauc/faos-rauc-signing.key
+      ```
+
+      This validates the Factory Assistant RAUC chain/key match and confirms
+      the channel points at esaueng-owned images and OTA URLs before a tag is
+      cut.
 - [ ] Factory Assistant RAUC keys are configured with
       `scripts/configure-rauc-signing.sh` or the three GitHub Actions secrets
       (`docs/OS_BUILD.md` §Signing). Without that, the image is **flash-only**

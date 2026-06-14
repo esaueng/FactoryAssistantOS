@@ -229,6 +229,21 @@ Publish signed bundles at the OTA URL template in `branding/identity.env`
 (`FAOS_OTA_URL_TEMPLATE`) and reference them from the channel JSON under
 `version-service/` (validated by `version-service/schema/channel.schema.json`).
 
+Before cutting a `v*` tag, run the local release preflight with the same
+external RAUC inputs:
+
+```sh
+scripts/verify-release-readiness.sh \
+  --channel version-service/stable.json \
+  --keyring /secure/faos-rauc/faos-rauc-ca.crt \
+  --cert /secure/faos-rauc/faos-rauc-signing.crt \
+  --key /secure/faos-rauc/faos-rauc-signing.key
+```
+
+The preflight validates the CA/signing certificate/private key relationship,
+refuses signing material from inside the repository, and checks that the
+channel document points at the Factory Assistant registry and OTA template.
+
 ## 6. Versioning policy
 
 Factory Assistant OS versions **track upstream MAJOR.MINOR** (FA OS 16.2 =

@@ -36,6 +36,27 @@ make_release_dir() {
     printf 'flash image\n' > "$dir/faos_generic-x86-64-17.3.img.xz"
     printf 'trusted rauc bundle\n' > "$dir/faos_generic-x86-64-17.3.raucb"
     printf 'legal info archive\n' > "$dir/faos_generic-x86-64-legal-info.tar.gz"
+    cat > "$dir/RAUC_TRUST.json" <<'EOF'
+{
+  "schema_version": 1,
+  "private_key_material": false,
+  "verified_by_keyring": true,
+  "keyring": {
+    "subject": "CN=Factory Assistant OS Test OTA Root CA,O=Factory Assistant",
+    "sha256_fingerprint": "AA:BB",
+    "not_before": "Jan  1 00:00:00 2026 GMT",
+    "not_after": "Jan  1 00:00:00 2031 GMT"
+  },
+  "signing_certificate": {
+    "subject": "CN=Factory Assistant OS Test OTA Signing,O=Factory Assistant",
+    "issuer": "CN=Factory Assistant OS Test OTA Root CA,O=Factory Assistant",
+    "serial": "01",
+    "sha256_fingerprint": "CC:DD",
+    "not_before": "Jan  1 00:00:00 2026 GMT",
+    "not_after": "Jan  1 00:00:00 2031 GMT"
+  }
+}
+EOF
     cat > "$dir/RELEASE_NOTES.md" <<'EOF'
 Factory Assistant is based on Home Assistant. Monitoring appliance —
 **not a safety device**.
@@ -46,7 +67,8 @@ EOF
     write_checksums "$dir" \
         faos_generic-x86-64-17.3.img.xz \
         faos_generic-x86-64-17.3.raucb \
-        faos_generic-x86-64-legal-info.tar.gz > "$dir/SHA256SUMS"
+        faos_generic-x86-64-legal-info.tar.gz \
+        RAUC_TRUST.json > "$dir/SHA256SUMS"
 }
 
 [ -x "$script" ] || fail "release artifact verifier script is missing or not executable"
@@ -89,6 +111,20 @@ fi
 grep -q 'trusted release notes must state Factory Assistant RAUC signing' "$tmp/bad-notes.err" \
     || fail "bad release-notes rejection did not explain trusted signing requirement"
 
+missing_trust="$tmp/missing-trust"
+make_release_dir "$missing_trust"
+rm "$missing_trust/RAUC_TRUST.json"
+write_checksums "$missing_trust" \
+    faos_generic-x86-64-17.3.img.xz \
+    faos_generic-x86-64-17.3.raucb \
+    faos_generic-x86-64-legal-info.tar.gz > "$missing_trust/SHA256SUMS"
+if "$script" --release-dir "$missing_trust" --board generic-x86-64 --trusted \
+    2> "$tmp/missing-trust.err"; then
+    fail "artifact verifier allowed a trusted release without RAUC_TRUST.json"
+fi
+grep -q 'trusted release requires RAUC_TRUST.json' "$tmp/missing-trust.err" \
+    || fail "missing trust manifest rejection did not explain trusted OTA provenance"
+
 bad_checksum="$tmp/bad-checksum"
 make_release_dir "$bad_checksum"
 printf 'tamper\n' >> "$bad_checksum/faos_generic-x86-64-17.3.img.xz"
@@ -113,9 +149,15 @@ grep -q 'SHA256SUMS does not list the RAUC bundle' "$tmp/missing-rauc-checksum.e
 
 grep -q 'scripts/verify-release-artifacts.sh' "$workflow" \
     || fail "build workflow does not verify release artifacts before publishing"
+grep -q 'scripts/write-rauc-trust-manifest.sh' "$workflow" \
+    || fail "build workflow does not write the RAUC trust manifest"
+grep -q 'release/RAUC_TRUST.json' "$workflow" \
+    || fail "build workflow does not publish the RAUC trust manifest"
 grep -q -- "--trusted" "$workflow" \
     || fail "build workflow artifact verification is not marked trusted"
 grep -q 'scripts/verify-release-artifacts.sh' "$release_doc" \
     || fail "release runbook does not document artifact verification"
+grep -q 'RAUC_TRUST.json' "$release_doc" \
+    || fail "release runbook does not document the RAUC trust manifest"
 
 echo "ok  release artifact verifier gates trusted release assets"

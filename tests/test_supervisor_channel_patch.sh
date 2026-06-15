@@ -75,6 +75,19 @@ for channel in stable beta dev; do
         || fail "version service is missing $channel.json for Supervisor channel $channel"
     grep -q "\"channel\": \"$channel\"" "$ROOT/version-service/$channel.json" \
         || fail "$channel.json does not declare channel $channel"
+    if ! python3 - "$ROOT/version-service/$channel.json" <<'PY'
+import json
+import sys
+
+with open(sys.argv[1], "r", encoding="utf-8") as fh:
+    data = json.load(fh)
+hassos = data.get("hassos", {})
+if hassos.get("generic-x86-64") != hassos.get("qemux86-64"):
+    raise SystemExit(1)
+PY
+    then
+        fail "$channel.json does not include both OS board and Supervisor machine aliases"
+    fi
     [ -f "$ROOT/version-service/apparmor_$channel.txt" ] \
         || fail "version service is missing apparmor_$channel.txt for Supervisor channel $channel"
     grep -q "$channel.json" "$version_doc" \
@@ -82,6 +95,24 @@ for channel in stable beta dev; do
     grep -q "apparmor_$channel.txt" "$version_doc" \
         || fail "version-service docs do not document apparmor_$channel.txt"
 done
+generated_channel="$tmp/generated-dev.json"
+"$ROOT/version-service/generate-channel.sh" \
+    --channel dev --supervisor 2026.6.0 --core 2026.6.0 \
+    --os-board generic-x86-64 --os-version 17.3 \
+    --out "$generated_channel" >/dev/null
+if ! python3 - "$generated_channel" <<'PY'
+import json
+import sys
+
+with open(sys.argv[1], "r", encoding="utf-8") as fh:
+    data = json.load(fh)
+hassos = data.get("hassos", {})
+if hassos.get("generic-x86-64") != hassos.get("qemux86-64"):
+    raise SystemExit(1)
+PY
+then
+    fail "channel generator does not include the qemux86-64 Supervisor machine alias"
+fi
 grep -q 'for channel in stable beta dev' "$pages_workflow" \
     || fail "Pages workflow does not validate and publish all Supervisor channels"
 grep -q 'running Supervisor update-channel URL preflight' "$release_doc" \

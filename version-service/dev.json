@@ -7,7 +7,8 @@
   },
   "hassos": {
     "ota": "https://github.com/esaueng/FactoryAssistantOS/releases/download/{version}/faos_{board}-{version}.raucb",
-    "generic-x86-64": "17.3"
+    "generic-x86-64": "17.3",
+    "qemux86-64": "17.3"
   },
   "dns": "2026.6.0",
   "audio": "2026.6.0",

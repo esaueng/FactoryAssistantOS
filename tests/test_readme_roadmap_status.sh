@@ -62,12 +62,12 @@ case "$readme_text" in
     *) fail "README status does not record the implemented native plant navigation";;
 esac
 case "$readme_text" in
-    *"native industrial setup handoff"*"frontend system data"*) ;;
-    *) fail "README status does not record the persisted native industrial setup handoff";;
+    *"industrial setup handoff backed by Core's"*"factory_assistant_onboarding"*) ;;
+    *) fail "README status does not record the Core-backed industrial setup handoff";;
 esac
 case "$readme_text" in
-    *"backend-driven industrial onboarding wizard integration"*) ;;
-    *) fail "README status does not name the remaining backend-driven onboarding work";;
+    *"full wizard-driven default seeding and add-on integration"*) ;;
+    *) fail "README status does not name the remaining wizard-driven seeding work";;
 esac
 grep -q 'frontend fork has visible rebrand/About/local-first onboarding bridge' "$arch_doc" \
     || fail "architecture status does not distinguish completed frontend bridge work"
@@ -79,10 +79,10 @@ grep -q "native read-only \`factory-wallboard-kiosk\`" "$arch_doc" \
     || fail "architecture status does not record the implemented native wallboard kiosk"
 grep -q "native plant navigation" "$arch_doc" \
     || fail "architecture status does not record the implemented native plant navigation"
-grep -q "native industrial setup handoff" "$arch_doc" \
-    || fail "architecture status does not record the persisted native industrial setup handoff"
-grep -q "P3 backlog is backend-driven industrial onboarding wizard integration" "$arch_doc" \
-    || fail "architecture status does not name the remaining backend-driven onboarding work"
+grep -q "Core-backed industrial setup handoff" "$arch_doc" \
+    || fail "architecture status does not record the Core-backed industrial setup handoff"
+grep -q "P3 backlog is full wizard-driven default seeding and add-on integration" "$arch_doc" \
+    || fail "architecture status does not name the remaining wizard-driven seeding work"
 if grep -q 'frontend branding/onboarding' "$release_doc"; then
     fail "release runbook still says broad frontend branding/onboarding is unresolved"
 fi

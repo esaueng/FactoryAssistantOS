@@ -218,10 +218,11 @@ wallboard scale ×1.6.
 | Native read-only `fa-andon-view` with severity grouping, ack bookkeeping status, and detail-only alert rows | `frontend` fork consuming the shipped `ui/frontend_contract.yaml` and `dashboards/andon.yaml` contract | implemented in fork |
 | Native read-only `factory-wallboard-kiosk` with hidden chrome, ×1.6 wallboard type scale, and view-only dashboard interaction blocking | `frontend` fork consuming the shipped `ui/frontend_contract.yaml` kiosk contract and `dashboards/wallboard.yaml` source dashboard | implemented in fork |
 | Native plant navigation: Plant overview first, Energy/History/Logbook priority, Map/Media/To-do hidden by default with user opt-in | `frontend` fork consuming the shipped `ui/frontend_contract.yaml` navigation contract | implemented in fork |
+| Core-backed industrial setup handoff: site/line/cell, NTP/static-IP, Mosquitto, local-first, dashboard seed, and non-safety acknowledgement | `frontend` fork posting to the `core` fork's `/api/onboarding/factory_assistant_industrial` step and persisted as `factory_assistant_onboarding` system data | implemented in forks |
 | Dashboard wiring using `custom:fa-machine-card`, `custom:fa-andon-view`, and `custom:factory-wallboard-kiosk` | shipped YAML templates consuming the frontend fork custom cards | **now** |
 | Area dashboard generator for line-level `custom:fa-machine-card`, `custom:fa-andon-view`, and telemetry history views | `scripts/generate-area-dashboards.py` consuming `onboarding/site_model.example.yaml`; reference output in `dashboards/area-dashboards.example.yaml` | **now** |
 | Terminology contract (`Plant overview`, site -> line or cell taxonomy, `Factory Assistant CLI`, canonical upstream attribution) | shipped `ui/frontend_contract.yaml` consumed by frontend/Supervisor/CLI copy | **now** |
-| Full industrial onboarding wizard | `frontend` fork consuming the shipped `ui/frontend_contract.yaml` and `onboarding/wizard_steps.yaml` contracts | P3 |
+| Full industrial onboarding wizard | `frontend` + `core` + `supervisor` forks consuming the shipped `ui/frontend_contract.yaml` and `onboarding/wizard_steps.yaml` contracts | P3: Core-backed setup handoff exists; default seeding/add-on integration remains |
 | Frontend onboarding integration that runs the area dashboard generator after site/line/cell setup | frontend fork consuming the shipped `onboarding/site_model.example.yaml` line/cell taxonomy scaffold | P3 |
 
 Templates keep stock Lovelace cards where they are still the right primitive,

@@ -114,7 +114,7 @@ paths move between upstream releases).
 | Containerized CLI-plugin banner | `plugin-cli/` image context + `.github/workflows/mirror-fa-plugins.yml` | A (workflow-built branded image) |
 | Plant overview default dashboard | rootfs overlay `usr/share/factory-assistant/configuration.yaml` + `dashboards/factory-overview.yaml` | A |
 | Frontend product branding, About dialog, and local-first onboarding bridge | `frontend` fork | P3 bridge implemented in fork |
-| Native industrial setup handoff | `frontend` fork (`onboarding-industrial-setup`, `factory_assistant_onboarding` frontend system data) | P3 handoff implemented in fork; backend-driven wizard still open |
+| Native industrial setup handoff | `frontend` + `core` forks (`onboarding-industrial-setup`, `/api/onboarding/factory_assistant_industrial`, `factory_assistant_onboarding` system data) | P3 Core-backed handoff implemented in forks; full wizard-driven seeding still open |
 | Native read-only machine card | `frontend` fork (`custom:fa-machine-card`) | P3 implemented in fork |
 | Native read-only andon view | `frontend` fork (`custom:fa-andon-view`) | P3 implemented in fork |
 | Native read-only wallboard kiosk | `frontend` fork (`custom:factory-wallboard-kiosk`) | P3 implemented in fork |
@@ -122,7 +122,7 @@ paths move between upstream releases).
 | Dashboard wiring for native machine, andon, and wallboard cards | this repo + `frontend` fork | A |
 | Area dashboard generator | `scripts/generate-area-dashboards.py` + `dashboards/area-dashboards.example.yaml` | A |
 | Terminology contract (`Plant overview`, line/cell taxonomy, Factory Assistant CLI) | `ui/frontend_contract.yaml` | A |
-| Full industrial onboarding wizard | `frontend` fork | P3 |
+| Full industrial onboarding wizard | `frontend` + `core` + `supervisor` forks | P3: Core-backed setup handoff exists; default seeding/add-on integration remains |
 
 **Component ownership preflight.** Before cutting a trusted tag, run
 `scripts/verify-component-ownership.sh --channel version-service/stable.json

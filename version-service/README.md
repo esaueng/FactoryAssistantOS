@@ -64,7 +64,10 @@ download host never drift between the image build and the channel:
 For `generic-x86-64`, the generator also emits `qemux86-64` in both
 `homeassistant` and `hassos`. That is deliberate: the running Supervisor
 indexes Core versions by machine id, while OS release artifacts are named with
-the board id.
+the board id. The Core image reference itself stays pinned to
+`ghcr.io/esaueng/generic-x86-64-homeassistant`, the public x86 appliance image;
+the `qemux86-64` key is a version lookup alias, not a separate package
+requirement.
 
 Use `--channel beta --out version-service/beta.json` or
 `--channel dev --out version-service/dev.json` when promoting a non-stable

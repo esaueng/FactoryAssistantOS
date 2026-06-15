@@ -17,7 +17,7 @@
   "multicast": "2026.6.0",
   "observer": "2026.6.0",
   "images": {
-    "core": "ghcr.io/esaueng/{machine}-homeassistant",
+    "core": "ghcr.io/esaueng/generic-x86-64-homeassistant",
     "supervisor": "ghcr.io/esaueng/{arch}-hassio-supervisor",
     "cli": "ghcr.io/esaueng/{arch}-hassio-cli",
     "dns": "ghcr.io/esaueng/{arch}-hassio-dns",

@@ -90,7 +90,10 @@ the selected document's **`images`** map (plural) — which this repo's
 `version-service/{stable,beta,dev}.json` provides for all 7 components. The
 same channel documents list `qemux86-64` in `homeassistant` and both
 `generic-x86-64`/`qemux86-64` in `hassos`: the Supervisor updater looks up Core
-by machine id, while OS bundles are named by board id.
+versions by machine id, while OS bundles are named by board id. The `images.core`
+entry remains fixed to the public `generic-x86-64-homeassistant` package for the
+shipped x86 appliance; `qemux86-64` is a version alias, not a separate GHCR pull
+target.
 
 ## Build & publish the forked Supervisor image
 

@@ -65,7 +65,7 @@
     "observer": { "$ref": "#/$defs/version" },
     "images": {
       "type": "object",
-      "description": "Container image name templates pulled from the Factory Assistant registry. The Supervisor reads this under the key 'images' (PLURAL) — see home-assistant/supervisor updater.py fetch_data(), which does data['images']['core'] etc. Every component the appliance runs MUST be listed, or that component silently falls back to the upstream ghcr.io/home-assistant default (plugins/base.py default_image). {machine}/{arch} placeholders are expanded by the Supervisor.",
+      "description": "Container image name templates pulled from the Factory Assistant registry. The Supervisor reads this under the key 'images' (PLURAL) — see home-assistant/supervisor updater.py fetch_data(), which does data['images']['core'] etc. Every component the appliance runs MUST be listed, or that component silently falls back to the upstream ghcr.io/home-assistant default (plugins/base.py default_image). {arch} placeholders are expanded by the Supervisor; {machine} may be used only when that machine-named Core package is intentionally published and public.",
       "required": ["core", "supervisor", "cli", "dns", "audio", "observer", "multicast"],
       "properties": {
         "core": { "$ref": "#/$defs/imageRef" },

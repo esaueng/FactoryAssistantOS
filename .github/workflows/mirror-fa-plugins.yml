@@ -100,6 +100,29 @@ jobs:
             -t "ghcr.io/esaueng/amd64-hassio-cli:${ver}" \
             plugin-cli
 
+      - name: Re-stamp the Core machine image to the FA version
+        run: |
+          set -euxo pipefail
+          ver="${{ inputs.fa_version || env.FA_VERSION }}"
+          # factory-assistant-core builds the Core image as a dev nightly, so its
+          # io.hass.version is e.g. 2026.7.0.devNNN; the FA release tag (this ver)
+          # is applied separately. As with the plugins, the Supervisor reads
+          # io.hass.version (const.LABEL_VERSION) as Core's installed version and
+          # then (re)starts ghcr.io/esaueng/generic-x86-64-homeassistant:<that
+          # version>. If the label disagrees with the FA tag the Supervisor pulls a
+          # tag that was never published, Core never starts, and backups/restore
+          # fail. Re-tag the image so io.hass.version == the FA tag == the channel
+          # "homeassistant" version, preserving the image content. Durable fix: have
+          # the FA Core release process stamp io.hass.version to the FA tag.
+          printf 'FROM ghcr.io/esaueng/generic-x86-64-homeassistant:%s\nLABEL io.hass.version="%s" org.opencontainers.image.version="%s"\n' \
+            "${ver}" "${ver}" "${ver}" \
+          | docker buildx build \
+              --platform linux/amd64 \
+              --pull \
+              --push \
+              -t "ghcr.io/esaueng/generic-x86-64-homeassistant:${ver}" \
+              -
+
       - name: Build and publish the Factory Assistant landingpage
         run: |
           set -euxo pipefail

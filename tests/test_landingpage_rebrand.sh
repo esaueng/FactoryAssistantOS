@@ -47,6 +47,8 @@ grep -q 'docker buildx build' "$workflow" \
     || fail "mirror workflow does not build the local Factory Assistant landingpage image"
 grep -q 'ghcr.io/esaueng/generic-x86-64-homeassistant:landingpage' "$workflow" \
     || fail "mirror workflow does not publish the expected landingpage tag"
+grep -q 'ghcr.io/esaueng/qemux86-64-homeassistant:landingpage' "$workflow" \
+    || fail "mirror workflow does not publish the Supervisor machine landingpage tag"
 grep -q 'Landing page text/art | this repo' "$branding_doc" \
     || fail "branding docs do not mark landing page text/art as shipped from this repo"
 if grep -q 'landing page art, boot console text' "$branding_doc"; then

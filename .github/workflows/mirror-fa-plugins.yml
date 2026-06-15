@@ -14,8 +14,8 @@
 # plugin versions move. Push auth prefers a GHCR_PAT secret (write:packages),
 # falling back to GITHUB_TOKEN (which can create these NEW org packages).
 #
-# After a successful run, make the 5 plugin packages and generic-x86-64 image
-# package PUBLIC (the appliance pulls anonymously).
+# After a successful run, make the 5 plugin packages and both landingpage image
+# packages PUBLIC (the appliance pulls anonymously).
 name: Mirror FA plugins + branded local images
 
 on:
@@ -94,6 +94,8 @@ jobs:
             --push \
             -t "ghcr.io/esaueng/generic-x86-64-homeassistant:landingpage" \
             -t "ghcr.io/esaueng/generic-x86-64-homeassistant:${ver}-landingpage" \
+            -t "ghcr.io/esaueng/qemux86-64-homeassistant:landingpage" \
+            -t "ghcr.io/esaueng/qemux86-64-homeassistant:${ver}-landingpage" \
             --label "org.opencontainers.image.version=${ver}" \
             landingpage
 
@@ -102,7 +104,7 @@ jobs:
           {
             echo "Mirrored to ghcr.io/esaueng/amd64-hassio-{dns,audio,observer,multicast}:${{ inputs.fa_version || env.FA_VERSION }}"
             echo "Published branded CLI plugin to ghcr.io/esaueng/amd64-hassio-cli:${{ inputs.fa_version || env.FA_VERSION }}"
-            echo "Published branded landingpage to ghcr.io/esaueng/generic-x86-64-homeassistant:landingpage"
+            echo "Published branded landingpage to ghcr.io/esaueng/{generic-x86-64,qemux86-64}-homeassistant:landingpage"
             echo ""
-            echo "NEXT: make the 5 plugin packages and the generic-x86-64-homeassistant package **public** (org Packages settings) — the appliance pulls anonymously."
+            echo "NEXT: make the 5 plugin packages and both landingpage packages **public** (org Packages settings) — the appliance pulls anonymously."
           } >> "$GITHUB_STEP_SUMMARY"

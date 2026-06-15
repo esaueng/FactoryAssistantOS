@@ -1,0 +1,59 @@
+Factory Assistant OS Remaining Work Plan
+Updated: 2026-06-15
+
+Immediate next actions
+1. Refresh GitHub Actions status for FactoryAssistantOS and factory-assistant-supervisor.
+2. Inspect the latest Supervisor build-smoke failure logs.
+3. Fix the current Supervisor smoke blocker where the runtime check expects a
+   hassio_cli container but none exists.
+4. Rerun Supervisor CI and Build supervisor until both pass.
+5. Re-verify live channel JSON and anonymous GHCR pulls after any channel or
+   image-name change.
+
+P2: trusted OTA and release pipeline
+1. Generate real Factory Assistant RAUC CA and signing keys outside the repo.
+2. Configure the device keyring with the real Factory Assistant CA.
+3. Configure GitHub release signing secrets for RAUC bundle builds.
+4. Produce signed release bundles using trusted keys, not development material.
+5. Verify signed RAUC bundles with the shipped keyring.
+6. Verify release artifacts: image, RAUC bundle, legal-info archive, checksums,
+   and no leaked private key material.
+7. Confirm stable, beta, and dev channel documents point only to esaueng-owned
+   public images and valid OTA artifact URLs.
+8. Keep scheduled upstream release and security tracking green.
+
+P2/P3 cleanup
+1. Finish product-name cleanup in translations, CLI notes, and user-visible
+   Supervisor/Core strings.
+2. Keep landing page, CLI plugin, and visible appliance branding free of Home
+   Assistant or OHF marks except factual attribution.
+3. Keep qemux86-64 as a Supervisor version alias while pulling the public
+   generic-x86-64 Core image for the shipped x86 appliance.
+
+P3: industrial product experience
+1. Finish the industrial onboarding wizard as the real first-run flow.
+2. Persist site, line, cell, station, and machine setup from onboarding.
+3. Wire onboarding to default dashboard seeding.
+4. Make Plant overview, wallboard, and andon views the default experience.
+5. Add guided Mosquitto installation during setup.
+6. Add guided industrial add-on installation for OPC UA bridge, PLC gateway
+   helper, and historian storage.
+7. Add NTP, network posture, and static-IP guidance to onboarding.
+8. Keep cloud and analytics defaults off.
+9. Finish network and mDNS polish for factory-assistant.local behavior.
+10. Verify the frontend fork consumes the native fa-machine-card, fa-andon-view,
+    and wallboard contracts without control affordances.
+
+P4: gated non-safety control
+1. Do not start until P2 and P3 are solid and there is an explicit product
+   decision.
+2. Any future control path must be disabled by default, opt-in, audited,
+   isolated from safety networks, and documented as non-safety only.
+3. Update docs/SAFETY_BOUNDARY.md before adding any machine write/control path.
+
+Standing invariants
+1. Preserve upstream-compatible internal identifiers required by Supervisor.
+2. Strip Home Assistant and OHF marks from shipped user-facing artifacts.
+3. Preserve Apache-2.0 licensing, NOTICE content, and factual attribution.
+4. Maintain monitoring-first posture.
+5. Treat machine control as gated, non-safety, opt-in functionality only.

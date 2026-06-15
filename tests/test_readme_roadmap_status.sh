@@ -66,7 +66,11 @@ case "$readme_text" in
     *) fail "README status does not record the Core-backed industrial setup handoff";;
 esac
 case "$readme_text" in
-    *"full wizard-driven default seeding and add-on integration"*) ;;
+    *"Supervisor fork now exposes \`factory-assistant-addons\` as a built-in add-on store"*) ;;
+    *) fail "README status does not record the built-in Supervisor add-on store";;
+esac
+case "$readme_text" in
+    *"full wizard-driven default seeding and guided add-on installation"*) ;;
     *) fail "README status does not name the remaining wizard-driven seeding work";;
 esac
 grep -q 'frontend fork has visible rebrand/About/local-first onboarding bridge' "$arch_doc" \
@@ -81,7 +85,9 @@ grep -q "native plant navigation" "$arch_doc" \
     || fail "architecture status does not record the implemented native plant navigation"
 grep -q "Core-backed industrial setup handoff" "$arch_doc" \
     || fail "architecture status does not record the Core-backed industrial setup handoff"
-grep -q "P3 backlog is full wizard-driven default seeding and add-on integration" "$arch_doc" \
+grep -q "Supervisor built-in \`factory-assistant-addons\` store" "$arch_doc" \
+    || fail "architecture status does not record the built-in Supervisor add-on store"
+grep -q "P3 backlog is full wizard-driven default seeding and guided add-on installation" "$arch_doc" \
     || fail "architecture status does not name the remaining wizard-driven seeding work"
 if grep -q 'frontend branding/onboarding' "$release_doc"; then
     fail "release runbook still says broad frontend branding/onboarding is unresolved"

@@ -122,7 +122,8 @@ paths move between upstream releases).
 | Dashboard wiring for native machine, andon, and wallboard cards | this repo + `frontend` fork | A |
 | Area dashboard generator | `scripts/generate-area-dashboards.py` + `dashboards/area-dashboards.example.yaml` | A |
 | Terminology contract (`Plant overview`, line/cell taxonomy, Factory Assistant CLI) | `ui/frontend_contract.yaml` | A |
-| Full industrial onboarding wizard | `frontend` + `core` + `supervisor` forks | P3: Core-backed setup handoff exists; default seeding/add-on integration remains |
+| Supervisor built-in industrial add-on store | `supervisor` fork (`BuiltinRepository.FACTORY_ASSISTANT_ADDONS`) | P3 implemented in fork |
+| Full industrial onboarding wizard | `frontend` + `core` + `supervisor` forks | P3: Core-backed setup handoff exists; default seeding/guided add-on installation remains |
 
 **Component ownership preflight.** Before cutting a trusted tag, run
 `scripts/verify-component-ownership.sh --channel version-service/stable.json
@@ -134,9 +135,10 @@ the published industrial add-on manifests check for
 with the OS-shipped catalog, verifies the published industrial add-on image tags
 referenced by those manifests are anonymously pullable from GHCR, plus
 `scripts/verify-supervisor-channel-patch.sh` so the running Supervisor fork
-is proven to read the Factory Assistant version channel. The tag build
-workflow runs the same check with `GH_COMPONENT_READ_TOKEN` when that secret
-is set, falling back to the workflow token.
+is proven to read the Factory Assistant version channel, and verifies the
+Supervisor built-in add-on store includes `factory-assistant-addons`. The tag
+build workflow runs the same check with `GH_COMPONENT_READ_TOKEN` when that
+secret is set, falling back to the workflow token.
 
 **os-release ID verification (P1).** After first boot, confirm the Supervisor
 accepts the `faos` OS identity: Settings → About reports "Factory Assistant

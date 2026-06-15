@@ -149,6 +149,15 @@ fetch_addon_file() {
         || die "published add-on repository is missing required file: $path"
 }
 
+fetch_supervisor_file() {
+    local path="$1"
+
+    "$gh_bin" api \
+        -H "Accept: application/vnd.github.raw" \
+        "/repos/$owner/factory-assistant-supervisor/contents/$path" \
+        || die "published Supervisor fork is missing required file: $path"
+}
+
 require_text() {
     local label="$1"
     local haystack="$2"
@@ -251,6 +260,14 @@ verify_industrial_addons() {
     verify_addon_manifest historian_storage historian-storage historian-storage
 }
 
+verify_supervisor_factory_assistant_addon_store() {
+    local store_const
+
+    store_const="$(fetch_supervisor_file supervisor/store/const.py)"
+    require_text "published Supervisor built-in stores" "$store_const" \
+        'FACTORY_ASSISTANT_ADDONS = "https://github.com/esaueng/factory-assistant-addons"'
+}
+
 for row in "${image_rows[@]}"; do
     IFS=$'\t' read -r _component package tag <<< "$row"
     verify_registry_tag "$package" "$tag"
@@ -262,6 +279,8 @@ FAOS_GH_BIN="$gh_bin" "$ROOT/scripts/verify-supervisor-channel-patch.sh" \
     --channel "$channel" \
     --repo "$owner/factory-assistant-supervisor" >/dev/null
 
+verify_supervisor_factory_assistant_addon_store
+
 cat <<EOF
 component ownership preflight passed
   owner: $owner
@@ -272,4 +291,5 @@ component ownership preflight passed
   industrial add-on manifests: verified
   industrial add-on image tags: $addon_image_count
   supervisor channel patch: verified
+  supervisor built-in add-on store: verified
 EOF

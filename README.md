@@ -34,8 +34,9 @@ verification are configured.
 P3 industrial product experience is partial. The OS image ships industrial
 defaults, a Plant overview dashboard, andon/wallboard templates, network/NTP
 posture handoffs, onboarding contracts, and industrial add-on catalog
-contracts. The frontend fork has the visible product rebrand, About panel
-contract, branded landing/onboarding links, local-first onboarding bridge,
+contracts. The Supervisor fork now exposes `factory-assistant-addons` as a
+built-in add-on store for the industrial add-on set. The frontend fork has the visible product rebrand, About panel contract,
+branded landing/onboarding links, local-first onboarding bridge,
 native plant navigation, native read-only `fa-machine-card`, native read-only
 `fa-andon-view`, native read-only `factory-wallboard-kiosk`, and a native
 industrial setup handoff backed by Core's
@@ -43,7 +44,7 @@ industrial setup handoff backed by Core's
 site/line/cell, NTP/static-IP, Mosquitto, local-first, dashboard, and safety
 acknowledgement data in `factory_assistant_onboarding` system data. The
 frontend/Core/Supervisor fork work still needs to complete full wizard-driven
-default seeding and add-on integration. Native dashboard wiring is
+default seeding and guided add-on installation. Native dashboard wiring is
 implemented in the shipped YAML templates, the area dashboard generator now
 emits `area-dashboards.example.yaml` from the shipped line/cell model using
 `custom:fa-machine-card` and `custom:fa-andon-view`, and the terminology

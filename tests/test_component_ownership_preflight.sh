@@ -57,6 +57,14 @@ if [ "$1" = "api" ]; then
             fi
             exit 0
             ;;
+          /repos/esaueng/factory-assistant-supervisor/contents/supervisor/store/const.py*)
+            if [ "$mode" = "bad_supervisor_addon_store" ]; then
+                printf '%s\n' 'COMMUNITY_ADDONS = "https://github.com/hassio-addons/repository"'
+            else
+                printf '%s\n' 'FACTORY_ASSISTANT_ADDONS = "https://github.com/esaueng/factory-assistant-addons"'
+            fi
+            exit 0
+            ;;
           /repos/esaueng/factory-assistant-addons/contents/repository.yaml*)
             printf '%s\n' 'name: Factory Assistant Add-ons'
             printf '%s\n' 'url: "https://github.com/esaueng/factory-assistant-addons"'
@@ -229,6 +237,8 @@ grep -q 'image tags: 7' "$tmp/ok.out" \
     || fail "component ownership preflight did not check every channel image tag"
 grep -q 'supervisor channel patch: verified' "$tmp/ok.out" \
     || fail "component ownership preflight does not report Supervisor channel patch verification"
+grep -q 'supervisor built-in add-on store: verified' "$tmp/ok.out" \
+    || fail "component ownership preflight does not report Supervisor add-on store verification"
 grep -q 'industrial add-on manifests: verified' "$tmp/ok.out" \
     || fail "component ownership preflight does not report add-on manifest verification"
 grep -q 'industrial add-on image tags: 3' "$tmp/ok.out" \
@@ -314,6 +324,18 @@ fi
 grep -q 'Supervisor fork must patch URL_HASSIO_VERSION' "$tmp/bad-supervisor.err" \
     || fail "bad Supervisor fork rejection did not identify the required channel patch"
 
+if FAKE_REGISTRY_LOG="$tmp/bad-supervisor-store-registry.log" \
+    FAKE_GH_MODE=bad_supervisor_addon_store \
+    FAOS_GH_BIN="$tmp/gh" \
+    FAOS_REGISTRY_CHECK_BIN="$tmp/registry-check" \
+    "$script" \
+    --channel "$ROOT/version-service/stable.json" --owner esaueng \
+    2> "$tmp/bad-supervisor-store.err"; then
+    fail "component ownership preflight allowed a Supervisor fork without the Factory Assistant add-on store"
+fi
+grep -q 'published Supervisor built-in stores missing required text' "$tmp/bad-supervisor-store.err" \
+    || fail "bad Supervisor store rejection did not identify the required add-on repository"
+
 if FAKE_REGISTRY_LOG="$tmp/bad-addon-registry.log" \
     FAKE_GH_MODE=bad_addon_manifest \
     FAOS_GH_BIN="$tmp/gh" \
@@ -332,12 +354,16 @@ grep -q 'industrial add-on manifests' "$release_doc" \
     || fail "release runbook does not document published industrial add-on manifest verification"
 grep -q 'industrial add-on image tags' "$release_doc" \
     || fail "release runbook does not document published industrial add-on image tag verification"
+grep -q 'Supervisor built-in add-on store' "$release_doc" \
+    || fail "release runbook does not document Supervisor built-in add-on store verification"
 grep -q 'scripts/verify-component-ownership.sh' "$build_doc" \
     || fail "OS build docs do not document component ownership preflight"
 grep -q 'industrial add-on manifests' "$build_doc" \
     || fail "OS build docs do not document published industrial add-on manifest verification"
 grep -q 'industrial add-on image tags' "$build_doc" \
     || fail "OS build docs do not document published industrial add-on image tag verification"
+grep -q 'Supervisor built-in add-on store' "$build_doc" \
+    || fail "OS build docs do not document Supervisor built-in add-on store verification"
 grep -q 'component ownership/channel work is verified' "$arch_doc" \
     || fail "architecture phase status does not mark P2 component ownership/channel work as verified"
 grep -q 'trusted OTA remains the P2 blocker' "$arch_doc" \
@@ -351,6 +377,8 @@ grep -q 'scripts/verify-supervisor-channel-patch.sh' "$script" \
     || fail "component ownership preflight does not call the Supervisor channel patch verifier"
 grep -q 'verify_industrial_addons' "$script" \
     || fail "component ownership preflight does not validate the published industrial add-ons"
+grep -q 'verify_supervisor_factory_assistant_addon_store' "$script" \
+    || fail "component ownership preflight does not validate the Supervisor add-on store"
 grep -q 'GH_COMPONENT_READ_TOKEN' "$workflow" \
     || fail "build workflow does not provide a GitHub token for component ownership verification"
 grep -q 'packages: read' "$workflow" \

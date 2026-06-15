@@ -143,9 +143,10 @@ and complete onboarding. Full flashing/VM notes: `docs/OS_BUILD.md` §3.
       referenced by those manifests are anonymously pullable from GHCR, then runs
       `scripts/verify-supervisor-channel-patch.sh` to confirm the Supervisor
       fork's `URL_HASSIO_VERSION` points at the Factory Assistant channel, not
-      `version.home-assistant.io`. The tag workflow runs the same check with
-      `GH_COMPONENT_READ_TOKEN` when that secret is set, falling back to the
-      workflow token.
+      `version.home-assistant.io`, and verifies the Supervisor built-in add-on store
+      includes `factory-assistant-addons`. The tag workflow runs the
+      same check with `GH_COMPONENT_READ_TOKEN` when that secret is set,
+      falling back to the workflow token.
 - [ ] Verify the published channel is live and matches the local stable
       document before cutting a release tag:
 
@@ -222,7 +223,9 @@ and complete onboarding. Full flashing/VM notes: `docs/OS_BUILD.md` §3.
       `custom:fa-machine-card` and `custom:fa-andon-view`; the terminology
       contract aligns `Plant overview`, line or cell taxonomy, `Factory
       Assistant CLI`, and “Factory Assistant is based on Home Assistant.”;
-      still P3: full industrial onboarding wizard integration.
+      the Supervisor fork includes the built-in `factory-assistant-addons`
+      store; still P3: full industrial onboarding wizard integration for
+      default seeding and guided add-on installation.
 - [ ] Verify the Supervisor accepts the `faos` os-release identity on first
       boot (`docs/OS_BUILD.md` §4 — os-release ID verification).
 - [ ] Verify the settled `branding/identity.env` go-live values before any

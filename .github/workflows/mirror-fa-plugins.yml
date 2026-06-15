@@ -11,8 +11,11 @@
 #
 # Source tags are the current upstream plugin versions; the target tag is the FA
 # release version (channel default 2026.6.0). Re-pin source tags when upstream
-# plugin versions move. Push auth prefers a GHCR_PAT secret (write:packages),
-# falling back to GITHUB_TOKEN (which can create these NEW org packages).
+# plugin versions move. Every published image is re-labeled so io.hass.version
+# equals the FA target tag: the Supervisor keys off that label to find the image
+# to start, so a label that disagrees with the tag breaks plugin startup. Push
+# auth prefers a GHCR_PAT secret (write:packages), falling back to GITHUB_TOKEN
+# (which can create these NEW org packages).
 #
 # After a successful run, make the 5 plugin packages and landingpage image
 # package PUBLIC (the appliance pulls anonymously).
@@ -57,14 +60,27 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GHCR_PAT || secrets.GITHUB_TOKEN }}
 
-      - name: Mirror the unbranded system plugins (re-tagged to the FA version)
+      - name: Mirror the unbranded system plugins (re-tagged + re-labeled to the FA version)
         run: |
           set -euxo pipefail
           ver="${{ inputs.fa_version || env.FA_VERSION }}"
+          # NOTE: do NOT use `docker buildx imagetools create` here. That copies the
+          # upstream manifest verbatim, keeping the upstream io.hass.version label
+          # (e.g. 2026.02.0). The Supervisor trusts io.hass.version (const.LABEL_VERSION)
+          # as a plugin's installed version and then references
+          # ghcr.io/esaueng/<arch>-hassio-<slug>:<that-version> — a tag we never
+          # publish — so the plugin (incl. hassio_cli) never starts. Rebuild with an
+          # overriding LABEL so io.hass.version == the FA tag == the update-channel
+          # version.
           copy() { # $1 = plugin slug, $2 = upstream source tag
-            docker buildx imagetools create \
-              -t "ghcr.io/esaueng/amd64-hassio-$1:${ver}" \
-              "ghcr.io/home-assistant/amd64-hassio-$1:$2"
+            printf 'FROM ghcr.io/home-assistant/amd64-hassio-%s:%s\nLABEL io.hass.version="%s" org.opencontainers.image.version="%s"\n' \
+              "$1" "$2" "${ver}" "${ver}" \
+            | docker buildx build \
+                --platform linux/amd64 \
+                --pull \
+                --push \
+                -t "ghcr.io/esaueng/amd64-hassio-$1:${ver}" \
+                -
           }
           copy dns       2026.02.0
           copy audio     2026.02.0
@@ -80,9 +96,32 @@ jobs:
             --pull \
             --push \
             --build-arg CLI_SOURCE_TAG=2026.05.0 \
+            --build-arg FA_VERSION="${ver}" \
             -t "ghcr.io/esaueng/amd64-hassio-cli:${ver}" \
-            --label "org.opencontainers.image.version=${ver}" \
             plugin-cli
+
+      - name: Re-stamp the Core machine image to the FA version
+        run: |
+          set -euxo pipefail
+          ver="${{ inputs.fa_version || env.FA_VERSION }}"
+          # factory-assistant-core builds the Core image as a dev nightly, so its
+          # io.hass.version is e.g. 2026.7.0.devNNN; the FA release tag (this ver)
+          # is applied separately. As with the plugins, the Supervisor reads
+          # io.hass.version (const.LABEL_VERSION) as Core's installed version and
+          # then (re)starts ghcr.io/esaueng/generic-x86-64-homeassistant:<that
+          # version>. If the label disagrees with the FA tag the Supervisor pulls a
+          # tag that was never published, Core never starts, and backups/restore
+          # fail. Re-tag the image so io.hass.version == the FA tag == the channel
+          # "homeassistant" version, preserving the image content. Durable fix: have
+          # the FA Core release process stamp io.hass.version to the FA tag.
+          printf 'FROM ghcr.io/esaueng/generic-x86-64-homeassistant:%s\nLABEL io.hass.version="%s" org.opencontainers.image.version="%s"\n' \
+            "${ver}" "${ver}" "${ver}" \
+          | docker buildx build \
+              --platform linux/amd64 \
+              --pull \
+              --push \
+              -t "ghcr.io/esaueng/generic-x86-64-homeassistant:${ver}" \
+              -
 
       - name: Build and publish the Factory Assistant landingpage
         run: |

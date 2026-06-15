@@ -4,10 +4,11 @@
 #   https://esaueng.github.io/FactoryAssistantOS/stable.json
 # (see buildroot-external/rootfs-overlay/usr/sbin/hassos-supervisor and
 # branding/identity.env: FAOS_VERSION_CHANNEL_URL). This workflow serves
-# version-service/stable.json at that exact URL, and the channel schema at its
-# $id (schema/channel.schema.json), so the single source of truth under
-# version-service/ is what reaches the field — no hand-copied duplicate. The
-# patched Supervisor also requests /apparmor_stable.txt from the same site.
+# version-service/{stable,beta,dev}.json at the matching URLs, and the channel
+# schema at its $id (schema/channel.schema.json), so the single source of truth
+# under version-service/ is what reaches the field — no hand-copied duplicate.
+# The patched Supervisor also requests /apparmor_{stable,beta,dev}.txt from
+# the same site.
 #
 # PREREQUISITES (one-time, in repo Settings — see version-service/README.md):
 #   1. A PUBLIC Pages site. The appliance fetches the channel anonymously, so
@@ -23,7 +24,7 @@ on:
   push:
     branches: ["main"]
     paths:
-      - "version-service/stable.json"
+      - "version-service/*.json"
       - "version-service/apparmor_*.txt"
       - "version-service/schema/**"
       - ".github/workflows/pages.yml"
@@ -56,25 +57,41 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Validate channel document against schema
-        # The field Supervisor parses this document; never publish one the
-        # schema rejects. Mirrors the check in lint.yml.
+      - name: Validate channel documents against schema
+        # The field Supervisor parses these documents; never publish one the
+        # schema rejects. Mirrors the check in lint.yml and verifies the
+        # filename/channel contract the Supervisor URL template depends on.
         run: |
           python -m pip install --quiet --upgrade pip
           python -m pip install --quiet check-jsonschema
-          check-jsonschema --schemafile version-service/schema/channel.schema.json \
-            version-service/stable.json
+          for channel in stable beta dev; do
+            check-jsonschema --schemafile version-service/schema/channel.schema.json \
+              "version-service/${channel}.json"
+          done
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          for channel in ("stable", "beta", "dev"):
+              path = Path("version-service") / f"{channel}.json"
+              with path.open(encoding="utf-8") as fh:
+                  data = json.load(fh)
+              if data.get("channel") != channel:
+                  raise SystemExit(f"{path} declares channel {data.get('channel')!r}")
+          PY
 
       - name: Assemble Pages site
         # Copy only the public channel artifacts so the URLs are clean:
-        #   /stable.json                  <- the channel the appliance polls
-        #   /apparmor_stable.txt          <- Supervisor AppArmor profile URL
+        #   /{stable,beta,dev}.json       <- channels the Supervisor polls
+        #   /apparmor_{stable,beta,dev}.txt <- Supervisor AppArmor profiles
         #   /schema/channel.schema.json   <- matches the schema's own $id
         run: |
           set -euo pipefail
           mkdir -p _site/schema
-          cp version-service/stable.json                 _site/stable.json
-          cp version-service/apparmor_*.txt              _site/
+          for channel in stable beta dev; do
+            cp "version-service/${channel}.json" "_site/${channel}.json"
+            cp "version-service/apparmor_${channel}.txt" "_site/apparmor_${channel}.txt"
+          done
           cp version-service/schema/channel.schema.json  _site/schema/channel.schema.json
           cat > _site/index.html <<'HTML'
           <!doctype html>
@@ -84,7 +101,11 @@ jobs:
           <p>Endpoints served from this site:</p>
           <ul>
             <li><a href="stable.json">stable.json</a> &mdash; the stable update channel the appliance polls</li>
+            <li><a href="beta.json">beta.json</a> &mdash; the beta update channel endpoint</li>
+            <li><a href="dev.json">dev.json</a> &mdash; the dev update channel endpoint</li>
             <li><a href="apparmor_stable.txt">apparmor_stable.txt</a> &mdash; Supervisor AppArmor profile</li>
+            <li><a href="apparmor_beta.txt">apparmor_beta.txt</a> &mdash; Supervisor AppArmor profile for beta</li>
+            <li><a href="apparmor_dev.txt">apparmor_dev.txt</a> &mdash; Supervisor AppArmor profile for dev</li>
             <li><a href="schema/channel.schema.json">schema/channel.schema.json</a> &mdash; channel document schema</li>
           </ul>
           HTML

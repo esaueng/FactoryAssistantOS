@@ -65,8 +65,9 @@ The second form uses the `supervisor` version from the channel document as the
 GitHub ref. It fails if `URL_HASSIO_VERSION` still points at
 `version.home-assistant.io`.
 
-The OS repo must publish `version-service/apparmor_stable.txt` to the Pages
-site as `/apparmor_stable.txt` whenever this AppArmor URL is patched.
+The OS repo must publish `version-service/apparmor_{stable,beta,dev}.txt` to
+the Pages site as `/apparmor_{stable,beta,dev}.txt` whenever this AppArmor URL
+is patched.
 
 ### Deliberately NOT changed in Phase 1
 
@@ -82,11 +83,11 @@ site as `/apparmor_stable.txt` whenever this AppArmor URL is patched.
 ## Channel coupling (must be true before this ships)
 
 `URL_HASSIO_VERSION` uses `{channel}` → for the default `stable` channel it
-fetches `https://esaueng.github.io/FactoryAssistantOS/stable.json` (already
-served). The Supervisor reads that document's **`images`** map (plural) — which
-this repo's `version-service/stable.json` now provides for all 7 components.
-If you ever switch a device to `beta`/`dev`, you must also publish
-`beta.json`/`dev.json`, or pin the channel to `stable`.
+fetches `https://esaueng.github.io/FactoryAssistantOS/stable.json`. The Pages
+workflow also publishes `beta.json` and `dev.json` so development-channel
+Supervisor runs do not hit upstream or 404 during startup. The Supervisor reads
+the selected document's **`images`** map (plural) — which this repo's
+`version-service/{stable,beta,dev}.json` provides for all 7 components.
 
 ## Build & publish the forked Supervisor image
 

@@ -7,6 +7,7 @@ component_script="$ROOT/scripts/verify-component-ownership.sh"
 release_doc="$ROOT/RELEASE.md"
 build_doc="$ROOT/docs/OS_BUILD.md"
 supervisor_doc="$ROOT/docs/forks/supervisor/README.md"
+version_doc="$ROOT/version-service/README.md"
 pages_workflow="$ROOT/.github/workflows/pages.yml"
 apparmor_profile="$ROOT/version-service/apparmor_stable.txt"
 tmp="$(mktemp -d)"
@@ -67,8 +68,22 @@ fi
 [ -f "$apparmor_profile" ] || fail "Factory Assistant AppArmor profile endpoint source is missing"
 grep -q 'apparmor_stable.txt' "$pages_workflow" \
     || fail "Pages workflow does not publish the Supervisor AppArmor profile"
-grep -q 'apparmor_stable.txt' "$supervisor_doc" \
-    || fail "Supervisor fork docs do not document the AppArmor profile endpoint"
+grep -q 'apparmor_{stable,beta,dev}.txt' "$supervisor_doc" \
+    || fail "Supervisor fork docs do not document the all-channel AppArmor profile endpoints"
+for channel in stable beta dev; do
+    [ -f "$ROOT/version-service/$channel.json" ] \
+        || fail "version service is missing $channel.json for Supervisor channel $channel"
+    grep -q "\"channel\": \"$channel\"" "$ROOT/version-service/$channel.json" \
+        || fail "$channel.json does not declare channel $channel"
+    [ -f "$ROOT/version-service/apparmor_$channel.txt" ] \
+        || fail "version service is missing apparmor_$channel.txt for Supervisor channel $channel"
+    grep -q "$channel.json" "$version_doc" \
+        || fail "version-service docs do not document $channel.json"
+    grep -q "apparmor_$channel.txt" "$version_doc" \
+        || fail "version-service docs do not document apparmor_$channel.txt"
+done
+grep -q 'for channel in stable beta dev' "$pages_workflow" \
+    || fail "Pages workflow does not validate and publish all Supervisor channels"
 grep -q 'running Supervisor update-channel URL preflight' "$release_doc" \
     || fail "release runbook does not list the running Supervisor channel preflight as applied"
 grep -q 'running fork: P2 verified by Supervisor channel patch preflight' "$build_doc" \

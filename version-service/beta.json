@@ -3,7 +3,8 @@
   "channel": "beta",
   "supervisor": "2026.6.0",
   "homeassistant": {
-    "default": "2026.6.0"
+    "default": "2026.6.0",
+    "qemux86-64": "2026.6.0"
   },
   "hassos": {
     "ota": "https://github.com/esaueng/FactoryAssistantOS/releases/download/{version}/faos_{board}-{version}.raucb",

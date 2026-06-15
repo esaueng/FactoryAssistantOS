@@ -61,9 +61,10 @@ download host never drift between the image build and the channel:
     --out version-service/stable.json
 ```
 
-For `generic-x86-64`, the generator also emits `qemux86-64` in `hassos`.
-That is deliberate: OS release artifacts are named with the board id, while
-the running Supervisor indexes update data by its machine id.
+For `generic-x86-64`, the generator also emits `qemux86-64` in both
+`homeassistant` and `hassos`. That is deliberate: the running Supervisor
+indexes Core versions by machine id, while OS release artifacts are named with
+the board id.
 
 Use `--channel beta --out version-service/beta.json` or
 `--channel dev --out version-service/dev.json` when promoting a non-stable

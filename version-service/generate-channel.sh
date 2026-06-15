@@ -71,8 +71,9 @@ cli="${cli:-$supervisor}"
 multicast="${multicast:-$supervisor}"
 observer="${observer:-$supervisor}"
 
-# Supervisor uses the machine id, while the OS release bundle is named by the
-# board id. The generic x86-64 image needs both keys to avoid updater failures.
+# Supervisor uses the machine id for Core versions, while the OS release bundle
+# is named by board id. The generic x86-64 image needs both keys to avoid
+# updater failures.
 if [ -z "$os_machine" ] && [ "$os_board" = "generic-x86-64" ]; then
     os_machine="qemux86-64"
 fi
@@ -99,7 +100,10 @@ doc="$(jq -n \
         _comment: $comment,
         channel: $channel,
         supervisor: $supervisor,
-        homeassistant: { default: $core },
+        homeassistant: (
+            { default: $core } +
+            (if ($machine == "" or $machine == "default") then {} else { ($machine): $core } end)
+        ),
         hassos: (
             { ota: $ota } +
             { ($board): $os } +

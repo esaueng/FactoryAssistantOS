@@ -82,7 +82,10 @@ import sys
 with open(sys.argv[1], "r", encoding="utf-8") as fh:
     data = json.load(fh)
 hassos = data.get("hassos", {})
+homeassistant = data.get("homeassistant", {})
 if hassos.get("generic-x86-64") != hassos.get("qemux86-64"):
+    raise SystemExit(1)
+if homeassistant.get("qemux86-64") != homeassistant.get("default"):
     raise SystemExit(1)
 PY
     then
@@ -107,7 +110,10 @@ import sys
 with open(sys.argv[1], "r", encoding="utf-8") as fh:
     data = json.load(fh)
 hassos = data.get("hassos", {})
+homeassistant = data.get("homeassistant", {})
 if hassos.get("generic-x86-64") != hassos.get("qemux86-64"):
+    raise SystemExit(1)
+if homeassistant.get("qemux86-64") != homeassistant.get("default"):
     raise SystemExit(1)
 PY
 then

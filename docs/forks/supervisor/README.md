@@ -88,9 +88,9 @@ workflow also publishes `beta.json` and `dev.json` so development-channel
 Supervisor runs do not hit upstream or 404 during startup. The Supervisor reads
 the selected document's **`images`** map (plural) — which this repo's
 `version-service/{stable,beta,dev}.json` provides for all 7 components. The
-same channel documents list both `generic-x86-64` and `qemux86-64` in `hassos`:
-the OS bundle is named by board id, but the Supervisor updater looks up the
-machine id it is running as.
+same channel documents list `qemux86-64` in `homeassistant` and both
+`generic-x86-64`/`qemux86-64` in `hassos`: the Supervisor updater looks up Core
+by machine id, while OS bundles are named by board id.
 
 ## Build & publish the forked Supervisor image
 

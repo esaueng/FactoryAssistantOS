@@ -15,7 +15,7 @@ permissions:
 jobs:
   track:
     name: Update upstream tracking issue
-    runs-on: ubuntu-22.04
+    runs-on: depot-ubuntu-22.04
     steps:
       - name: Checkout
         uses: actions/checkout@v4

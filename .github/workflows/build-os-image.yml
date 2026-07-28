@@ -37,7 +37,7 @@ permissions:
 jobs:
   build:
     name: Build Factory Assistant OS (generic-x86-64)
-    runs-on: ubuntu-22.04
+    runs-on: depot-ubuntu-22.04
     env:
       DEFCONFIG: generic_x86_64 # Buildroot defconfig for board generic-x86-64
       BOARD_ID: generic-x86-64

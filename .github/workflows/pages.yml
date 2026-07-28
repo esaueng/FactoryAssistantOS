@@ -44,7 +44,7 @@ concurrency:
 jobs:
   publish:
     name: Validate channel + deploy to Pages
-    runs-on: ubuntu-22.04
+    runs-on: depot-ubuntu-22.04
     environment:
       name: github-pages
       url: ${{ steps.deploy.outputs.page_url }}

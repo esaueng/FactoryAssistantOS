@@ -45,7 +45,7 @@ permissions:
 jobs:
   mirror:
     name: Publish plugins (upstream mirrors + local branding)
-    runs-on: ubuntu-24.04
+    runs-on: depot-ubuntu-24.04
     steps:
       - name: Check out local build contexts
         uses: actions/checkout@v4
